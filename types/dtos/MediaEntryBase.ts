@@ -14,6 +14,12 @@ export interface MediaEntryDetailedDto {
   createdAtUtc: string;
 }
 
+export interface MediaEntrySearchResultDto {
+  idExternal: string;
+  title: string;
+  coverImageUrl: string | null;
+}
+
 export interface MediaEntryCreateDto {
   idExternal?: string | null;
   status: number;

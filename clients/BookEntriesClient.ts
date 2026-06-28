@@ -1,15 +1,15 @@
 import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from '../types/dtos/BookEntry';
+import { apiFetch } from '../shared/apiFetch';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 
 export default class BookEntriesClient {
   private baseUrl = `${API_BASE_URL}/mediaentries/books`;
 
   async createBook(dto: BookEntryCreateDto): Promise<BookEntryDetailedDto> {
-    const response = await fetch(this.baseUrl, {
+    const response = await apiFetch(this.baseUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(dto),
     });
     if (!response.ok) {
@@ -20,10 +20,9 @@ export default class BookEntriesClient {
   }
 
   async updateBook(id: string, dto: BookEntryUpdateDto): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}`, {
+    const response = await apiFetch(`${this.baseUrl}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(dto),
     });
     if (!response.ok) {

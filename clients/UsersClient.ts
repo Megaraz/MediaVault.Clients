@@ -1,3 +1,6 @@
+import { apiFetch } from '../shared/apiFetch';
+import { saveToken, clearToken } from '../shared/tokenStore';
+
 export type UserDetailedDto = {
   id: string;
   username: string;
@@ -18,13 +21,18 @@ export type UserLoginDto = {
   password: string;
 };
 
+type LoginResponseDto = {
+  user: UserDetailedDto;
+  token: string;
+};
+
 type ApiErrorResponse = {
   message?: string;
   errorCode?: string;
   errors?: string[];
 };
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 
 export default class UsersClient {
   private authBaseUrl = `${API_BASE_URL}/auth`;
@@ -54,43 +62,31 @@ export default class UsersClient {
   async login(credentials: UserLoginDto): Promise<UserDetailedDto> {
     const response = await fetch(`${this.authBaseUrl}/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
 
-    return this.readResponse<UserDetailedDto>(response);
+    const data = await this.readResponse<LoginResponseDto>(response);
+    await saveToken(data.token);
+    return data.user;
   }
 
   async logout(): Promise<void> {
-    const response = await fetch(`${this.authBaseUrl}/logout`, {
+    await clearToken();
+  }
+
+  async register(dto: UserCreateDto): Promise<void> {
+    const response = await fetch(`${this.authBaseUrl}/register`, {
       method: 'POST',
-      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dto),
     });
 
     return this.readResponse<void>(response);
   }
 
-  async register(dto: UserCreateDto): Promise<UserDetailedDto> {
-    const response = await fetch(`${this.usersBaseUrl}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(dto),
-    });
-
-    return this.readResponse<UserDetailedDto>(response);
-  }
-
   async getCurrentUser(): Promise<UserDetailedDto> {
-    const response = await fetch(`${this.usersBaseUrl}/me`, {
-      credentials: 'include',
-    });
-
+    const response = await apiFetch(`${this.authBaseUrl}/me`);
     return this.readResponse<UserDetailedDto>(response);
   }
 }

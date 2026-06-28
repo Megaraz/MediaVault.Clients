@@ -1,15 +1,15 @@
 import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from '../types/dtos/TvSeriesEntry';
+import { apiFetch } from '../shared/apiFetch';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 
 export default class TvSeriesEntriesClient {
   private baseUrl = `${API_BASE_URL}/mediaentries/tv-series`;
 
   async createTvSeries(dto: TvSeriesEntryCreateDto): Promise<TvSeriesEntryDetailedDto> {
-    const response = await fetch(this.baseUrl, {
+    const response = await apiFetch(this.baseUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(dto),
     });
     if (!response.ok) {
@@ -20,10 +20,9 @@ export default class TvSeriesEntriesClient {
   }
 
   async updateTvSeries(id: string, dto: TvSeriesEntryUpdateDto): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}`, {
+    const response = await apiFetch(`${this.baseUrl}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(dto),
     });
     if (!response.ok) {

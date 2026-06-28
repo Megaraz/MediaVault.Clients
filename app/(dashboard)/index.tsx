@@ -251,7 +251,7 @@ export default function DashboardScreen() {
           return (
             <TouchableOpacity key={type.value} onPress={() => setMediaTypeFilter(type.value)}
               style={[styles.filterChip, isActive && styles.filterChipActive]}>
-              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>{type.label}</Text>
+              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]} numberOfLines={1}>{type.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -334,17 +334,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
   },
   filterBarContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    gap: 6,
   },
   filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
     backgroundColor: Colors.surfaceElevated,
     borderWidth: 1,
     borderColor: Colors.border,
+    minWidth: 'auto',
   },
   filterChipActive: {
     backgroundColor: Colors.primary,
@@ -352,8 +353,9 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     color: Colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
+    textAlign: 'center',
   },
   filterChipTextActive: {
     color: '#fff',

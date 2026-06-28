@@ -1,8 +1,9 @@
-import { ScrollView, TextInput, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, TextInput, TouchableOpacity, View, Text, ActivityIndicator } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useState } from 'react';
 import UsersClient, { type UserCreateDto } from '../../clients/UsersClient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, S } from '../../constants/theme';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -15,149 +16,92 @@ export default function RegisterScreen() {
     confirmPassword: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRegister = async () => {
     if (!form.username || !form.email || !form.confirmEmail || !form.password || !form.confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setErrorMessage('Please fill in all fields');
       return;
     }
-
     if (form.email !== form.confirmEmail) {
-      Alert.alert('Error', 'Emails do not match');
+      setErrorMessage('Emails do not match');
       return;
     }
-
     if (form.password !== form.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      setErrorMessage('Passwords do not match');
       return;
     }
 
+    setErrorMessage(null);
     setIsSubmitting(true);
     try {
       await usersClient.register(form as UserCreateDto);
-      Alert.alert('Success', 'Account created! Please log in.');
       router.replace('/(auth)' as any);
     } catch (error) {
-      Alert.alert('Registration Failed', (error as Error).message);
+      setErrorMessage((error as Error).message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const field = (key: keyof typeof form, placeholder: string, opts?: { secureTextEntry?: boolean; keyboardType?: 'email-address' }) => (
+    <View>
+      <TextInput
+        placeholder={placeholder}
+        placeholderTextColor={S.inputPlaceholder}
+        value={form[key]}
+        onChangeText={(text) => setForm({ ...form, [key]: text })}
+        editable={!isSubmitting}
+        autoCapitalize="none"
+        style={S.input}
+        {...opts}
+      />
+    </View>
+  );
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}>
-        <View style={{ alignItems: 'center', marginBottom: 40 }}>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#333', marginBottom: 8 }}>
-            Create Account
-          </Text>
-          <Text style={{ fontSize: 16, color: '#666' }}>Join MediaVault</Text>
+    <SafeAreaView style={S.screen}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}>
+        {/* Branding */}
+        <View style={{ alignItems: 'center', marginBottom: 36 }}>
+          <View style={{ backgroundColor: Colors.primaryDim, borderRadius: 20, padding: 14, marginBottom: 16 }}>
+            <Text style={{ fontSize: 28, color: Colors.primary }}>✨</Text>
+          </View>
+          <Text style={S.title}>Create Account</Text>
+          <Text style={S.subtitle}>Join MediaVault today</Text>
         </View>
 
-        <View style={{ gap: 12 }}>
-          <TextInput
-            placeholder="Username"
-            value={form.username}
-            onChangeText={(text) => setForm({ ...form, username: text })}
-            editable={!isSubmitting}
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#ddd',
-              fontSize: 16,
-            }}
-          />
+        {/* Card */}
+        <View style={[S.card, { padding: 24, gap: 12 }]}>
+          {field('username', 'Username')}
+          {field('email', 'Email', { keyboardType: 'email-address' })}
+          {field('confirmEmail', 'Confirm Email', { keyboardType: 'email-address' })}
+          {field('password', 'Password', { secureTextEntry: true })}
+          {field('confirmPassword', 'Confirm Password', { secureTextEntry: true })}
 
-          <TextInput
-            placeholder="Email"
-            value={form.email}
-            onChangeText={(text) => setForm({ ...form, email: text })}
-            keyboardType="email-address"
-            editable={!isSubmitting}
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#ddd',
-              fontSize: 16,
-            }}
-          />
-
-          <TextInput
-            placeholder="Confirm Email"
-            value={form.confirmEmail}
-            onChangeText={(text) => setForm({ ...form, confirmEmail: text })}
-            keyboardType="email-address"
-            editable={!isSubmitting}
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#ddd',
-              fontSize: 16,
-            }}
-          />
-
-          <TextInput
-            placeholder="Password"
-            value={form.password}
-            onChangeText={(text) => setForm({ ...form, password: text })}
-            secureTextEntry
-            editable={!isSubmitting}
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#ddd',
-              fontSize: 16,
-            }}
-          />
-
-          <TextInput
-            placeholder="Confirm Password"
-            value={form.confirmPassword}
-            onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
-            secureTextEntry
-            editable={!isSubmitting}
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 8,
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#ddd',
-              fontSize: 16,
-            }}
-          />
+          {errorMessage && (
+            <View style={{ backgroundColor: Colors.errorDim, borderRadius: 8, padding: 12 }}>
+              <Text style={{ color: Colors.error, fontSize: 13 }}>{errorMessage}</Text>
+            </View>
+          )}
 
           <TouchableOpacity
             onPress={handleRegister}
             disabled={isSubmitting}
-            style={{
-              backgroundColor: '#3b82f6',
-              borderRadius: 8,
-              padding: 14,
-              alignItems: 'center',
-              marginTop: 8,
-              opacity: isSubmitting ? 0.6 : 1,
-            }}
+            style={[S.primaryBtn, { opacity: isSubmitting ? 0.6 : 1, marginTop: 4 }]}
           >
             {isSubmitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Register</Text>
+              <Text style={S.primaryBtnText}>Create Account</Text>
             )}
           </TouchableOpacity>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
-            <Text style={{ color: '#666' }}>Already have an account?</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+            <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>Already have an account?</Text>
             <Link href={'/(auth)' as any} asChild>
               <TouchableOpacity>
-                <Text style={{ color: '#3b82f6', fontWeight: 'bold' }}>Login</Text>
+                <Text style={[S.linkText, { fontSize: 14 }]}>Login</Text>
               </TouchableOpacity>
             </Link>
           </View>

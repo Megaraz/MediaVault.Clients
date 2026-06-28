@@ -1,6 +1,8 @@
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import MediaEntriesClient, { type MediaEntryMinimalDto, MediaTypeLabels } from '../../clients/MediaEntriesClient';
+import { Colors, S } from '../../constants/theme';
 
 const DEBOUNCE_DELAY_MS = 400;
 const MIN_SEARCH_LENGTH = 3;
@@ -43,77 +45,64 @@ export default function SearchScreen() {
   }, [searchQuery, client]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <View style={{ padding: 16 }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 16 }}>
-          Search
-        </Text>
+    <SafeAreaView style={S.screen}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Search</Text>
+      </View>
 
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: '#ddd',
-            paddingHorizontal: 12,
-          }}
-        >
+      {/* Search Input */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            placeholder="Search media..."
+            placeholder="Search your library..."
+            placeholderTextColor={S.inputPlaceholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            style={{ flex: 1, padding: 12, fontSize: 16 }}
+            style={styles.searchInput}
+            autoCapitalize="none"
           />
-          {isSearching && <ActivityIndicator size="small" color="#3b82f6" />}
+          {isSearching && <ActivityIndicator size="small" color={Colors.primary} style={{ marginRight: 4 }} />}
         </View>
 
         {searchQuery.length > 0 && searchQuery.length < MIN_SEARCH_LENGTH && (
-          <Text style={{ color: '#999', marginTop: 8 }}>
+          <Text style={styles.hint}>
             Type at least {MIN_SEARCH_LENGTH} characters to search
           </Text>
         )}
       </View>
 
+      {/* Results */}
       {searchResults.length > 0 && (
         <FlatList
           data={searchResults}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+          contentContainerStyle={styles.resultsList}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 8,
-                marginBottom: 12,
-                flexDirection: 'row',
-                overflow: 'hidden',
-                borderWidth: 1,
-                borderColor: '#e5e7eb',
-              }}
-            >
-              {item.imageUrl && (
+            <TouchableOpacity style={styles.resultCard} activeOpacity={0.7}>
+              {item.imageUrl ? (
                 <Image
                   source={{ uri: item.imageUrl }}
-                  style={{ width: 80, height: 120 }}
+                  style={styles.resultImage}
                   resizeMode="cover"
                 />
+              ) : (
+                <View style={[styles.resultImage, styles.resultImagePlaceholder]}>
+                  <Text style={{ fontSize: 22 }}>🎬</Text>
+                </View>
               )}
-              <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 4 }}>
-                    {item.title}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>
-                    {MediaTypeLabels[item.mediaType]}
-                  </Text>
+              <View style={styles.resultBody}>
+                <Text style={styles.resultTitle} numberOfLines={2}>{item.title}</Text>
+                <View style={styles.resultBadge}>
+                  <Text style={styles.resultBadgeText}>{MediaTypeLabels[item.mediaType]}</Text>
                 </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ fontSize: 12, color: '#3b82f6', fontWeight: 'bold' }}>
-                    ⭐ {item.rating}
-                  </Text>
-                </View>
+                {item.rating > 0 && (
+                  <View style={styles.ratingRow}>
+                    <Text style={styles.ratingStar}>★</Text>
+                    <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+                  </View>
+                )}
               </View>
             </TouchableOpacity>
           )}
@@ -121,10 +110,130 @@ export default function SearchScreen() {
       )}
 
       {searchQuery.length >= MIN_SEARCH_LENGTH && searchResults.length === 0 && !isSearching && (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, color: '#999' }}>No results found</Text>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateIcon}>🔭</Text>
+          <Text style={styles.emptyStateText}>No results found</Text>
         </View>
       )}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: Colors.text,
+    letterSpacing: -0.5,
+  },
+  searchContainer: {
+    padding: 16,
+    gap: 8,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  searchIcon: {
+    fontSize: 16,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 13,
+    fontSize: 15,
+    color: Colors.text,
+  },
+  hint: {
+    color: Colors.textMuted,
+    fontSize: 13,
+    paddingHorizontal: 4,
+  },
+  resultsList: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    gap: 10,
+  },
+  resultCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  resultImage: {
+    width: 72,
+    height: 108,
+  },
+  resultImagePlaceholder: {
+    backgroundColor: Colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultBody: {
+    flex: 1,
+    padding: 12,
+    gap: 4,
+    justifyContent: 'center',
+  },
+  resultTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  resultBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.primaryDim,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  resultBadgeText: {
+    color: Colors.primary,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingStar: {
+    color: '#f59e0b',
+    fontSize: 13,
+  },
+  ratingText: {
+    color: Colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingBottom: 60,
+  },
+  emptyStateIcon: {
+    fontSize: 40,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+});

@@ -1,21 +1,21 @@
 /**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
+ * Simplified theme color hook for the single dark-mode MediaVault theme.
+ * Falls back to named Colors tokens; light/dark overrides still supported.
  */
 
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
-  colorName: keyof typeof Colors.light & keyof typeof Colors.dark
+  colorName: keyof typeof Colors,
 ) {
-  const theme = useColorScheme() ?? 'light';
-  const colorFromProps = props[theme];
+  // App uses a single dark theme; prefer explicit overrides when provided
+  const colorFromProps = props.dark ?? props.light;
 
   if (colorFromProps) {
     return colorFromProps;
-  } else {
-    return Colors[theme][colorName];
   }
+
+  const value = Colors[colorName];
+  return typeof value === 'string' ? value : Colors.text;
 }

@@ -1,50 +1,191 @@
-# Welcome to your Expo app 👋
+# MediaVault Android - React Native App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native port of the MediaVault web application for Android devices, built with Expo.
 
-## Get started
+## 🚀 Quick Start
 
-1. Install dependencies
+### Prerequisites
+- Node.js 16+
+- npm or yarn
+- Expo Go app (for testing)
+- Android device or emulator
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Installation & Running
 
 ```bash
-npm run reset-project
+# 1. Install dependencies
+npm install
+
+# 2. Set up environment
+cp .env.example .env.local
+
+# 3. Update API URL in .env.local (if needed)
+# EXPO_PUBLIC_API_URL=http://localhost:5000
+
+# 4. Start the development server
+npm start
+
+# 5. Choose how to run:
+# - Press 'a' for Android emulator/device
+# - Press 'i' for iOS simulator (Mac only)
+# - Press 'w' for web browser
+# - Scan QR code with Expo Go app
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 📱 Features
 
-## Learn more
+### ✅ Implemented
+- **Authentication**: Login, registration, and session management
+- **Dashboard**: View media entries organized by status
+- **Search**: Real-time search with debouncing
+- **Filtering**: Filter by media type (Movies, Series, Books, Manga, Games)
+- **Profile**: User profile and logout
+- **Type Safety**: Full TypeScript support throughout
+- **Protected Routes**: Auth-protected navigation
 
-To learn more about developing your project with Expo, look at the following resources:
+### 📋 Status Organization
+Media entries are automatically organized by:
+- **On Going**: Currently watching/reading/playing
+- **Completed**: Finished consuming
+- **Caught Up**: Latest episodes watched
+- **Dropped**: Abandoned
+- **Backlog**: In queue/wishlist
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📚 Project Structure
 
-## Join the community
+```
+app/
+├── (auth)/                    # Authentication routes
+│   ├── index.tsx             # Login screen
+│   ├── register.tsx          # Registration screen
+│   └── _layout.tsx           # Auth layout
+│
+├── (dashboard)/              # Protected dashboard routes
+│   ├── index.tsx             # Dashboard/home screen
+│   ├── search.tsx            # Search screen
+│   ├── profile.tsx           # Profile screen
+│   └── _layout.tsx           # Dashboard layout
+│
+├── clients/                  # API client classes
+│   ├── UsersClient.ts
+│   ├── MediaEntriesClient.ts
+│   ├── MovieEntriesClient.ts
+│   ├── TvSeriesEntriesClient.ts
+│   ├── GameEntriesClient.ts
+│   ├── BookEntriesClient.ts
+│   └── MangaEntriesClient.ts
+│
+├── types/dtos/              # TypeScript type definitions
+│   ├── MediaEntryBase.ts
+│   ├── MovieEntry.ts
+│   ├── TvSeriesEntry.ts
+│   ├── GameEntry.ts
+│   ├── BookEntry.ts
+│   ├── MangaEntry.ts
+│   └── Season.ts
+│
+├── shared/                  # Shared utilities
+│   ├── UserContext.tsx      # Auth state management
+│   └── mediaConstants.ts    # Status and type constants
+│
+└── _layout.tsx             # Root layout with providers
+```
 
-Join our community of developers creating universal apps.
+## 🔧 Configuration
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Environment Variables
+Create a `.env.local` file with:
+```env
+EXPO_PUBLIC_API_URL=http://your-backend-api-url:5000
+```
+
+## 📝 Available Scripts
+
+```bash
+# Development
+npm start              # Start Expo development server
+npm run android        # Build and run on Android
+npm run ios           # Build and run on iOS (Mac only)
+npm run web           # Run in web browser
+
+# Code Quality
+npm run lint          # Run ESLint
+
+# Type Checking (manual)
+npx tsc --noEmit      # Check TypeScript compilation
+```
+
+## 🔐 Authentication
+
+The app implements a complete auth flow:
+
+1. **Login Screen**: Enter credentials
+2. **Registration**: Create new account with validation
+3. **Auth State**: Persisted via React Context
+4. **Auto-load**: Current user loaded on startup
+5. **Protected Routes**: Dashboard only accessible when authenticated
+
+## 🎨 Styling
+
+The app uses React Native's StyleSheet and inline styles. Future enhancements can include:
+- NativeWind for Tailwind CSS support
+- Dark mode theming
+- Custom theme system
+
+## 🐛 Troubleshooting
+
+### App won't start
+```bash
+# Clear cache and reinstall
+expo r -c
+rm -rf node_modules
+npm install
+```
+
+### API connection issues
+- Check `.env.local` has correct `EXPO_PUBLIC_API_URL`
+- Ensure backend API is running: `http://your-url/api/health`
+- For device: use IP address instead of localhost
+
+### TypeScript errors
+```bash
+# Check compilation
+npx tsc --noEmit
+```
+
+## 📖 Documentation
+
+- **[PORTING_NOTES.md](./PORTING_NOTES.md)** - Detailed porting notes and architecture
+- **[PORT_SUMMARY.md](./PORT_SUMMARY.md)** - Summary of what was ported
+- **[Expo Documentation](https://docs.expo.dev/)** - Expo framework docs
+- **[React Native Docs](https://reactnative.dev/)** - React Native components & API
+
+## 🚧 Not Yet Implemented
+
+- Media entry creation/editing
+- Entry detail view
+- Image upload
+- Offline support
+- Dark mode
+- Advanced filtering/sorting
+- Statistics and analytics
+- Social features
+
+## 🤝 Contributing
+
+When adding features:
+1. Check TypeScript: `npx tsc --noEmit`
+2. Run linter: `npm run lint`
+3. Test on device
+4. Update documentation
+
+## 📄 License
+
+This is a port of the MediaVault web application.
+
+---
+
+**Last Updated**: June 28, 2026
+**Expo Version**: ~54.0.0
+**React Native Version**: 0.81.5
+**Status**: ✅ Core features ported, ready for enhancement

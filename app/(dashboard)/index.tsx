@@ -4,36 +4,183 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MediaEntriesClient, {
   type MediaEntryMinimalDto,
   MediaType,
-  StatusType,
-  StatusLabels,
   MediaTypeLabels,
 } from '../../clients/MediaEntriesClient';
+import MovieEntriesClient from '../../clients/MovieEntriesClient';
+import TvSeriesEntriesClient from '../../clients/TvSeriesEntriesClient';
+import GameEntriesClient from '../../clients/GameEntriesClient';
+import BookEntriesClient from '../../clients/BookEntriesClient';
+import MangaEntriesClient from '../../clients/MangaEntriesClient';
 import { useUser } from '../../shared/UserContext';
 import { statusSections } from '../../shared/mediaConstants';
 import { Colors, S } from '../../constants/theme';
+import MediaEntrySheet from '../../components/media-entry/MediaEntrySheet';
+import type { MediaEntryFormData } from '../../components/media-entry/MediaEntryForm';
+import type { MediaEntryDetailedDto } from '../../types/dtos/MediaEntryBase';
 
 export default function DashboardScreen() {
   const { currentUser } = useUser();
   const [entries, setEntries] = useState<MediaEntryMinimalDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [mediaTypeFilter, setMediaTypeFilter] = useState<number>(MediaType.All);
-  const [client] = useState(() => new MediaEntriesClient());
 
-  useEffect(() => {
-    const fetchEntries = async () => {
-      setIsLoading(true);
-      try {
-        const data = await client.getMediaEntries();
-        setEntries(data);
-      } catch (error) {
-        Alert.alert('Error', 'Failed to fetch entries: ' + (error as Error).message);
-      } finally {
-        setIsLoading(false);
-      }
+  const [client] = useState(() => new MediaEntriesClient());
+  const [movieClient] = useState(() => new MovieEntriesClient());
+  const [tvClient] = useState(() => new TvSeriesEntriesClient());
+  const [gameClient] = useState(() => new GameEntriesClient());
+  const [bookClient] = useState(() => new BookEntriesClient());
+  const [mangaClient] = useState(() => new MangaEntriesClient());
+
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto | undefined>();
+
+  useEffect(() => { void fetchEntries(); }, []);
+
+  const fetchEntries = async () => {
+    setIsLoading(true);
+    try {
+      const data = await client.getMediaEntries();
+      setEntries(data);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch entries: ' + (error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadDetailedEntry = async (entry: Pick<MediaEntryMinimalDto, 'id' | 'mediaType'>): Promise<MediaEntryDetailedDto> => {
+    switch (entry.mediaType) {
+      case MediaType.Movie: return client.getMovieById(entry.id);
+      case MediaType.Series: return client.getTvSeriesById(entry.id);
+      case MediaType.Game: return client.getGameById(entry.id);
+      case MediaType.Book: return client.getBookById(entry.id);
+      case MediaType.Manga: return client.getMangaById(entry.id);
+      default: return client.getMediaEntryById(entry.id);
+    }
+  };
+
+  const handleOpenEntry = async (entry: MediaEntryMinimalDto) => {
+    try {
+      const detailed = await loadDetailedEntry(entry);
+      setSelectedEntry(detailed);
+      setSheetVisible(true);
+    } catch (err) {
+      Alert.alert('Error', (err as Error).message);
+    }
+  };
+
+  const handleOpenCreate = () => {
+    setSelectedEntry(undefined);
+    setSheetVisible(true);
+  };
+
+  const handleCloseSheet = () => {
+    setSheetVisible(false);
+    setSelectedEntry(undefined);
+  };
+
+  const handleSubmit = async (formData: MediaEntryFormData, entryId?: string) => {
+    const baseFields = {
+      idExternal: formData.idExternal ?? null,
+      title: formData.title ?? '',
+      status: formData.status,
+      rating: formData.rating,
+      imageUrl: formData.imageUrl?.trim() || null,
+      review: formData.review || null,
+      overview: formData.overview || null,
+      genres: formData.genres,
+      releaseDate: formData.releaseDate || null,
     };
 
-    void fetchEntries();
-  }, [client]);
+    const gamePlatforms = formData.platforms
+      ? formData.platforms.split(',').map(s => s.trim()).filter(Boolean)
+      : undefined;
+
+    const buildSeasons = () => formData.seasons?.map(s => ({
+      seasonNumber: parseInt(s.seasonNumber) || 0,
+      name: s.name || null,
+      overview: s.overview || null,
+      imageUrl: s.imageUrl || null,
+      airDate: s.airDate || null,
+      episodes: parseInt(s.episodes) || 0,
+      watchedEpisodes: parseInt(s.watchedEpisodes) || 0,
+      status: s.status,
+      rating: s.rating,
+    }));
+
+    if (entryId) {
+      // UPDATE
+      switch (formData.mediaType) {
+        case MediaType.Movie:
+          await movieClient.updateMovie(entryId, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
+          break;
+        case MediaType.Series:
+          await tvClient.updateTvSeries(entryId, {
+            ...baseFields,
+            numberOfSeasons: Number(formData.numberOfSeasons) || 0,
+            numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
+            totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
+            backdropImageUrl: formData.backdropImageUrl ?? null,
+            firstAirDate: formData.firstAirDate ?? null,
+            lastAirDate: formData.lastAirDate ?? null,
+            airingStatus: formData.airingStatus ?? null,
+            seasons: buildSeasons(),
+          });
+          break;
+        case MediaType.Game:
+          await gameClient.updateGame(entryId, { ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms: gamePlatforms });
+          break;
+        case MediaType.Book:
+          await bookClient.updateBook(entryId, { ...baseFields, author: formData.author || null });
+          break;
+        case MediaType.Manga:
+          await mangaClient.updateManga(entryId, { ...baseFields, author: formData.author || null });
+          break;
+        default:
+          throw new Error('Unknown media type');
+      }
+      const updated = await client.getMediaEntryById(entryId);
+      setEntries(prev => prev.map(e => e.id === entryId ? updated : e));
+    } else {
+      // CREATE
+      let created: MediaEntryDetailedDto;
+      switch (formData.mediaType) {
+        case MediaType.Movie:
+          created = await movieClient.createMovie({ ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
+          break;
+        case MediaType.Series:
+          created = await tvClient.createTvSeries({
+            ...baseFields,
+            numberOfSeasons: Number(formData.numberOfSeasons) || 0,
+            numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
+            totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
+            backdropImageUrl: formData.backdropImageUrl ?? null,
+            firstAirDate: formData.firstAirDate ?? null,
+            lastAirDate: formData.lastAirDate ?? null,
+            airingStatus: formData.airingStatus ?? null,
+            seasons: buildSeasons(),
+          });
+          break;
+        case MediaType.Game:
+          created = await gameClient.createGame({ ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms: gamePlatforms });
+          break;
+        case MediaType.Book:
+          created = await bookClient.createBook({ ...baseFields, author: formData.author || null });
+          break;
+        case MediaType.Manga:
+          created = await mangaClient.createManga({ ...baseFields, author: formData.author || null });
+          break;
+        default:
+          throw new Error('Unknown media type');
+      }
+      setEntries(prev => [...prev, created]);
+    }
+  };
+
+  const handleDelete = async (entryId: string) => {
+    await client.deleteMediaEntry(entryId);
+    setEntries(prev => prev.filter(e => e.id !== entryId));
+  };
 
   const filteredEntries = mediaTypeFilter === MediaType.All
     ? entries
@@ -57,7 +204,7 @@ export default function DashboardScreen() {
         <Text style={[S.sectionTitle, styles.sectionTitle]}>{title}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRow}>
           {sectionEntries.map(entry => (
-            <TouchableOpacity key={entry.id} style={styles.card} activeOpacity={0.75}>
+            <TouchableOpacity key={entry.id} style={styles.card} onPress={() => handleOpenEntry(entry)} activeOpacity={0.75}>
               {entry.imageUrl ? (
                 <Image source={{ uri: entry.imageUrl }} style={styles.cardImage} resizeMode="cover" />
               ) : (
@@ -86,13 +233,9 @@ export default function DashboardScreen() {
     <SafeAreaView style={S.screen}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerBrand}>
-          <Text style={styles.headerLogo}>MediaVault</Text>
-        </View>
-        <View style={styles.headerUser}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{(currentUser?.username?.[0] ?? '?').toUpperCase()}</Text>
-          </View>
+        <Text style={styles.headerLogo}>MediaVault</Text>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{(currentUser?.username?.[0] ?? '?').toUpperCase()}</Text>
         </View>
       </View>
 
@@ -106,19 +249,13 @@ export default function DashboardScreen() {
         {mediaTypeFilters.map((type) => {
           const isActive = mediaTypeFilter === type.value;
           return (
-            <TouchableOpacity
-              key={type.value}
-              onPress={() => setMediaTypeFilter(type.value)}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}
-            >
-              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
-                {type.label}
-              </Text>
+            <TouchableOpacity key={type.value} onPress={() => setMediaTypeFilter(type.value)}
+              style={[styles.filterChip, isActive && styles.filterChipActive]}>
+              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>{type.label}</Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
-
       <View style={styles.divider} />
 
       {/* Content */}
@@ -127,18 +264,32 @@ export default function DashboardScreen() {
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           {filteredEntries.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateIcon}>📭</Text>
               <Text style={styles.emptyStateTitle}>No entries yet</Text>
-              <Text style={styles.emptyStateSubtitle}>Start tracking your media!</Text>
+              <Text style={styles.emptyStateSub}>Tap + to add your first entry</Text>
             </View>
           ) : (
             statusSections.map(section => renderStatusSection(section))
           )}
         </ScrollView>
       )}
+
+      {/* FAB */}
+      <TouchableOpacity onPress={handleOpenCreate} style={styles.fab} activeOpacity={0.85}>
+        <Text style={styles.fabIcon}>+</Text>
+      </TouchableOpacity>
+
+      {/* Entry Sheet */}
+      <MediaEntrySheet
+        visible={sheetVisible}
+        detailedEntry={selectedEntry}
+        onSubmit={handleSubmit}
+        onDelete={handleDelete}
+        onClose={handleCloseSheet}
+      />
     </SafeAreaView>
   );
 }
@@ -157,21 +308,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  headerBrand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   headerLogo: {
     fontSize: 20,
     fontWeight: '800',
     color: Colors.primary,
     letterSpacing: -0.5,
-  },
-  headerUser: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
   },
   avatar: {
     width: 36,
@@ -232,6 +373,7 @@ const styles = StyleSheet.create({
   cardRow: {
     paddingHorizontal: 20,
     gap: 12,
+    paddingBottom: 4,
   },
   card: {
     width: CARD_WIDTH,
@@ -280,7 +422,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   emptyState: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 60,
@@ -295,9 +436,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
   },
-  emptyStateSubtitle: {
+  emptyStateSub: {
     fontSize: 14,
     color: Colors.textSecondary,
   },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabIcon: {
+    color: '#fff',
+    fontSize: 28,
+    lineHeight: 30,
+    fontWeight: '300',
+  },
 });
-

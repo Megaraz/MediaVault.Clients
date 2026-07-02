@@ -1,6 +1,8 @@
 import { apiFetch } from '../shared/apiFetch';
 import type { MediaEntrySearchResultDto } from '../types/dtos/MediaEntryBase';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+
 export interface TmdbMovieDetailedDto {
   tmdbBackdropPath?: string;
   tmdbReleaseDate?: string;
@@ -42,7 +44,7 @@ export interface TmdbGenreDto {
 }
 
 export default class TmdbApiClient {
-  private baseUrl = '/tmdbapi';
+  private baseUrl = `${API_BASE_URL}/tmdbapi`;
 
   async searchMovies(query: string, page = 1): Promise<MediaEntrySearchResultDto[]> {
     const params = new URLSearchParams({ page: page.toString() });

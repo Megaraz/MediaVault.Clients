@@ -1,12 +1,14 @@
 import { apiFetch } from '../shared/apiFetch';
 import type { MediaEntrySearchResultDto } from '../types/dtos/MediaEntryBase';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+
 export interface GoogleBooksDetailedDto extends MediaEntrySearchResultDto {
   author: string;
 }
 
 export default class GoogleBooksApiClient {
-  private baseUrl = '/googlebooksapi';
+  private baseUrl = `${API_BASE_URL}/googlebooksapi`;
 
   async searchBooks(query: string, page = 1, pageSize = 8): Promise<GoogleBooksDetailedDto[]> {
     const params = new URLSearchParams({

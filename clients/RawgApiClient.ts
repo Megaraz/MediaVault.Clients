@@ -1,6 +1,8 @@
 import { apiFetch } from '../shared/apiFetch';
 import type { MediaEntrySearchResultDto } from '../types/dtos/MediaEntryBase';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+
 export interface RawgGameDetailedDto {
   rawgId: number;
   rawgSlug?: string;
@@ -14,7 +16,7 @@ export interface RawgGameDetailedDto {
 }
 
 export default class RawgApiClient {
-  private baseUrl = '/rawgapi';
+  private baseUrl = `${API_BASE_URL}/rawgapi`;
 
   async searchGames(query: string, page = 1, pageSize = 8): Promise<MediaEntrySearchResultDto[]> {
     const params = new URLSearchParams({

@@ -1,13 +1,18 @@
 import { ScrollView, TextInput, TouchableOpacity, View, Text, ActivityIndicator } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useState } from 'react';
-import UsersClient, { type UserCreateDto } from '../../clients/UsersClient';
+import type { UserRegisterDto } from '../../types/dtos/User';
+import { AuthService } from '../../services/authService';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, S } from '../../constants/theme';
+import { OperationType } from 'result-pattern-typescript';
+import { UserDtoValidator } from '../../validators/User/UserDtoValidator';
+
+const userValidator = new UserDtoValidator();
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [usersClient] = useState(() => new UsersClient());
+  const [authService] = useState(() => new AuthService());
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -19,23 +24,22 @@ export default function RegisterScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRegister = async () => {
-    if (!form.username || !form.email || !form.confirmEmail || !form.password || !form.confirmPassword) {
-      setErrorMessage('Please fill in all fields');
-      return;
-    }
-    if (form.email !== form.confirmEmail) {
-      setErrorMessage('Emails do not match');
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      setErrorMessage('Passwords do not match');
+    const validation = userValidator.validateCreateDto(form, {
+      layer: 'Presentation',
+      serviceName: 'RegisterScreen',
+      methodName: 'handleRegister',
+      operation: OperationType.Create,
+      entityName: 'User',
+    });
+    if (!validation.isValid) {
+      setErrorMessage(validation.validationErrors[0]?.userMessage ?? 'Invalid registration details.');
       return;
     }
 
     setErrorMessage(null);
     setIsSubmitting(true);
     try {
-      await usersClient.register(form as UserCreateDto);
+      await authService.registerUserAsync(form as UserRegisterDto);
       router.replace('/(auth)' as any);
     } catch (error) {
       setErrorMessage((error as Error).message);

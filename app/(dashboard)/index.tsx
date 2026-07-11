@@ -1,16 +1,12 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MediaEntriesClient, {
+import {
   type MediaEntryMinimalDto,
   MediaType,
   MediaTypeLabels,
 } from '../../clients/MediaEntriesClient';
-import MovieEntriesClient from '../../clients/MovieEntriesClient';
-import TvSeriesEntriesClient from '../../clients/TvSeriesEntriesClient';
-import GameEntriesClient from '../../clients/GameEntriesClient';
-import BookEntriesClient from '../../clients/BookEntriesClient';
-import MangaEntriesClient from '../../clients/MangaEntriesClient';
+import { MediaEntryService } from '../../services/mediaEntryService';
 import { useUser } from '../../shared/UserContext';
 import { statusSections } from '../../shared/mediaConstants';
 import { Colors, S } from '../../constants/theme';
@@ -24,12 +20,7 @@ export default function DashboardScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [mediaTypeFilter, setMediaTypeFilter] = useState<number>(MediaType.All);
 
-  const [client] = useState(() => new MediaEntriesClient());
-  const [movieClient] = useState(() => new MovieEntriesClient());
-  const [tvClient] = useState(() => new TvSeriesEntriesClient());
-  const [gameClient] = useState(() => new GameEntriesClient());
-  const [bookClient] = useState(() => new BookEntriesClient());
-  const [mangaClient] = useState(() => new MangaEntriesClient());
+  const [mediaEntryService] = useState(() => new MediaEntryService());
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto | undefined>();
@@ -39,7 +30,8 @@ export default function DashboardScreen() {
   const fetchEntries = async () => {
     setIsLoading(true);
     try {
-      const data = await client.getMediaEntries();
+      if (!currentUser) throw new Error('Not authenticated.');
+      const data = await mediaEntryService.getMinimalCollectionByOwnerIdAsync(currentUser.id);
       setEntries(data);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch entries: ' + (error as Error).message);
@@ -50,12 +42,12 @@ export default function DashboardScreen() {
 
   const loadDetailedEntry = async (entry: Pick<MediaEntryMinimalDto, 'id' | 'mediaType'>): Promise<MediaEntryDetailedDto> => {
     switch (entry.mediaType) {
-      case MediaType.Movie: return client.getMovieById(entry.id);
-      case MediaType.Series: return client.getTvSeriesById(entry.id);
-      case MediaType.Game: return client.getGameById(entry.id);
-      case MediaType.Book: return client.getBookById(entry.id);
-      case MediaType.Manga: return client.getMangaById(entry.id);
-      default: return client.getMediaEntryById(entry.id);
+      case MediaType.Movie: return mediaEntryService.getMovieByIdAsync(currentUser!.id, entry.id);
+      case MediaType.Series: return mediaEntryService.getTvSeriesByIdAsync(currentUser!.id, entry.id);
+      case MediaType.Game: return mediaEntryService.getGameByIdAsync(currentUser!.id, entry.id);
+      case MediaType.Book: return mediaEntryService.getBookByIdAsync(currentUser!.id, entry.id);
+      case MediaType.Manga: return mediaEntryService.getMangaByIdAsync(currentUser!.id, entry.id);
+      default: return mediaEntryService.getDetailedByIdAsync(currentUser!.id, entry.id);
     }
   };
 
@@ -80,6 +72,7 @@ export default function DashboardScreen() {
   };
 
   const handleSubmit = async (formData: MediaEntryFormData, entryId?: string) => {
+    if (!currentUser) throw new Error('Not authenticated.');
     const baseFields = {
       idExternal: formData.idExternal ?? null,
       title: formData.title ?? '',
@@ -112,10 +105,10 @@ export default function DashboardScreen() {
       // UPDATE
       switch (formData.mediaType) {
         case MediaType.Movie:
-          await movieClient.updateMovie(entryId, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
+          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Movie, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
           break;
         case MediaType.Series:
-          await tvClient.updateTvSeries(entryId, {
+          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Series, {
             ...baseFields,
             numberOfSeasons: Number(formData.numberOfSeasons) || 0,
             numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
@@ -128,28 +121,28 @@ export default function DashboardScreen() {
           });
           break;
         case MediaType.Game:
-          await gameClient.updateGame(entryId, { ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms: gamePlatforms });
+          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Game, { ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms: gamePlatforms });
           break;
         case MediaType.Book:
-          await bookClient.updateBook(entryId, { ...baseFields, author: formData.author || null });
+          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Book, { ...baseFields, author: formData.author || null });
           break;
         case MediaType.Manga:
-          await mangaClient.updateManga(entryId, { ...baseFields, author: formData.author || null });
+          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Manga, { ...baseFields, author: formData.author || null });
           break;
         default:
           throw new Error('Unknown media type');
       }
-      const updated = await client.getMediaEntryById(entryId);
+      const updated = await mediaEntryService.getDetailedByIdAsync(currentUser.id, entryId);
       setEntries(prev => prev.map(e => e.id === entryId ? updated : e));
     } else {
       // CREATE
       let created: MediaEntryDetailedDto;
       switch (formData.mediaType) {
         case MediaType.Movie:
-          created = await movieClient.createMovie({ ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
+          created = await mediaEntryService.createAsync(currentUser.id, MediaType.Movie, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
           break;
         case MediaType.Series:
-          created = await tvClient.createTvSeries({
+          created = await mediaEntryService.createAsync(currentUser.id, MediaType.Series, {
             ...baseFields,
             numberOfSeasons: Number(formData.numberOfSeasons) || 0,
             numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
@@ -162,13 +155,13 @@ export default function DashboardScreen() {
           });
           break;
         case MediaType.Game:
-          created = await gameClient.createGame({ ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms: gamePlatforms });
+          created = await mediaEntryService.createAsync(currentUser.id, MediaType.Game, { ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms: gamePlatforms });
           break;
         case MediaType.Book:
-          created = await bookClient.createBook({ ...baseFields, author: formData.author || null });
+          created = await mediaEntryService.createAsync(currentUser.id, MediaType.Book, { ...baseFields, author: formData.author || null });
           break;
         case MediaType.Manga:
-          created = await mangaClient.createManga({ ...baseFields, author: formData.author || null });
+          created = await mediaEntryService.createAsync(currentUser.id, MediaType.Manga, { ...baseFields, author: formData.author || null });
           break;
         default:
           throw new Error('Unknown media type');
@@ -178,7 +171,8 @@ export default function DashboardScreen() {
   };
 
   const handleDelete = async (entryId: string) => {
-    await client.deleteMediaEntry(entryId);
+    if (!currentUser) throw new Error('Not authenticated.');
+    await mediaEntryService.deleteAsync(currentUser.id, entryId);
     setEntries(prev => prev.filter(e => e.id !== entryId));
   };
 

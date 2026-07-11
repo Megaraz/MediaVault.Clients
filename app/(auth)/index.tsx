@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { useUser } from '../../shared/UserContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, S } from '../../constants/theme';
+import { OperationType } from 'result-pattern-typescript';
+import { UserDtoValidator } from '../../validators/User/UserDtoValidator';
+
+const userValidator = new UserDtoValidator();
 
 export default function LoginScreen() {
   const { login, isLoading } = useUser();
@@ -13,8 +17,18 @@ export default function LoginScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    if (!userNameOrEmail || !password) {
-      setErrorMessage('Please fill in all fields');
+    const validation = userValidator.validateLoginDto(
+      { userNameOrEmail, password },
+      {
+        layer: 'Presentation',
+        serviceName: 'LoginScreen',
+        methodName: 'handleLogin',
+        operation: OperationType.Login,
+        entityName: 'User',
+      },
+    );
+    if (!validation.isValid) {
+      setErrorMessage(validation.validationErrors[0]?.userMessage ?? 'Invalid login details.');
       return;
     }
     setErrorMessage(null);

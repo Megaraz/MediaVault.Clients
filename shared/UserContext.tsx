@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import UsersClient, { type UserDetailedDto, type UserLoginDto } from '../clients/UsersClient';
+import type { UserDetailedDto, UserLoginDto } from '../types/dtos/User';
+import { AuthService } from '../services/authService';
 
 type UserContextType = {
   currentUser: UserDetailedDto | null;
@@ -20,11 +21,11 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: UserProviderProps) {
   const [currentUser, setCurrentUser] = useState<UserDetailedDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [client] = useState(() => new UsersClient());
+  const [authService] = useState(() => new AuthService());
 
   const refreshCurrentUser = async () => {
     try {
-      const user = await client.getCurrentUser();
+      const user = await authService.getCurrentUserAsync();
       setCurrentUser(user);
       return user;
     } catch {
@@ -38,7 +39,7 @@ export function UserProvider({ children }: UserProviderProps) {
 
     const loadCurrentUser = async () => {
       try {
-        const user = await client.getCurrentUser();
+        const user = await authService.getCurrentUserAsync();
 
         if (isMounted) {
           setCurrentUser(user);
@@ -59,16 +60,16 @@ export function UserProvider({ children }: UserProviderProps) {
     return () => {
       isMounted = false;
     };
-  }, [client]);
+  }, [authService]);
 
   const login = async (credentials: UserLoginDto) => {
-    const user = await client.login(credentials);
+    const user = await authService.loginAsync(credentials);
     setCurrentUser(user);
     return user;
   };
 
   const logout = async () => {
-    await client.logout();
+    await authService.logoutAsync();
     setCurrentUser(null);
   };
 

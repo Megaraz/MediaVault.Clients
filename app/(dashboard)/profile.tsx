@@ -44,7 +44,7 @@ export default function ProfileScreen() {
           <View style={S.separator} />
           <InfoRow
             label="Member Since"
-            value={currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : '—'}
+            value={currentUser?.createdAtUtc ? new Date(currentUser.createdAtUtc).toLocaleDateString() : '—'}
           />
         </View>
 

@@ -2,6 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 const TOKEN_KEY = 'media_vault_auth_token';
+const OFFLINE_TOKEN_PREFIX = 'offline:';
 
 export async function saveToken(token: string): Promise<void> {
   if (Platform.OS === 'web') {
@@ -24,4 +25,15 @@ export async function clearToken(): Promise<void> {
     return;
   }
   await SecureStore.deleteItemAsync(TOKEN_KEY);
+}
+
+export async function getOfflineUserId(): Promise<string | null> {
+  const token = await getToken();
+  return token?.startsWith(OFFLINE_TOKEN_PREFIX)
+    ? token.slice(OFFLINE_TOKEN_PREFIX.length)
+    : null;
+}
+
+export function createOfflineToken(userId: string): string {
+  return `${OFFLINE_TOKEN_PREFIX}${userId}`;
 }

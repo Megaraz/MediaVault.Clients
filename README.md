@@ -97,6 +97,8 @@ app/
 Create a `.env.local` file with:
 ```env
 EXPO_PUBLIC_API_URL=http://your-backend-api-url:5000
+# Set to true to initialize and enable the client-side SQLite database path.
+EXPO_PUBLIC_USE_CLIENT_DATABASE=false
 ```
 
 ## 📝 Available Scripts

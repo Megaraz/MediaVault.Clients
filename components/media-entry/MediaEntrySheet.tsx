@@ -35,8 +35,11 @@ import RawgApiClient from '../../clients/RawgApiClient';
 import GoogleBooksApiClient from '../../clients/GoogleBooksApiClient';
 import type { SearchResult } from './TitleSearchInput';
 import type { GoogleBooksDetailedDto } from '../../clients/GoogleBooksApiClient';
+import { OperationType } from 'result-pattern-typescript';
+import { MediaEntryDtoValidator } from '../../validators/MediaEntry/MediaEntryDtoValidator';
 
 const SUCCESS_DELAY_MS = 1200;
+const mediaEntryValidator = new MediaEntryDtoValidator();
 
 type Props = {
   visible: boolean;
@@ -190,8 +193,41 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
   };
 
   const handleSave = async () => {
-    if (!formData.title?.trim()) { setError('Title is required'); return; }
     if (formData.mediaType < 0) { setError('Please select a media type'); return; }
+
+    const validation = isEditMode
+      ? mediaEntryValidator.validateUpdateDto(
+        {
+          title: formData.title ?? '',
+          status: formData.status,
+          rating: formData.rating,
+        },
+        {
+          layer: 'Presentation',
+          serviceName: 'MediaEntrySheet',
+          methodName: 'handleSave',
+          operation: OperationType.Update,
+          entityName: 'MediaEntry',
+        },
+      )
+      : mediaEntryValidator.validateCreateDto(
+        {
+          title: formData.title ?? '',
+          status: formData.status,
+          rating: formData.rating,
+        },
+        {
+          layer: 'Presentation',
+          serviceName: 'MediaEntrySheet',
+          methodName: 'handleSave',
+          operation: OperationType.Create,
+          entityName: 'MediaEntry',
+        },
+      );
+    if (!validation.isValid) {
+      setError(validation.validationErrors[0]?.userMessage ?? 'Invalid media entry details.');
+      return;
+    }
 
     setError(null);
     setIsSubmitting(true);

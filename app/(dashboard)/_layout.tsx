@@ -22,14 +22,14 @@ export default function DashboardLayout() {
           backgroundColor: Colors.surface,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 6,
+          height: 76,
+          paddingBottom: 10,
+          paddingTop: 8,
         },
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.tabIconDefault,
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: '600',
         },
       }}
@@ -61,6 +61,6 @@ export default function DashboardLayout() {
 
 function TabIcon({ emoji, color }: { emoji: string; color: string }) {
   return (
-    <Text style={{ fontSize: 18, opacity: color === Colors.primary ? 1 : 0.5 }}>{emoji}</Text>
+    <Text style={{ fontSize: 25, opacity: color === Colors.primary ? 1 : 0.5 }}>{emoji}</Text>
   );
 }

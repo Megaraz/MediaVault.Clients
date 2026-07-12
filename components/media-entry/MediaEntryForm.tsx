@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
 import { Colors, ST } from '../../constants/theme';
 import { MediaType, MediaTypeLabels, StatusLabels } from '../../clients/MediaEntriesClient';
@@ -76,6 +77,9 @@ const mediaTypeOptions = Object.entries(MediaTypeLabels).map(([v, label]) => ({ 
 const statusOptions = Object.entries(StatusLabels).map(([v, label]) => ({ value: Number(v), label }));
 
 export default function MediaEntryForm({ formData, onChange, onSeasonsChange, onSelectResult, isEditMode }: Props) {
+  const { width } = useWindowDimensions();
+  const typeCardWidth = Math.min((width - 64) / 2, 190);
+
   const normalizeGenres = (val: FormValue): string[] => {
     if (Array.isArray(val)) return val.map(s => s.trim()).filter(Boolean);
     if (!val) return [];
@@ -91,7 +95,11 @@ export default function MediaEntryForm({ formData, onChange, onSeasonsChange, on
           {mediaTypeOptions.map(opt => (
             <TouchableOpacity
               key={opt.value}
-              style={[styles.typeChip, formData.mediaType === opt.value && styles.typeChipActive]}
+              style={[
+                styles.typeChip,
+                { width: typeCardWidth },
+                formData.mediaType === opt.value && styles.typeChipActive,
+              ]}
               onPress={() => onChange('mediaType', opt.value)}
               activeOpacity={0.7}
             >
@@ -327,46 +335,46 @@ function typeIcon(type: number): string {
 const styles = StyleSheet.create({
   typePickerContainer: {
     alignItems: 'center',
-    paddingVertical: 16,
-    gap: 8,
+    paddingVertical: 28,
+    gap: 10,
   },
   typePickerTitle: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: '800',
     color: Colors.text,
   },
   typePickerSub: {
-    fontSize: 14,
+    fontSize: 18,
     color: Colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: 14,
   },
   typeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 14,
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   typeChip: {
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 14,
+    justifyContent: 'center',
+    gap: 12,
+    height: 154,
+    paddingHorizontal: 12,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: Colors.border,
     backgroundColor: Colors.surface,
-    minWidth: 90,
   },
   typeChipActive: {
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryDim,
   },
   typeChipIcon: {
-    fontSize: 28,
+    fontSize: 42,
   },
   typeChipLabel: {
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: '600',
     color: Colors.textSecondary,
   },
@@ -377,34 +385,34 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   section: {
-    marginBottom: 16,
+    marginBottom: 22,
   },
   label: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.textSecondary,
-    marginBottom: 6,
+    marginBottom: 9,
   },
   input: {
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
+    borderRadius: 14,
+    paddingHorizontal: 17,
+    paddingVertical: 16,
     borderWidth: 1,
     borderColor: Colors.border,
-    fontSize: 15,
+    fontSize: 17,
     color: Colors.text,
   },
   textarea: {
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
+    borderRadius: 14,
+    paddingHorizontal: 17,
+    paddingVertical: 16,
     borderWidth: 1,
     borderColor: Colors.border,
-    fontSize: 15,
+    fontSize: 17,
     color: Colors.text,
-    minHeight: 110,
+    minHeight: 132,
   },
   row: {
     flexDirection: 'row',
@@ -414,13 +422,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   segmentRow: {
-    gap: 8,
-    paddingVertical: 2,
+    gap: 10,
+    paddingVertical: 3,
   },
   segmentChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: Colors.border,
     backgroundColor: Colors.surfaceElevated,
@@ -430,7 +438,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryDim,
   },
   segmentChipText: {
-    fontSize: 13,
+    fontSize: 16,
     color: Colors.textSecondary,
     fontWeight: '500',
   },

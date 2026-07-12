@@ -76,8 +76,8 @@ export const SV: {
   },
   primaryBtn: {
     backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 15,
+    borderRadius: 14,
+    paddingVertical: 17,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -85,8 +85,8 @@ export const SV: {
   },
   dangerBtn: {
     backgroundColor: Colors.error,
-    borderRadius: 10,
-    paddingVertical: 15,
+    borderRadius: 14,
+    paddingVertical: 17,
     alignItems: 'center',
   },
   separator: {
@@ -107,45 +107,45 @@ export const ST: {
   linkText: TextStyle;
 } = StyleSheet.create({
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: Colors.text,
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 17,
     color: Colors.textSecondary,
     marginTop: 4,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
     color: Colors.textSecondary,
     marginBottom: 6,
   },
   input: {
     backgroundColor: Colors.surface,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     borderWidth: 1,
     borderColor: Colors.border,
-    fontSize: 15,
+    fontSize: 17,
     color: Colors.text,
   },
   primaryBtnText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '700',
   },
   dangerBtnText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '700',
   },
   linkText: {

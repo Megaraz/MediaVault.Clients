@@ -24,25 +24,25 @@ export default function StarRating({ rating, onChange, max = 10 }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 6,
+    gap: 10,
   },
   stars: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 2,
+    gap: 3,
   },
   starBtn: {
-    padding: 4,
+    padding: 5,
   },
   star: {
-    fontSize: 24,
+    fontSize: 31,
     color: Colors.border,
   },
   starActive: {
     color: '#f59e0b',
   },
   label: {
-    fontSize: 12,
+    fontSize: 16,
     color: Colors.textSecondary,
     marginLeft: 4,
   },

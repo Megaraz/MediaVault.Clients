@@ -288,8 +288,8 @@ export default function DashboardScreen() {
   );
 }
 
-const CARD_WIDTH = 130;
-const CARD_IMAGE_HEIGHT = 190;
+const CARD_WIDTH = 164;
+const CARD_IMAGE_HEIGHT = 238;
 
 const styles = StyleSheet.create({
   header: {
@@ -297,21 +297,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 20,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
   headerLogo: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: '800',
     color: Colors.primary,
     letterSpacing: -0.5,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: Colors.primaryDim,
     borderWidth: 1,
     borderColor: Colors.primary,
@@ -321,27 +321,27 @@ const styles = StyleSheet.create({
   avatarText: {
     color: Colors.primary,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 18,
   },
   filterBar: {
     flexGrow: 0,
     flexShrink: 0,
-    height: 46,
+    height: 58,
     backgroundColor: Colors.surface,
   },
   filterBarContent: {
     paddingHorizontal: 8,
-    minHeight: 46,
+    minHeight: 58,
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   filterChip: {
-    height: 30,
+    height: 42,
     flexShrink: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    paddingHorizontal: 18,
+    borderRadius: 22,
     backgroundColor: Colors.surfaceElevated,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -353,8 +353,8 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     color: Colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
     textAlign: 'center',
   },
   filterChipTextActive: {
@@ -366,21 +366,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
   },
   section: {
-    paddingTop: 20,
+    paddingTop: 28,
   },
   sectionTitle: {
     paddingHorizontal: 20,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   cardRow: {
     paddingHorizontal: 20,
-    gap: 12,
-    paddingBottom: 4,
+    gap: 16,
+    paddingBottom: 8,
   },
   card: {
     width: CARD_WIDTH,
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.border,
@@ -395,17 +395,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardBody: {
-    padding: 10,
-    gap: 3,
+    padding: 14,
+    gap: 5,
   },
   cardTitle: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: Colors.text,
-    lineHeight: 17,
+    lineHeight: 22,
   },
   cardMeta: {
-    fontSize: 11,
+    fontSize: 14,
     color: Colors.textMuted,
   },
   ratingRow: {
@@ -416,11 +416,11 @@ const styles = StyleSheet.create({
   },
   ratingStar: {
     color: '#f59e0b',
-    fontSize: 11,
+    fontSize: 16,
   },
   ratingText: {
     color: Colors.textSecondary,
-    fontSize: 11,
+    fontSize: 15,
     fontWeight: '600',
   },
   emptyState: {
@@ -434,21 +434,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyStateTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700',
     color: Colors.text,
   },
   emptyStateSub: {
-    fontSize: 14,
+    fontSize: 16,
     color: Colors.textSecondary,
   },
   fab: {
     position: 'absolute',
     bottom: 24,
     right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -460,8 +460,8 @@ const styles = StyleSheet.create({
   },
   fabIcon: {
     color: '#fff',
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: 36,
+    lineHeight: 40,
     fontWeight: '300',
   },
 });

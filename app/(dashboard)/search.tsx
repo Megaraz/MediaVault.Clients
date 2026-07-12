@@ -1,14 +1,18 @@
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
-import MediaEntriesClient, { type MediaEntryMinimalDto, MediaTypeLabels } from '../../clients/MediaEntriesClient';
+import { type MediaEntryMinimalDto } from '../../types/dtos/MediaEntryBase';
+import { MediaTypeLabels } from '../../types/dtos/MediaEntryBase';
+import { useUser } from '../../shared/UserContext';
+import { MediaEntryService } from '../../services/mediaEntryService';
 import { Colors, S } from '../../constants/theme';
 
 const DEBOUNCE_DELAY_MS = 400;
 const MIN_SEARCH_LENGTH = 3;
 
 export default function SearchScreen() {
-  const [client] = useState(() => new MediaEntriesClient());
+  const { currentUser } = useUser();
+  const [mediaEntryService] = useState(() => new MediaEntryService());
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MediaEntryMinimalDto[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -27,7 +31,10 @@ export default function SearchScreen() {
     debounceTimer.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const results = await client.searchMediaEntries({ query: searchQuery });
+        if (!currentUser) {
+          throw new Error('Not authenticated.');
+        }
+        const results = await mediaEntryService.searchAsync(currentUser.id, searchQuery);
         setSearchResults(results);
       } catch (error) {
         Alert.alert('Search Error', (error as Error).message);
@@ -42,7 +49,7 @@ export default function SearchScreen() {
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [searchQuery, client]);
+  }, [searchQuery, currentUser, mediaEntryService]);
 
   return (
     <SafeAreaView style={S.screen}>

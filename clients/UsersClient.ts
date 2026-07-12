@@ -1,11 +1,5 @@
 import { apiFetch } from '../shared/apiFetch';
-import { createOfflineToken, getOfflineUserId, saveToken, clearToken } from '../shared/tokenStore';
-import { featureFlags } from '../shared/featureFlags';
-import { UserRepo } from '../database/repos/UserRepo';
-import { hashPassword, verifyPassword } from '../shared/passwordHash';
-import type { User } from '../models/User';
-import { UserDtoMapper } from '../mappers/User/UserDtoMapper';
-import { UserEntityMapper } from '../mappers/User/UserEntityMapper';
+import { saveToken, clearToken } from '../shared/tokenStore';
 import type {
   UserDetailedDto,
   UserLoginDto,
@@ -28,9 +22,6 @@ type ApiErrorResponse = {
 };
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
-const userDtoMapper = new UserDtoMapper();
-const userEntityMapper = new UserEntityMapper();
-
 export default class UsersClient {
   private authBaseUrl = `${API_BASE_URL}/auth`;
   private usersBaseUrl = `${API_BASE_URL}/users`;
@@ -57,15 +48,6 @@ export default class UsersClient {
   }
 
   async login(credentials: UserLoginDto): Promise<UserDetailedDto> {
-    if (featureFlags.useClientDatabase) {
-      const user = await this.getLocalUser(credentials.userNameOrEmail);
-      if (!(await verifyPassword(credentials.password, user.passwordHash))) {
-        throw new Error('Invalid username/email or password.');
-      }
-      await saveToken(createOfflineToken(user.id));
-      return userEntityMapper.toDetailedDto(user);
-    }
-
     const response = await fetch(`${this.authBaseUrl}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -82,29 +64,6 @@ export default class UsersClient {
   }
 
   async register(dto: UserCreateDto): Promise<void> {
-    if (featureFlags.useClientDatabase) {
-      const repo = new UserRepo();
-      const availability = await repo.checkRegistrationAvailabilityAsync(dto.username, dto.email);
-      if (!availability.isSuccess) {
-        throw new Error(availability.message || 'Unable to check registration availability.');
-      }
-      if (!availability.value.isUserNameAvailable) throw new Error('Username is already taken.');
-      if (!availability.value.isEmailAvailable) throw new Error('Email is already registered.');
-
-      const mappedUser = userDtoMapper.toEntity(dto);
-      const user: User = {
-        ...mappedUser,
-        username: mappedUser.username.trim(),
-        email: mappedUser.email.trim(),
-        passwordHash: await hashPassword(mappedUser.passwordHash),
-      };
-      const result = await repo.registerUserAsync(user);
-      if (!result.isSuccess) {
-        throw new Error(result.message || 'Failed to create local account.');
-      }
-      return;
-    }
-
     const response = await fetch(`${this.authBaseUrl}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -115,12 +74,6 @@ export default class UsersClient {
   }
 
   async getCurrentUser(): Promise<UserDetailedDto> {
-    if (featureFlags.useClientDatabase) {
-      const userId = await getOfflineUserId();
-      if (!userId) throw new Error('Not authenticated.');
-      return userEntityMapper.toDetailedDto(await this.getLocalUserById(userId));
-    }
-
     const response = await apiFetch(`${this.authBaseUrl}/me`);
     return this.readResponse<UserDetailedDto>(response);
   }
@@ -160,15 +113,4 @@ export default class UsersClient {
     await this.readResponse<void>(response);
   }
 
-  private async getLocalUser(usernameOrEmail: string): Promise<User> {
-    const result = await new UserRepo().getByUsernameOrEmailAsync(usernameOrEmail);
-    if (!result.isSuccess) throw new Error(result.message || 'Invalid username/email or password.');
-    return result.value;
-  }
-
-  private async getLocalUserById(id: string): Promise<User> {
-    const result = await new UserRepo().getByIdAsync(id);
-    if (!result.isSuccess) throw new Error(result.message || 'Not authenticated.');
-    return result.value;
-  }
 }

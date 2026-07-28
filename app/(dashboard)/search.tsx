@@ -16,7 +16,7 @@ export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MediaEntryMinimalDto[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const debounceTimer = useRef<number | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (debounceTimer.current) {

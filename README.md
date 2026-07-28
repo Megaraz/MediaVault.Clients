@@ -20,7 +20,7 @@ npm install
 cp .env.example .env.local
 
 # 3. Update API URL in .env.local (if needed)
-# EXPO_PUBLIC_API_URL=http://localhost:5000
+# EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://localhost:5210
 
 # 4. Start the development server
 npm start
@@ -96,7 +96,7 @@ app/
 ### Environment Variables
 Create a `.env.local` file with:
 ```env
-EXPO_PUBLIC_API_URL=http://your-backend-api-url:5000
+EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://your-backend-api-url:5210
 # Set to true to initialize and enable the client-side SQLite database path.
 EXPO_PUBLIC_USE_CLIENT_DATABASE=false
 ```
@@ -145,7 +145,7 @@ npm install
 ```
 
 ### API connection issues
-- Check `.env.local` has correct `EXPO_PUBLIC_API_URL`
+- Check `.env.local` has the correct `EXPO_PUBLIC_MEDIA_VAULT_API_URL`
 - Ensure backend API is running: `http://your-url/api/health`
 - For device: use IP address instead of localhost
 
@@ -175,15 +175,18 @@ npx tsc --noEmit
 
 ## 🤝 Contributing
 
-When adding features:
-1. Check TypeScript: `npx tsc --noEmit`
-2. Run linter: `npm run lint`
-3. Test on device
-4. Update documentation
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing work. Focused
+contributions are welcome after issue-first discussion.
 
 ## 📄 License
 
-This is a port of the MediaVault web application.
+This repository is available under the [MIT License](LICENSE).
+
+## Repository policies
+
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security](SECURITY.md)
 
 ---
 

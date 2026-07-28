@@ -1,0 +1,44 @@
+{
+  "name": "result-pattern-typescript",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript port of Rasmus.SharedKernel.ResultPattern",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=18"
+  },
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./dist/index.react-native.d.ts",
+        "default": "./dist/index.react-native.js"
+      },
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "require": "./dist/node.js",
+      "default": "./dist/node.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/result-pattern.test.cjs"
+  },
+  "keywords": [
+    "result-pattern",
+    "typescript",
+    "errors"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}

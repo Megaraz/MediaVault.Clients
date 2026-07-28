@@ -109,7 +109,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
-            <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>Don't have an account?</Text>
+            <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>Don&apos;t have an account?</Text>
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity>
                 <Text style={[S.linkText, { fontSize: 14 }]}>Sign Up</Text>

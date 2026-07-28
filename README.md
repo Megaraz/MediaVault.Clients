@@ -1,20 +1,22 @@
 # MediaVault Android - React Native App
 
+[![CI](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml)
+
 A React Native port of the MediaVault web application for Android devices, built with Expo.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+
-- npm or yarn
+- Node.js 20.19.x or newer (the minimum supported by Expo SDK 54)
+- npm (the lock file is the supported install source)
 - Expo Go app (for testing)
 - Android device or emulator
 
 ### Installation & Running
 
 ```bash
-# 1. Install dependencies
-npm install
+# 1. Install the exact locked dependencies
+npm ci
 
 # 2. Set up environment
 cp .env.example .env.local
@@ -116,6 +118,25 @@ npm run lint          # Run ESLint
 # Type Checking (manual)
 npx tsc --noEmit      # Check TypeScript compilation
 ```
+
+## ✅ Continuous integration
+
+GitHub Actions runs the following quality gates for pull requests and pushes to
+`main`:
+
+```bash
+npm ci
+npm run lint
+npx tsc --noEmit
+npm exec -- expo-doctor
+```
+
+The workflow uses Ubuntu, Node.js 20.19.x, `actions/checkout` v6.0.2, and
+`actions/setup-node` v6.4.0. Both actions are pinned to their release commit.
+The npm cache contains downloaded package data keyed from `package-lock.json`;
+`node_modules` is not cached. The workflow has read-only repository contents
+permission, receives no application credentials, and cancels superseded runs
+for the same pull request or branch.
 
 ## 🔐 Authentication
 

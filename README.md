@@ -1,217 +1,230 @@
-# MediaVault Android - React Native App
+# MediaVault Android
+
+MediaVault is a personal library for movies, TV series, games, books, and
+manga. This repository contains the Expo/React Native Android client; it uses
+the shared [MediaVault API and web application](https://github.com/Megaraz/media-vault-app)
+for authenticated library and metadata-provider operations.
+
+> **Status:** active pre-release development. The Android client supports the
+> core library workflows described below, but it is not a production release
+> and does not provide offline synchronization.
 
 [![CI](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml)
 
-A React Native port of the MediaVault web application for Android devices, built with Expo.
+## Product tour
 
-## 🚀 Quick Start
+The screenshots use a synthetic demo account and demonstration library data. They
+show no account email, token, API credential, local path, or private library
+data.
+
+### Organize a personal library
+
+The authenticated dashboard groups entries by status and lets users filter by
+media type, open an entry, or start a new one.
+
+![Android dashboard showing a synthetic media library grouped by status](docs/images/dashboard-demo.png)
+
+### Search an external catalog
+
+In the new-entry sheet, typing at least three title characters searches the
+backend for the selected media type. The backend owns calls to TMDB, RAWG, and
+Google Books; provider credentials are never sent to this app.
+
+![Android new-entry sheet showing external metadata search results for The Lord of the Rings](docs/images/metadata-search-demo.png)
+
+### Review imported metadata before saving
+
+Selecting a search result fills editable metadata fields. It does not save the
+entry automatically.
+
+![Android new-entry sheet populated with metadata for The Lord of the Rings](docs/images/metadata-autofill-demo.png)
+
+## What works today
+
+- JWT bearer registration, login, persisted session restoration, logout, and
+  protected routes
+- Dashboard grouping by status, media-type filters, and a library search tab
+- Create, read, update, and delete workflows for movies, TV series, games,
+  books, and manga
+- Ratings, reviews, genres, release details, artwork, and type-specific fields
+- Provider-backed title search and editable metadata autofill
+- Android token storage through `expo-secure-store`
+- An opt-in Expo SQLite persistence path, controlled by a feature flag
+
+### Current limitations and direction
+
+- The opt-in client database is not offline synchronization. There is no
+  conflict policy, server-to-client synchronization, or production recovery
+  workflow.
+- No production Android build or app-store distribution is provided.
+- The checked-in source supports Expo's Android workflow. iOS and web scripts
+  exist because Expo exposes them, but this project does not claim they have
+  been manually tested.
+- Offline sync, production distribution, observability, and AI recommendations
+  are roadmap work, not current features.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    App["Expo Router screens and React Native components"] --> Services["Services, validation, and mappers"]
+    Services --> Clients["Typed API and metadata clients"]
+    Clients --> Transport["apiFetch: JWT bearer header"]
+    Transport --> API["MediaVault ASP.NET Core API"]
+    App --> Auth["User context and SecureStore token storage"]
+    Services -. "optional feature flag" .-> SQLite[("Expo SQLite")]
+    API --> Providers["TMDB, RAWG, and Google Books"]
+```
+
+Screens and components own presentation, navigation, form state, and user
+feedback. Services coordinate workflows, validation, API clients, mapping, and
+the optional local repository path. The backend remains authoritative for
+shared account and library data.
+
+| Path | Responsibility |
+| --- | --- |
+| `app/` | Expo Router routes, protected layouts, and screens |
+| `components/` | Reusable UI, including the media-entry sheet and form |
+| `clients/` | MediaVault API and backend metadata-search clients |
+| `services/`, `mappers/`, `validators/` | Workflows, DTO mapping, and input validation |
+| `shared/` | Authentication context, SecureStore token handling, authorized fetch, and feature flags |
+| `database/` | Opt-in Expo SQLite initialization, migrations, and repositories |
+| `packages/result-pattern-typescript/` | Repository-owned TypeScript ResultPattern dependency |
+
+## Run locally
 
 ### Prerequisites
-- Node.js 20.19.x or newer (the minimum supported by Expo SDK 54)
-- npm (the lock file is the supported install source)
-- Expo Go app (for testing)
-- Android device or emulator
 
-### Installation & Running
+- [Node.js](https://nodejs.org/) 20.19.x or newer
+- npm
+- An Android emulator or physical Android device; [Expo Go](https://expo.dev/go)
+  is suitable for the current managed workflow
+- A running local instance of the [MediaVault API](https://github.com/Megaraz/media-vault-app)
 
-```bash
-# 1. Install the exact locked dependencies
-npm ci
+This project uses Expo SDK `~54.0.36`, React Native `0.81.5`, and React
+`19.1.0`. Expo SDK 54 requires Node.js 20.19.x or newer and targets React
+Native 0.81; see the [versioned Expo SDK 54 reference](https://docs.expo.dev/versions/v54.0.0/).
 
-# 2. Set up environment
-cp .env.example .env.local
+### 1. Configure the API URL
 
-# 3. Update API URL in .env.local (if needed)
-# EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://localhost:5210
+Copy the safe example and edit the ignored local file:
 
-# 4. Start the development server
-npm start
-
-# 5. Choose how to run:
-# - Press 'a' for Android emulator/device
-# - Press 'i' for iOS simulator (Mac only)
-# - Press 'w' for web browser
-# - Scan QR code with Expo Go app
+```powershell
+Copy-Item .env.example .env.local
 ```
 
-## 📱 Features
+```dotenv
+# Android emulator: API running on the development machine
+EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://10.0.2.2:5210
 
-### ✅ Implemented
-- **Authentication**: Login, registration, and session management
-- **Dashboard**: View media entries organized by status
-- **Search**: Real-time search with debouncing
-- **Filtering**: Filter by media type (Movies, Series, Books, Manga, Games)
-- **Profile**: User profile and logout
-- **Type Safety**: Full TypeScript support throughout
-- **Protected Routes**: Auth-protected navigation
-
-### 📋 Status Organization
-Media entries are automatically organized by:
-- **On Going**: Currently watching/reading/playing
-- **Completed**: Finished consuming
-- **Caught Up**: Latest episodes watched
-- **Dropped**: Abandoned
-- **Backlog**: In queue/wishlist
-
-## 📚 Project Structure
-
-```
-app/
-├── (auth)/                    # Authentication routes
-│   ├── index.tsx             # Login screen
-│   ├── register.tsx          # Registration screen
-│   └── _layout.tsx           # Auth layout
-│
-├── (dashboard)/              # Protected dashboard routes
-│   ├── index.tsx             # Dashboard/home screen
-│   ├── search.tsx            # Search screen
-│   ├── profile.tsx           # Profile screen
-│   └── _layout.tsx           # Dashboard layout
-│
-├── clients/                  # API client classes
-│   ├── UsersClient.ts
-│   ├── MediaEntriesClient.ts
-│   ├── MovieEntriesClient.ts
-│   ├── TvSeriesEntriesClient.ts
-│   ├── GameEntriesClient.ts
-│   ├── BookEntriesClient.ts
-│   └── MangaEntriesClient.ts
-│
-├── types/dtos/              # TypeScript type definitions
-│   ├── MediaEntryBase.ts
-│   ├── MovieEntry.ts
-│   ├── TvSeriesEntry.ts
-│   ├── GameEntry.ts
-│   ├── BookEntry.ts
-│   ├── MangaEntry.ts
-│   └── Season.ts
-│
-├── shared/                  # Shared utilities
-│   ├── UserContext.tsx      # Auth state management
-│   └── mediaConstants.ts    # Status and type constants
-│
-└── _layout.tsx             # Root layout with providers
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-Create a `.env.local` file with:
-```env
-EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://your-backend-api-url:5210
-# Set to true to initialize and enable the client-side SQLite database path.
+# Keep disabled unless deliberately testing the local database path.
 EXPO_PUBLIC_USE_CLIENT_DATABASE=false
 ```
 
-## 📝 Available Scripts
+`EXPO_PUBLIC_MEDIA_VAULT_API_URL` is the backend base URL. Every
+`EXPO_PUBLIC_*` value is embedded in the client bundle: use it only for public
+runtime configuration, never for a password, JWT, provider key, or other
+secret.
 
-```bash
-# Development
-npm start              # Start Expo development server
-npm run android        # Build and run on Android
-npm run ios           # Build and run on iOS (Mac only)
-npm run web           # Run in web browser
+For networking:
 
-# Code Quality
-npm run lint          # Run ESLint
+- An Android Emulator reaches an API on the host machine through
+  `http://10.0.2.2:5210`, not `localhost`.
+- A physical device must use the development machine's reachable LAN address,
+  for example `http://192.168.1.20:5210`, and the API must be configured to
+  listen safely on that interface. Do not commit that local address.
+- `http://localhost:5210` is only appropriate when the app process itself can
+  reach that localhost address; it is not the normal physical-device setting.
 
-# Type Checking (manual)
-npx tsc --noEmit      # Check TypeScript compilation
+Follow the backend repository's local setup instructions to configure, migrate,
+and start the API. Its development HTTP profile listens on port 5210.
+
+### 2. Install and start the Android app
+
+```powershell
+npm ci
+npm run android
 ```
 
-## ✅ Continuous integration
+`npm run android` starts Expo and opens the project on an available Android
+emulator or connected device. To start Metro without choosing a target, use
+`npm start` and follow the Expo prompt.
 
-GitHub Actions runs the following quality gates for pull requests and pushes to
-`main`:
+## Authentication and local data
 
-```bash
+The API uses JWT bearer authentication. On Android, `shared/tokenStore.ts`
+stores the token with `expo-secure-store`; `shared/apiFetch.ts` is the central
+place that attaches the `Authorization: Bearer` header. Tokens must never be
+placed in AsyncStorage, source code, logs, or `EXPO_PUBLIC_*` values.
+
+`EXPO_PUBLIC_USE_CLIENT_DATABASE=false` is the default. Setting it to `true`
+initializes an Expo SQLite database and its checked-in migrations. This is an
+opt-in, experimental local persistence path—not a replacement for backend
+ownership and not an offline-sync solution. Local database files are runtime
+data and are ignored by Git.
+
+## Verification
+
+Run these checks from the repository root:
+
+```powershell
 npm ci
 npm run lint
 npx tsc --noEmit
-npm exec -- expo-doctor
+npx expo-doctor
+git diff --check
 ```
 
-The workflow uses Ubuntu, Node.js 20.19.x, `actions/checkout` v6.0.2, and
-`actions/setup-node` v6.4.0. Both actions are pinned to their release commit.
-The npm cache contains downloaded package data keyed from `package-lock.json`;
-`node_modules` is not cached. The workflow has read-only repository contents
-permission, receives no application credentials, and cancels superseded runs
-for the same pull request or branch.
+The CI workflow runs the first four commands for pull requests and pushes to
+`main` on Ubuntu with Node.js 20.19.x. The documented clean-clone verification
+also completed an Android Expo export. The Expo toolchain may report its
+existing `@noble/hashes/crypto.js` package-exports fallback warning during that
+export; it is not a claim of a production build.
 
-## 🔐 Authentication
+For an Android UI or networking change, test the supported emulator or physical
+device path manually. This README change does not claim a fresh device test.
 
-The app implements a complete auth flow:
+## Troubleshooting
 
-1. **Login Screen**: Enter credentials
-2. **Registration**: Create new account with validation
-3. **Auth State**: Persisted via React Context
-4. **Auto-load**: Current user loaded on startup
-5. **Protected Routes**: Dashboard only accessible when authenticated
+### The app cannot reach the API
 
-## 🎨 Styling
+- Confirm that the API is running and that `.env.local` contains the correct
+  `EXPO_PUBLIC_MEDIA_VAULT_API_URL` for the target.
+- For an emulator, use `10.0.2.2` instead of the host's `localhost`.
+- For a device, verify that the device and development machine can reach each
+  other on the same trusted network and that the API is listening on the chosen
+  address.
+- Restart Expo after changing `.env.local` so the public configuration is
+  reloaded.
 
-The app uses React Native's StyleSheet and inline styles. Future enhancements can include:
-- NativeWind for Tailwind CSS support
-- Dark mode theming
-- Custom theme system
+### Expo reports a compatibility or configuration problem
 
-## 🐛 Troubleshooting
-
-### App won't start
-```bash
-# Clear cache and reinstall
-expo r -c
-rm -rf node_modules
-npm install
+```powershell
+npx expo-doctor
 ```
 
-### API connection issues
-- Check `.env.local` has the correct `EXPO_PUBLIC_MEDIA_VAULT_API_URL`
-- Ensure backend API is running: `http://your-url/api/health`
-- For device: use IP address instead of localhost
+Use `npx expo install <package>` for Expo-managed packages so their versions
+remain compatible with SDK 54. Do not upgrade dependencies or run broad audit
+fixes as a substitute for diagnosing the reported problem.
 
-### TypeScript errors
-```bash
-# Check compilation
+### Lint or type checking fails
+
+```powershell
+npm run lint
 npx tsc --noEmit
 ```
 
-## 📖 Documentation
+Use `npm ci` to restore exactly the checked-in dependency tree before
+investigating a local installation problem.
 
-- **[PORTING_NOTES.md](./PORTING_NOTES.md)** - Detailed porting notes and architecture
-- **[PORT_SUMMARY.md](./PORT_SUMMARY.md)** - Summary of what was ported
-- **[Expo Documentation](https://docs.expo.dev/)** - Expo framework docs
-- **[React Native Docs](https://reactnative.dev/)** - React Native components & API
+## Project and community
 
-## 🚧 Not Yet Implemented
-
-- Media entry creation/editing
-- Entry detail view
-- Image upload
-- Offline support
-- Dark mode
-- Advanced filtering/sorting
-- Statistics and analytics
-- Social features
-
-## 🤝 Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing work. Focused
-contributions are welcome after issue-first discussion.
-
-## 📄 License
-
-This repository is available under the [MIT License](LICENSE).
-
-## Repository policies
-
+- [MediaVault API and web application](https://github.com/Megaraz/media-vault-app)
+- [Build in Public parent issue](https://github.com/Megaraz/media-vault-app/issues/55)
+- [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2)
+- [Android README issue](https://github.com/Megaraz/media-vault-android/issues/2)
+- [Public repository readiness audit](docs/public-repository-readiness-audit.md)
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security](SECURITY.md)
-
----
-
-**Last Updated**: June 28, 2026
-**Expo Version**: ~54.0.0
-**React Native Version**: 0.81.5
-**Status**: ✅ Core features ported, ready for enhancement
+- [MIT License](LICENSE)

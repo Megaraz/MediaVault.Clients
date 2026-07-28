@@ -3,10 +3,13 @@
 # dependencies
 node_modules/
 
+# IDE and editor state
+.idea/
+
 # Expo
 .expo/
-dist/
-web-build/
+/dist/
+/web-build/
 expo-env.d.ts
 
 # Native
@@ -15,8 +18,11 @@ expo-env.d.ts
 *.jks
 *.p8
 *.p12
+*.pfx
 *.key
 *.mobileprovision
+*.keystore
+google-services.json
 
 # Metro
 .metro-health-check*
@@ -32,6 +38,17 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+.env.development
+.env.production
+.env.test
+
+# local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
 # typescript
 *.tsbuildinfo

@@ -62,7 +62,7 @@ npm install
 cp .env.example .env.local
 
 # Update .env.local with your backend API URL
-# EXPO_PUBLIC_API_URL=http://your-backend-url:5000
+# EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://your-backend-url:5210
 ```
 
 ### Running the App
@@ -85,7 +85,7 @@ npm run web
 The app communicates with a MediaVault backend API. Configure the API URL in `.env.local`:
 
 ```env
-EXPO_PUBLIC_API_URL=http://localhost:5000
+EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://localhost:5210
 ```
 
 The API base URL should point to your running MediaVault backend server.
@@ -199,7 +199,7 @@ The app has been validated with:
 - Delete node_modules and reinstall: `rm -rf node_modules && npm install`
 
 ### API connection issues
-- Verify `.env.local` has correct `EXPO_PUBLIC_API_URL`
+- Verify `.env.local` has the correct `EXPO_PUBLIC_MEDIA_VAULT_API_URL`
 - Ensure backend API is running and accessible
 - Check network connectivity (for device testing)
 
@@ -211,7 +211,7 @@ The app has been validated with:
 
 ### Available Variables
 ```env
-EXPO_PUBLIC_API_URL    # Backend API base URL (required)
+EXPO_PUBLIC_MEDIA_VAULT_API_URL    # Backend API base URL (required)
 ```
 
 Note: All `EXPO_PUBLIC_*` prefixed variables are available in the client code.

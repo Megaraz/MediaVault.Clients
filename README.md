@@ -22,7 +22,7 @@ data.
 The authenticated dashboard groups entries by status and lets users filter by
 media type, open an entry, or start a new one.
 
-![Android dashboard showing a synthetic media library grouped by status](docs/images/dashboard-demo.png)
+![Android dashboard showing a synthetic media library grouped by status](docs/images/dashboard-demo.jpg)
 
 ### Search an external catalog
 
@@ -30,14 +30,14 @@ In the new-entry sheet, typing at least three title characters searches the
 backend for the selected media type. The backend owns calls to TMDB, RAWG, and
 Google Books; provider credentials are never sent to this app.
 
-![Android new-entry sheet showing external metadata search results for The Lord of the Rings](docs/images/metadata-search-demo.png)
+![Android new-entry sheet showing external metadata search results for The Lord of the Rings](docs/images/metadata-search-demo.jpg)
 
 ### Review imported metadata before saving
 
 Selecting a search result fills editable metadata fields. It does not save the
 entry automatically.
 
-![Android new-entry sheet populated with metadata for The Lord of the Rings](docs/images/metadata-autofill-demo.png)
+![Android new-entry sheet populated with metadata for The Lord of the Rings](docs/images/metadata-autofill-demo.jpg)
 
 ## What works today
 
@@ -62,6 +62,21 @@ entry automatically.
   been manually tested.
 - Offline sync, production distribution, observability, and AI recommendations
   are roadmap work, not current features.
+
+## Current direction
+
+MediaVault is being developed as a useful personal product, a public portfolio,
+and a learning environment for sound engineering judgment. The current roadmap
+includes deliberate work on API resilience and observability, a designed
+offline-sync model for Android, production-minded distribution, and a narrow,
+privacy-conscious AI recommendation feature. Any future recommendation flow
+will keep model credentials on the backend, minimize the taste data it sends,
+validate the response, and require user confirmation before it affects trusted
+library data.
+
+These are directions, not claims about the current Android implementation. See
+the [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2)
+for tracked work.
 
 ## Architecture
 

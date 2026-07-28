@@ -175,15 +175,18 @@ npx tsc --noEmit
 
 ## 🤝 Contributing
 
-When adding features:
-1. Check TypeScript: `npx tsc --noEmit`
-2. Run linter: `npm run lint`
-3. Test on device
-4. Update documentation
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing work. Focused
+contributions are welcome after issue-first discussion.
 
 ## 📄 License
 
-This is a port of the MediaVault web application.
+This repository is available under the [MIT License](LICENSE).
+
+## Repository policies
+
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security](SECURITY.md)
 
 ---
 

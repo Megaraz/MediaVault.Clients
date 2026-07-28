@@ -15,8 +15,8 @@ issue, documentation, or command output.
 
 ## Findings and remediation
 
-- Gitleaks v8.30.1 scanned all 16 commits (about 1.08 MB) with full redaction and
-  reported zero findings.
+- Gitleaks v8.30.1 scanned the complete pre-PR history (more than 1.2 MB) with
+  full redaction and reported zero findings.
 - No signing files, private keys, local databases, `google-services.json`, or
   tracked environment-value files were found.
 - A historical `.env.example` contained only a local placeholder and was later
@@ -108,4 +108,25 @@ git log --all --format= --name-only -- '.env*' '*.jks' '*.p8' '*.p12' `
 git diff --check
 ```
 
-The final pull request records the exact clean-clone results.
+## Clean-clone evidence
+
+A fresh clone of commit `5d42c5c` was verified outside the development
+checkout, with no sibling ResultPattern repository available through package or
+Metro configuration:
+
+- `npm ci`: passed and left the lock file unchanged.
+- Vendored package build: passed and left checked-in `dist/` unchanged.
+- Vendored package tests: 6 passed, 0 failed.
+- `npm run lint`: passed with 11 existing warnings and no errors.
+- `npx tsc --noEmit`: passed.
+- `npx expo-doctor`: all 18 checks passed.
+- Android Expo export: passed and produced the application bundle. Metro
+  reported the existing `@noble/hashes/crypto.js` package-exports fallback
+  warning.
+- Gitleaks full-history scan: zero findings.
+- Current-tree machine-path scan: zero matching files.
+- `git diff --check`: passed.
+- Final clean-clone `git status --short`: empty.
+
+The high-risk tracked-path command reports only `.env.example`; its two values
+are the documented public placeholder and boolean feature flag.

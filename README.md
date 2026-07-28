@@ -1,5 +1,7 @@
 # MediaVault Android - React Native App
 
+[![CI](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml)
+
 A React Native port of the MediaVault web application for Android devices, built with Expo.
 
 ## 🚀 Quick Start

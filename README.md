@@ -238,6 +238,7 @@ investigating a local installation problem.
 - [Build in Public parent issue](https://github.com/Megaraz/media-vault-app/issues/55)
 - [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2)
 - [Android README issue](https://github.com/Megaraz/media-vault-android/issues/2)
+- [Continuous integration and default-branch gates](docs/continuous-integration.md)
 - [Public repository readiness audit](docs/public-repository-readiness-audit.md)
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)

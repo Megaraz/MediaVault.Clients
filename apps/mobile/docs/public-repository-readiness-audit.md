@@ -1,7 +1,7 @@
 # Public repository readiness audit
 
 Status: implementation evidence for
-[`Megaraz/media-vault-android#1`](https://github.com/Megaraz/media-vault-android/issues/1)
+[`Megaraz/MediaVault.Clients#1`](https://github.com/Megaraz/MediaVault.Clients/issues/1)
 
 Audit date: 2026-07-28
 
@@ -44,8 +44,8 @@ remain visible during dependency-upgrade planning.
 
 `result-pattern-typescript` was not available from npm or a public Git
 repository. The approved solution is a repository-owned package at
-`packages/result-pattern-typescript`, installed through
-`file:packages/result-pattern-typescript`.
+`packages/result-pattern-typescript`, linked through the repository's npm
+workspace configuration.
 
 This is intentionally an in-repository `file:` dependency: it is available in
 the same clean clone, has no owner-specific path, and does not require an

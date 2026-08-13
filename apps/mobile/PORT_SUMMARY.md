@@ -134,5 +134,5 @@ The foundation is set up for easy addition of:
 ---
 
 **Port Date**: 2026-06-28
-**Ported From**: [media-vault-app.client](../../../media-vault-app/media-vault-app.client)
+**Ported From**: the web client now located at `../web`
 **Status**: ✅ Feature Complete (Core functionality ported)

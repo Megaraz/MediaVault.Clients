@@ -21,7 +21,7 @@ private data, or reproduction secrets in a public issue, pull request,
 discussion, or commit.
 
 MediaVault is a public repository. Use GitHub's private
-[Report a vulnerability](https://github.com/Megaraz/media-vault-android/security/advisories/new)
+[Report a vulnerability](https://github.com/Megaraz/MediaVault.Clients/security/advisories/new)
 form as the primary reporting channel.
 
 If the private form is unexpectedly unavailable, open a normal issue asking

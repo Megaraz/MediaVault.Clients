@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality:
+  mobile:
     name: Expo quality gates
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -38,11 +38,38 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint mobile
+        run: npm run lint --workspace=media-vault-android
 
-      - name: Type-check
-        run: npx tsc --noEmit
+      - name: Type-check mobile
+        run: npm run typecheck:mobile
 
       - name: Validate Expo project
-        run: npm exec -- expo-doctor
+        run: npm run doctor:mobile
+
+  web:
+    name: Web (Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Lint web
+        run: npm run lint --workspace=media-vault-app.client
+
+      - name: Build web
+        run: npm run build:web

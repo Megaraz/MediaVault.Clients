@@ -8,8 +8,8 @@ node_modules/
 
 # Expo
 .expo/
-/dist/
-/web-build/
+/apps/mobile/dist/
+/apps/mobile/web-build/
 expo-env.d.ts
 
 # Native
@@ -53,9 +53,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-app-example
+apps/mobile/app-example
 
 # generated native folders
-/ios
-/android
+/apps/mobile/ios
+/apps/mobile/android
 .aider*

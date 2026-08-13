@@ -1,5 +1,10 @@
 # MediaVault Clients
 
+> Part of the **[MediaVault project](https://github.com/Megaraz/MediaVault)**.
+> For the product overview, cross-repository architecture, roadmap, and
+> one-command workspace setup, start in the main repository. Backend code lives
+> in **[MediaVault.Api](https://github.com/Megaraz/MediaVault.Api)**.
+
 MediaVault is a personal library for movies, TV series, games, books, and
 manga. This repository contains the React web client and the Expo/React Native
 mobile client. Both use the separate

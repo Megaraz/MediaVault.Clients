@@ -1,13 +1,14 @@
 # Continuous integration and default-branch gates
 
-The `CI` GitHub Actions workflow validates the supported Expo Android source on
-every pull request and on pushes to `main`.
+The `CI` GitHub Actions workflow validates both client applications on every
+pull request and on pushes to `main`.
 
 ## Checks
 
-- **Expo quality gates** uses Node.js 20.19.x and the checked-in npm lock file
-  to run `npm ci`, `npm run lint`, `npx tsc --noEmit`, and
-  `npm exec -- expo-doctor`.
+- **Expo quality gates** uses Node.js 20.19.x and the root workspace lock file
+  to run `npm ci`, mobile lint, TypeScript checking, and Expo Doctor.
+- **Web (Node 24)** uses the same root workspace lock file to run `npm ci`, web
+  lint, and the production build.
 - **Dependency review** runs on pull requests and rejects newly introduced
   runtime vulnerabilities of moderate severity or higher. It keeps the
   official action's license inspection enabled without defining a separate
@@ -39,8 +40,8 @@ The active repository ruleset named **Protect main quality and security gates**
 targets only the default branch. It:
 
 - requires changes to reach `main` through a pull request;
-- requires the `Expo quality gates` and `Dependency review` status checks
-  against the latest `main` state;
+- requires the `Expo quality gates`, `Web (Node 24)`, and `Dependency review`
+  status checks against the latest `main` state;
 - requires CodeQL code-scanning results and blocks error-level quality alerts or
   high-or-higher security alerts;
 - blocks force pushes and deletion of `main`; and
@@ -76,15 +77,15 @@ misconfigured required check blocks an urgent security or repository-recovery
 change, the repository owner may temporarily edit the ruleset in **Settings >
 Rules > Rulesets**. Record the reason, affected commit or pull request, time,
 and exact temporary change in the relevant private operational record; use the
-narrowest change; restore the ruleset immediately; and re-run the API checks
-below. Do not use this path for routine merges or to ignore a failing check.
+narrowest change; restore the ruleset immediately; and re-run the checks below.
+Do not use this path for routine merges or to ignore a failing check.
 
 After any ruleset or workflow change, verify the live policy:
 
 ```powershell
-gh api repos/Megaraz/media-vault-android/code-scanning/default-setup
-gh api repos/Megaraz/media-vault-android/rulesets
-gh api repos/Megaraz/media-vault-android/rules/branches/main
+gh api repos/Megaraz/MediaVault.Clients/code-scanning/default-setup
+gh api repos/Megaraz/MediaVault.Clients/rulesets
+gh api repos/Megaraz/MediaVault.Clients/rules/branches/main
 ```
 
 ## Run the same checks locally
@@ -94,8 +95,9 @@ From the repository root:
 ```powershell
 npm ci
 npm run lint
-npx tsc --noEmit
-npm exec -- expo-doctor
+npm run typecheck:mobile
+npm run doctor:mobile
+npm run build:web
 ```
 
 Generated native folders, Expo state, build output, environment files, signing

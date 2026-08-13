@@ -13,8 +13,8 @@ the proposed work will be accepted.
    observable outcome, scope, non-goals, acceptance criteria, and verification.
 3. Wait for the issue to be accepted for implementation and confirm its base
    branch. Do not absorb work owned by a parent, sibling, or roadmap issue.
-4. Read `AGENTS.md` and the exact versioned Expo documentation it references
-   before changing application code or configuration.
+4. Read `AGENTS.md`; for mobile work, also read the exact versioned Expo
+   documentation it references before changing application code or configuration.
 
 Security vulnerabilities must follow [SECURITY.md](SECURITY.md), not the normal
 issue workflow. Participation is governed by the
@@ -28,7 +28,7 @@ issue workflow. Participation is governed by the
 - Treat API routes, authentication, status codes, JSON and error shapes,
   persistence identifiers, pagination, and synchronization metadata as
   contracts shared by the Android app, web client, and backend.
-- Coordinate an intentional shared-contract change with the API/web repository.
+- Coordinate an intentional shared-contract change with the API repository.
   Otherwise, preserve the contract and document any out-of-scope compatibility
   gap.
 - Keep credentials, personal data, local databases, environment files, signing
@@ -45,8 +45,10 @@ before requesting review:
 ```powershell
 npm ci
 npm run lint
-npx tsc --noEmit
-npx expo-doctor
+npm run typecheck:mobile
+npm run doctor:mobile
+npm run build:web
+
 git diff --check
 ```
 

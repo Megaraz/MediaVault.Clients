@@ -1,10 +1,10 @@
-# AGENTS.md - MediaVault Android
+# AGENTS.md - MediaVault Clients
 
 ## Scope and precedence
 
-This is the root instruction file for AI-assisted work in the MediaVault Expo
-Android repository. It applies to application code, local persistence, tests,
-configuration, and documentation.
+This is the root instruction file for AI-assisted work in the MediaVault client
+repository. It applies to the Expo mobile app, React web app, shared TypeScript
+packages, tests, configuration, and documentation.
 
 - Treat checked-out code, `package.json`, `package-lock.json`, app
   configuration, tests, and the active issue as the source of truth.
@@ -14,7 +14,7 @@ configuration, and documentation.
   direction. Never describe roadmap work as implemented.
 - Revalidate version-sensitive claims from the manifests and the exact
   versioned Expo documentation.
-- For Expo SDK 54 work, read
+- For Expo SDK 54 mobile work, read
   <https://docs.expo.dev/versions/v54.0.0/> before changing application code or
   configuration. SDK 54 requires Node.js 20.19.x or newer.
 
@@ -38,10 +38,11 @@ enterprise ceremony.
 
 ## Repository and ecosystem boundaries
 
-This repository owns the Expo/React Native client. The ASP.NET Core API and
-React web client live in `Megaraz/media-vault-app`. ResultPattern .NET packages
-are separate published packages. The TypeScript ResultPattern port used by this
-app is vendored in `packages/result-pattern-typescript`.
+This repository owns the Expo/React Native mobile client and the React web
+client. The ASP.NET Core API lives in the separate `Megaraz/MediaVault.Api`
+repository. ResultPattern .NET packages are separate published packages. The
+TypeScript ResultPattern port used by the mobile app remains in
+`packages/result-pattern-typescript`.
 
 - Do not modify sibling repositories or external packages unless the user
   explicitly puts them in scope.
@@ -61,18 +62,19 @@ app is vendored in `packages/result-pattern-typescript`.
 
 Revalidate this map before architectural work:
 
-- `app/`: Expo Router screens and layouts.
-- `components/`: reusable presentation and interaction components.
-- `clients/`: MediaVault API and metadata-provider transport clients.
-- `services/`: application workflows coordinating clients, validation, and
+- `apps/mobile/app/`: Expo Router screens and layouts.
+- `apps/mobile/components/`: reusable mobile presentation and interaction components.
+- `apps/mobile/clients/`: mobile API and metadata-provider transport clients.
+- `apps/mobile/services/`: application workflows coordinating clients, validation, and
   persistence.
-- `shared/`: authentication context, token storage, authorized fetch, feature
+- `apps/mobile/shared/`: authentication context, token storage, authorized fetch, feature
   flags, and shared runtime helpers.
-- `database/`: opt-in Expo SQLite initialization, migrations, and repositories.
-- `models/`, `types/`, and `mappers/`: client models, API DTOs, and mapping.
-- `validators/`: application input validation.
+- `apps/mobile/database/`: opt-in Expo SQLite initialization, migrations, and repositories.
+- `apps/mobile/models/`, `types/`, and `mappers/`: mobile models, API DTOs, and mapping.
+- `apps/mobile/validators/`: mobile input validation.
+- `apps/web/`: React, TypeScript, Vite, and Tailwind web client.
 - `packages/result-pattern-typescript/`: repository-owned ResultPattern package.
-- `docs/`: durable operational and architecture documentation.
+- `apps/mobile/docs/`: mobile operational and architecture documentation.
 
 The app currently uses Expo SDK 54, React Native 0.81, React 19, Expo Router,
 strict TypeScript, JWT bearer authentication, `expo-secure-store`, and optional
@@ -205,10 +207,17 @@ From the repository root:
 
 ```powershell
 npm ci
-npm run lint
-npx tsc --noEmit
-npx expo-doctor
+npm run lint --workspace=media-vault-android
+npm run typecheck:mobile
+npm run doctor:mobile
 git diff --check
+```
+
+For the web client:
+
+```powershell
+npm run lint --workspace=media-vault-app.client
+npm run build:web
 ```
 
 For dependency or Metro-resolution changes, also create an Android bundle with

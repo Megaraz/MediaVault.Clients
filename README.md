@@ -1,245 +1,209 @@
-# MediaVault Android
+# MediaVault Clients
 
 MediaVault is a personal library for movies, TV series, games, books, and
-manga. This repository contains the Expo/React Native Android client; it uses
-the shared [MediaVault API and web application](https://github.com/Megaraz/media-vault-app)
-for authenticated library and metadata-provider operations.
+manga. This repository contains the React web client and the Expo/React Native
+mobile client. Both use the separate
+[MediaVault API](https://github.com/Megaraz/MediaVault.Api) for authenticated
+library operations and external metadata.
 
-> **Status:** active pre-release development. The Android client supports the
-> core library workflows described below, but it is not a production release
-> and does not provide offline synchronization.
+> **Status:** active pre-release development. The core web and Android
+> workflows are functional, but neither client is a production release and
+> general offline synchronization is not implemented.
 
-[![CI](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Megaraz/media-vault-android/actions/workflows/ci.yml)
+[![CI](https://github.com/Megaraz/MediaVault.Clients/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Megaraz/MediaVault.Clients/actions/workflows/ci.yml)
 
 ## Product tour
 
-The screenshots use a synthetic demo account and demonstration library data. They
-show no account email, token, API credential, local path, or private library
-data.
+The screenshots use synthetic demo accounts and fictional library data. They
+show no real account details, tokens, API credentials, or private library data.
 
-### Organize a personal library
+### Web client
 
-The authenticated dashboard groups entries by status and lets users filter by
-media type, open an entry, or start a new one.
+The authenticated web dashboard groups entries by status and supports
+media-type filtering, library search, sorting, and create/edit flows.
 
-![Android dashboard showing a synthetic media library grouped by status](docs/images/dashboard-demo.jpg)
+![MediaVault web dashboard showing a synthetic media library](docs/images/web/dashboard-demo.jpg)
 
-### Search an external catalog
+Typing at least three title characters searches the appropriate external
+catalog through the backend.
 
-In the new-entry sheet, typing at least three title characters searches the
-backend for the selected media type. The backend owns calls to TMDB, RAWG, and
-Google Books; provider credentials are never sent to this app.
+![MediaVault web form showing metadata search results for Dune](docs/images/web/metadata-search-demo.jpg)
 
-![Android new-entry sheet showing external metadata search results for The Lord of the Rings](docs/images/metadata-search-demo.jpg)
+Selecting a result fills editable fields without saving the entry
+automatically.
 
-### Review imported metadata before saving
+![MediaVault web form populated with metadata for Dune Part Two](docs/images/web/metadata-autofill-demo.jpg)
 
-Selecting a search result fills editable metadata fields. It does not save the
-entry automatically.
+### Mobile client
 
-![Android new-entry sheet populated with metadata for The Lord of the Rings](docs/images/metadata-autofill-demo.jpg)
+The Android dashboard provides the same core library workflows in an
+Expo/React Native interface.
+
+![MediaVault Android dashboard showing a synthetic media library](apps/mobile/docs/images/dashboard-demo.jpg)
+
+The mobile entry sheet searches backend metadata providers and lets the user
+review imported data before saving.
+
+![MediaVault Android entry sheet showing metadata search results](apps/mobile/docs/images/metadata-search-demo.jpg)
+
+![MediaVault Android entry sheet populated with imported metadata](apps/mobile/docs/images/metadata-autofill-demo.jpg)
 
 ## What works today
 
-- JWT bearer registration, login, persisted session restoration, logout, and
-  protected routes
-- Dashboard grouping by status, media-type filters, and a library search tab
-- Create, read, update, and delete workflows for movies, TV series, games,
-  books, and manga
-- Ratings, reviews, genres, release details, artwork, and type-specific fields
-- Provider-backed title search and editable metadata autofill
-- Android token storage through `expo-secure-store`
-- An opt-in Expo SQLite persistence path, controlled by a feature flag
+Both clients support:
 
-### Current limitations and direction
+- JWT bearer registration, login, authenticated profile access, and protected
+  library operations;
+- create, read, update, and delete workflows for movies, TV series, games,
+  books, and manga;
+- status, rating, review, genre, release, artwork, and type-specific metadata;
+- provider-backed title search and editable metadata autofill; and
+- centralized API transport and authentication handling.
 
-- The opt-in client database is not offline synchronization. There is no
-  conflict policy, server-to-client synchronization, or production recovery
-  workflow.
-- No production Android build or app-store distribution is provided.
-- The checked-in source supports Expo's Android workflow. iOS and web scripts
-  exist because Expo exposes them, but this project does not claim they have
-  been manually tested.
-- Offline sync, production distribution, observability, and AI recommendations
-  are roadmap work, not current features.
+The web client provides dashboard grouping, filtering, search, sorting, and
+modal create/edit flows. The mobile client adds persisted session restoration
+through `expo-secure-store`, protected Expo Router routes, and an opt-in Expo
+SQLite persistence path controlled by `EXPO_PUBLIC_USE_CLIENT_DATABASE`.
 
-## Current direction
+## Repository layout
 
-MediaVault is being developed as a useful personal product, a public portfolio,
-and a learning environment for sound engineering judgment. The current roadmap
-includes deliberate work on API resilience and observability, a designed
-offline-sync model for Android, production-minded distribution, and a narrow,
-privacy-conscious AI recommendation feature. Any future recommendation flow
-will keep model credentials on the backend, minimize the taste data it sends,
-validate the response, and require user confirmation before it affects trusted
-library data.
+```text
+MediaVault.Clients/
+├── apps/
+│   ├── mobile/       Expo, React Native, and Expo Router
+│   └── web/          React, TypeScript, Vite, and Tailwind
+├── packages/
+│   └── result-pattern-typescript/
+├── package.json      npm workspace configuration and shared scripts
+└── package-lock.json one lock file for all workspaces
+```
 
-These are directions, not claims about the current Android implementation. See
-the [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2)
-for tracked work.
+The npm workspace establishes repository-level dependency installation and
+script orchestration. Application DTOs and other TypeScript contracts have not
+yet been consolidated into shared packages; that remains separate work.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    App["Expo Router screens and React Native components"] --> Services["Services, validation, and mappers"]
-    Services --> Clients["Typed API and metadata clients"]
-    Clients --> Transport["apiFetch: JWT bearer header"]
-    Transport --> API["MediaVault ASP.NET Core API"]
-    App --> Auth["User context and SecureStore token storage"]
-    Services -. "optional feature flag" .-> SQLite[("Expo SQLite")]
+    Web["React web client"] --> WebTransport["Web API clients and auth transport"]
+    WebTransport --> API["MediaVault ASP.NET Core API"]
+    Mobile --> MobileServices["Mobile services, validation, and mappers"]
+    MobileServices --> MobileTransport["Mobile API clients and secure auth transport"]
+    MobileTransport --> API
+    MobileServices -. "optional feature flag" .-> SQLite[("Expo SQLite")]
+    Shared["Repository-owned TypeScript packages"] -.-> Mobile
     API --> Providers["TMDB, RAWG, and Google Books"]
 ```
 
-Screens and components own presentation, navigation, form state, and user
-feedback. Services coordinate workflows, validation, API clients, mapping, and
-the optional local repository path. The backend remains authoritative for
-shared account and library data.
-
-| Path | Responsibility |
-| --- | --- |
-| `app/` | Expo Router routes, protected layouts, and screens |
-| `components/` | Reusable UI, including the media-entry sheet and form |
-| `clients/` | MediaVault API and backend metadata-search clients |
-| `services/`, `mappers/`, `validators/` | Workflows, DTO mapping, and input validation |
-| `shared/` | Authentication context, SecureStore token handling, authorized fetch, and feature flags |
-| `database/` | Opt-in Expo SQLite initialization, migrations, and repositories |
-| `packages/result-pattern-typescript/` | Repository-owned TypeScript ResultPattern dependency |
+The backend remains authoritative for shared account and library data. Provider
+credentials stay on the API; neither client receives RAWG, TMDB, or Google
+Books credentials.
 
 ## Run locally
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 20.19.x or newer
-- npm
-- An Android emulator or physical Android device; [Expo Go](https://expo.dev/go)
-  is suitable for the current managed workflow
-- A running local instance of the [MediaVault API](https://github.com/Megaraz/media-vault-app)
+- [Node.js 24](https://nodejs.org/) and npm. Expo SDK 54 requires at least
+  Node.js 20.19.x.
+- A running local [MediaVault API](https://github.com/Megaraz/MediaVault.Api).
+- For mobile development, an Android emulator or physical Android device.
+- For the HTTPS web development server, a trusted ASP.NET Core development
+  certificate created with `dotnet dev-certs https --trust`.
 
-This project uses Expo SDK `~54.0.36`, React Native `0.81.5`, and React
-`19.1.0`. Expo SDK 54 requires Node.js 20.19.x or newer and targets React
-Native 0.81; see the [versioned Expo SDK 54 reference](https://docs.expo.dev/versions/v54.0.0/).
+Install every workspace from the repository root:
 
-### 1. Configure the API URL
+```powershell
+npm ci
+```
+
+### Start the web client
+
+```powershell
+npm run dev:web
+```
+
+Open `https://localhost:61366`. Vite proxies API routes to
+`http://localhost:5210` by default. `ASPNETCORE_HTTPS_PORT` or
+`ASPNETCORE_URLS` can override the target.
+
+### Configure and start the mobile client
 
 Copy the safe example and edit the ignored local file:
 
 ```powershell
-Copy-Item .env.example .env.local
+Copy-Item apps/mobile/.env.example apps/mobile/.env.local
 ```
 
 ```dotenv
 # Android emulator: API running on the development machine
 EXPO_PUBLIC_MEDIA_VAULT_API_URL=http://10.0.2.2:5210
 
-# Keep disabled unless deliberately testing the local database path.
+# Keep disabled unless deliberately testing local mobile persistence.
 EXPO_PUBLIC_USE_CLIENT_DATABASE=false
 ```
 
-`EXPO_PUBLIC_MEDIA_VAULT_API_URL` is the backend base URL. Every
-`EXPO_PUBLIC_*` value is embedded in the client bundle: use it only for public
-runtime configuration, never for a password, JWT, provider key, or other
-secret.
+Every `EXPO_PUBLIC_*` value is embedded in the client bundle. Use these values
+only for public runtime configuration, never for passwords, JWTs, provider
+keys, or other secrets.
 
-For networking:
-
-- An Android Emulator reaches an API on the host machine through
-  `http://10.0.2.2:5210`, not `localhost`.
-- A physical device must use the development machine's reachable LAN address,
-  for example `http://192.168.1.20:5210`, and the API must be configured to
-  listen safely on that interface. Do not commit that local address.
-- `http://localhost:5210` is only appropriate when the app process itself can
-  reach that localhost address; it is not the normal physical-device setting.
-
-Follow the backend repository's local setup instructions to configure, migrate,
-and start the API. Its development HTTP profile listens on port 5210.
-
-### 2. Install and start the Android app
+Start the Android workflow from the repository root:
 
 ```powershell
-npm ci
 npm run android
 ```
 
-`npm run android` starts Expo and opens the project on an available Android
-emulator or connected device. To start Metro without choosing a target, use
-`npm start` and follow the Expo prompt.
+An Android emulator reaches an API on the host through `10.0.2.2`, not
+`localhost`. A physical device must use a reachable LAN address and the API
+must be configured safely to listen on that interface.
 
 ## Authentication and local data
 
-The API uses JWT bearer authentication. On Android, `shared/tokenStore.ts`
-stores the token with `expo-secure-store`; `shared/apiFetch.ts` is the central
-place that attaches the `Authorization: Bearer` header. Tokens must never be
-placed in AsyncStorage, source code, logs, or `EXPO_PUBLIC_*` values.
+Both clients attach JWT bearer tokens through centralized transport helpers.
+The mobile client stores its token with `expo-secure-store`; tokens must never
+be moved to AsyncStorage, source code, logs, or `EXPO_PUBLIC_*` values.
 
-`EXPO_PUBLIC_USE_CLIENT_DATABASE=false` is the default. Setting it to `true`
-initializes an Expo SQLite database and its checked-in migrations. This is an
-opt-in, experimental local persistence path—not a replacement for backend
-ownership and not an offline-sync solution. Local database files are runtime
-data and are ignored by Git.
+The optional mobile database is experimental local persistence, not offline
+synchronization. The API remains authoritative, and local database files are
+ignored runtime state.
 
 ## Verification
 
-Run these checks from the repository root:
+Run from the repository root:
 
 ```powershell
 npm ci
 npm run lint
-npx tsc --noEmit
-npx expo-doctor
+npm run typecheck:mobile
+npm run doctor:mobile
+npm run build:web
+npm run test:result-pattern
 git diff --check
 ```
 
-The CI workflow runs the first four commands for pull requests and pushes to
-`main` on Ubuntu with Node.js 20.19.x. The documented clean-clone verification
-also completed an Android Expo export. The Expo toolchain may report its
-existing `@noble/hashes/crypto.js` package-exports fallback warning during that
-export; it is not a claim of a production build.
+CI runs independent mobile and web jobs. The mobile lint currently completes
+with existing warnings but no errors. Neither application has an established
+automated UI test suite.
 
-For an Android UI or networking change, test the supported emulator or physical
-device path manually. This README change does not claim a fresh device test.
+## Current limitations and direction
 
-## Troubleshooting
+- No production web deployment, Android distribution, or app-store release is
+  provided.
+- The mobile SQLite path is not a general synchronization implementation.
+- iOS and Expo web scripts exist, but this repository does not claim they have
+  been manually validated.
+- Shared DTO/type consolidation, React Query adoption, offline sync,
+  production telemetry, and AI recommendations remain future work unless the
+  checked-in code proves otherwise.
 
-### The app cannot reach the API
-
-- Confirm that the API is running and that `.env.local` contains the correct
-  `EXPO_PUBLIC_MEDIA_VAULT_API_URL` for the target.
-- For an emulator, use `10.0.2.2` instead of the host's `localhost`.
-- For a device, verify that the device and development machine can reach each
-  other on the same trusted network and that the API is listening on the chosen
-  address.
-- Restart Expo after changing `.env.local` so the public configuration is
-  reloaded.
-
-### Expo reports a compatibility or configuration problem
-
-```powershell
-npx expo-doctor
-```
-
-Use `npx expo install <package>` for Expo-managed packages so their versions
-remain compatible with SDK 54. Do not upgrade dependencies or run broad audit
-fixes as a substitute for diagnosing the reported problem.
-
-### Lint or type checking fails
-
-```powershell
-npm run lint
-npx tsc --noEmit
-```
-
-Use `npm ci` to restore exactly the checked-in dependency tree before
-investigating a local installation problem.
+Current work is tracked in the
+[MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2).
 
 ## Project and community
 
-- [MediaVault API and web application](https://github.com/Megaraz/media-vault-app)
-- [Build in Public parent issue](https://github.com/Megaraz/media-vault-app/issues/55)
-- [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2)
-- [Android README issue](https://github.com/Megaraz/media-vault-android/issues/2)
-- [Continuous integration and default-branch gates](docs/continuous-integration.md)
-- [Public repository readiness audit](docs/public-repository-readiness-audit.md)
+- [MediaVault API](https://github.com/Megaraz/MediaVault.Api)
+- [Continuous integration and default-branch gates](apps/mobile/docs/continuous-integration.md)
+- [Public repository readiness audit](apps/mobile/docs/public-repository-readiness-audit.md)
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security](SECURITY.md)

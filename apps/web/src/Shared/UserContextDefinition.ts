@@ -1,8 +1,5 @@
 import { createContext, type Dispatch, type SetStateAction } from "react";
-import type {
-  UserDetailedDto,
-  UserLoginDto,
-} from "../Clients/UsersClient";
+import type { UserDetailedDto, UserLoginDto } from "@mediavault/contracts";
 
 export type UserContextType = {
   currentUser: UserDetailedDto | null;

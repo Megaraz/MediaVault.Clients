@@ -1,6 +1,6 @@
 // Compact list-row card used in the Backlog section.
 // Shows a small thumbnail, title, and key metadata in a single row.
-import type { MediaEntryMinimalDto } from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "@mediavault/contracts";
 import MediaTypeBadge from "../Shared/MediaTypeBadge";
 
 type MediaItemCompactProps = {

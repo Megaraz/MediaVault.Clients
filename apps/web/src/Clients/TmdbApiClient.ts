@@ -1,6 +1,9 @@
-import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
-import type { TmdbMovieDetailedDto } from "../Types/DTOs/MovieEntry";
-import type { TmdbTvSeriesDetailedDto } from "../Types/DTOs/TvSeriesEntry";
+import type {
+    SearchRequestDto,
+    TmdbMovieDetailedDto,
+    TmdbSearchResultDto,
+    TmdbTvSeriesDetailedDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
 
@@ -10,7 +13,7 @@ export default class TmdbApiClient {
     async searchMovies(
         request: SearchRequestDto,
         page: number = 1,
-    ): Promise<MediaEntrySearchResultDto[]> {
+    ): Promise<TmdbSearchResultDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
 
@@ -42,7 +45,7 @@ export default class TmdbApiClient {
     async searchTvSeries(
         request: SearchRequestDto,
         page: number = 1,
-    ): Promise<MediaEntrySearchResultDto[]> {
+    ): Promise<TmdbSearchResultDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
 

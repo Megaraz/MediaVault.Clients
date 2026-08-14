@@ -1,6 +1,10 @@
 // Handles create and update API calls for Manga entries.
 // Hits /mediaentries/manga which expects MangaEntryCreateDto / MangaEntryUpdateDto.
-import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from "../Types/DTOs/MangaEntry";
+import type {
+    MangaEntryCreateDto,
+    MangaEntryDetailedDto,
+    MangaEntryUpdateDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
 export default class MangaEntriesClient {

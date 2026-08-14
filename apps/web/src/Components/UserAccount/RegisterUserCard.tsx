@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { UserCreateDto } from "../../Clients/UsersClient";
+import type { UserRegisterDto } from "@mediavault/contracts";
 import ModalWindow from "../Shared/ModalWindow";
 import RegisterUserForm, { RegisterUserFormData } from "./RegisterUserForm";
 import UsersClient from "../../Clients/UsersClient";
@@ -62,7 +62,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
       return;
     }
 
-    const dto: UserCreateDto = {
+    const dto: UserRegisterDto = {
       username: formData.username,
       email: formData.email,
       confirmEmail: formData.confirmEmail,

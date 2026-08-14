@@ -1,6 +1,10 @@
 // Handles create and update API calls for Movie entries.
 // Hits /mediaentries/movies which expects MovieEntryCreateDto / MovieEntryUpdateDto.
-import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from "../Types/DTOs/MovieEntry";
+import type {
+    MovieEntryCreateDto,
+    MovieEntryDetailedDto,
+    MovieEntryUpdateDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
 export default class MovieEntriesClient {

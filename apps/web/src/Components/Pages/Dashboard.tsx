@@ -10,25 +10,66 @@
 // ─────────────────────────────────────────────────────────────
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import MediaEntriesClient, {
+import {
+  MediaType,
+  Status,
   type MediaEntryDetailedDto,
   type MediaEntryMinimalDto,
-  MediaType,
-  StatusType,
-} from "../../Clients/MediaEntriesClient";
+  type SeasonCreateDto,
+  type SeasonUpdateDto,
+} from "@mediavault/contracts";
+import MediaEntriesClient from "../../Clients/MediaEntriesClient";
 import MovieEntriesClient from "../../Clients/MovieEntriesClient";
 import TvSeriesEntriesClient from "../../Clients/TvSeriesEntriesClient";
 import GameEntriesClient from "../../Clients/GameEntriesClient";
 import BookEntriesClient from "../../Clients/BookEntriesClient";
 import MangaEntriesClient from "../../Clients/MangaEntriesClient";
 import type { MediaEntryFormData } from "../MediaEntry/MediaEntryForm";
+import type { SeasonFormData } from "../MediaEntry/SeasonSection";
 import MediaEntryModal from "../MediaEntry/MediaEntryModal";
 import { useUser } from "../../Shared/useUser";
 import MainHeader from "../Dashboard/MainHeader";
 import Sidebar from "../Dashboard/Sidebar";
 import EntriesSectionMain from "../Dashboard/EntriesSectionMain";
 import EntriesSectionSub from "../Dashboard/EntriesSectionSub";
-import { statusSections } from "../../Shared/mediaConstants";
+import { ALL_MEDIA_TYPE, statusSections } from "../../Shared/mediaConstants";
+
+const EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
+const DEFAULT_API_DATE = "0001-01-01T00:00:00.000Z";
+
+// The API's season request fields are non-required CLR value types. Omitting
+// them previously made the server use Guid.Empty/DateTime.MinValue; retain
+// those defaults while satisfying the shared contract's explicit fields.
+function toSeasonCreateDto(
+  season: SeasonFormData,
+  tvSeriesId: string,
+): SeasonCreateDto {
+  return {
+    tvSeriesId,
+    idExternal: season.idExternal ?? null,
+    name: season.name || null,
+    overview: season.overview || null,
+    imageUrl: season.imageUrl || null,
+    seasonNumber: parseInt(season.seasonNumber) || 0,
+    airDate: season.airDate || null,
+    watchedEpisodes: parseInt(season.watchedEpisodes) || 0,
+    episodes: parseInt(season.episodes) || 0,
+    status: season.status as Status,
+    rating: season.rating,
+    createdAtUtc: season.createdAtUtc ?? DEFAULT_API_DATE,
+    updatedAtUtc: season.updatedAtUtc ?? DEFAULT_API_DATE,
+  };
+}
+
+function toSeasonUpdateDto(
+  season: SeasonFormData,
+  entryId: string,
+): SeasonUpdateDto {
+  return {
+    id: season.id ?? EMPTY_GUID,
+    ...toSeasonCreateDto(season, season.tvSeriesId ?? entryId),
+  };
+}
 
 export default function Dashboard() {
   const { currentUser, isAuthenticated } = useUser();
@@ -46,9 +87,9 @@ export default function Dashboard() {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
   // The currently active media type filter driven by the sidebar.
-  // -1 (MediaType.All) means show all types.
+  // -1 (the local ALL_MEDIA_TYPE sentinel) means show all types.
   const [mainMediaTypeFilter, setMainMediaTypeFilter] = useState<number>(
-    MediaType.All,
+    ALL_MEDIA_TYPE,
   );
 
   useEffect(() => {
@@ -82,7 +123,7 @@ export default function Dashboard() {
     switch (entry.mediaType) {
       case MediaType.Movie:
         return client.getMovieById(entry.id);
-      case MediaType.Series:
+      case MediaType.TvSeries:
         return client.getTvSeriesById(entry.id);
       case MediaType.Game:
         return client.getGameById(entry.id);
@@ -140,7 +181,7 @@ export default function Dashboard() {
     const baseFields = {
       idExternal: formData.idExternal ?? null,
       title: formData.title ?? "",
-      status: formData.status,
+      status: formData.status as Status,
       rating: formData.rating,
       imageUrl: formData.imageUrl?.trim() || null,
       review: formData.review || null,
@@ -170,27 +211,18 @@ export default function Dashboard() {
               runtimeMinutes: Number(formData.runtimeMinutes) || 0,
             });
             break;
-          case MediaType.Series:
+          case MediaType.TvSeries:
             await tvSeriesClient.updateTvSeries(entryId, {
               ...baseFields,
               numberOfSeasons: Number(formData.numberOfSeasons) || 0,
               numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
               totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
               backdropImageUrl: formData.backdropImageUrl ?? null,
-              firstAirDate: formData.firstAirDate ?? null,
               lastAirDate: formData.lastAirDate ?? null,
               airingStatus: formData.airingStatus ?? null,
-              seasons: formData.seasons?.map((s) => ({
-                seasonNumber: parseInt(s.seasonNumber) || 0,
-                name: s.name || null,
-                overview: s.overview || null,
-                imageUrl: s.imageUrl || null,
-                airDate: s.airDate || null,
-                episodes: parseInt(s.episodes) || 0,
-                watchedEpisodes: parseInt(s.watchedEpisodes) || 0,
-                status: s.status,
-                rating: s.rating,
-              })),
+              seasons: (formData.seasons ?? []).map((season) =>
+                toSeasonUpdateDto(season, entryId),
+              ),
             });
             break;
           case MediaType.Game:
@@ -230,27 +262,18 @@ export default function Dashboard() {
               runtimeMinutes: Number(formData.runtimeMinutes) || 0,
             });
             break;
-          case MediaType.Series:
+          case MediaType.TvSeries:
             created = await tvSeriesClient.createTvSeries({
               ...baseFields,
               numberOfSeasons: Number(formData.numberOfSeasons) || 0,
               numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
               totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
               backdropImageUrl: formData.backdropImageUrl ?? null,
-              firstAirDate: formData.firstAirDate ?? null,
               lastAirDate: formData.lastAirDate ?? null,
               airingStatus: formData.airingStatus ?? null,
-              seasons: formData.seasons?.map((s) => ({
-                seasonNumber: parseInt(s.seasonNumber) || 0,
-                name: s.name || null,
-                overview: s.overview || null,
-                imageUrl: s.imageUrl || null,
-                airDate: s.airDate || null,
-                episodes: parseInt(s.episodes) || 0,
-                watchedEpisodes: parseInt(s.watchedEpisodes) || 0,
-                status: s.status,
-                rating: s.rating,
-              })),
+              seasons: (formData.seasons ?? []).map((season) =>
+                toSeasonCreateDto(season, EMPTY_GUID),
+              ),
             });
             break;
           case MediaType.Game:
@@ -325,7 +348,7 @@ export default function Dashboard() {
   };
 
   const onChangeMainMediaTypeFilter = (mediaType: number | undefined) => {
-    setMainMediaTypeFilter(mediaType ?? MediaType.All);
+    setMainMediaTypeFilter(mediaType ?? ALL_MEDIA_TYPE);
   };
 
   const onCancel = () => {
@@ -371,7 +394,7 @@ export default function Dashboard() {
                     (e) => e.status === type,
                   );
 
-                  return type === StatusType.Backlog ? (
+                  return type === Status.Backlog ? (
                     <EntriesSectionSub
                       key={type}
                       mediaEntries={sectionEntriesByStatus}

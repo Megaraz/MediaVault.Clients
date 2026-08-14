@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import RawgApiClient from "../../Clients/RawgApiClient";
 import TmdbApiClient from "../../Clients/TmdbApiClient";
 import GoogleBooksApiClient from "../../Clients/GoogleBooksApiClient";
-import { MediaType } from "../../Clients/MediaEntriesClient";
+import { MediaType } from "@mediavault/contracts";
 
 // Unified shape shared by all search APIs
 export interface SearchResult {
@@ -59,7 +59,7 @@ export default function TitleSearchInput({
   const isSearchEnabled =
     mediaType === MediaType.Game ||
     mediaType === MediaType.Movie ||
-    mediaType === MediaType.Series ||
+    mediaType === MediaType.TvSeries ||
     mediaType === MediaType.Book;
 
   // ── Debounced search effect ──
@@ -97,7 +97,7 @@ export default function TitleSearchInput({
 
         if (mediaType === MediaType.Movie) {
           results = await tmdbClient.searchMovies({ query: value }, 1);
-        } else if (mediaType === MediaType.Series) {
+        } else if (mediaType === MediaType.TvSeries) {
           results = await tmdbClient.searchTvSeries({ query: value }, 1);
         } else if (mediaType === MediaType.Book) {
           results = await googleBooksClient.searchBooks({ query: value }, 1, 8);

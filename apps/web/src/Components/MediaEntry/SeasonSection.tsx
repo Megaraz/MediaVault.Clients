@@ -12,7 +12,7 @@ import { useState } from "react";
 import InputText from "../Shared/InputText";
 import SelectOption from "../Shared/SelectOption";
 import StarRating from "../Shared/StarRating";
-import { StatusLabels } from "../../Clients/MediaEntriesClient";
+import { StatusLabels } from "../../Shared/mediaConstants";
 import type { SelectOptionItem } from "../Shared/SelectOption";
 
 const statusOptions: SelectOptionItem[] = Object.entries(StatusLabels).map(
@@ -21,6 +21,11 @@ const statusOptions: SelectOptionItem[] = Object.entries(StatusLabels).map(
 
 // ─── Season form state ────────────────────────────────────────
 export type SeasonFormData = {
+  id?: string;
+  tvSeriesId?: string;
+  idExternal?: string | null;
+  createdAtUtc?: string;
+  updatedAtUtc?: string;
   seasonNumber: string;
   name: string;
   overview: string;

@@ -17,7 +17,6 @@ export declare class ResultError {
     readonly description: string;
     readonly type: ErrorType;
     readonly userMessage: string;
-    readonly exception?: unknown;
     constructor(code: string, description: string, type: ErrorType, userMessage?: string, exception?: unknown);
     toString(): string;
     static notFound(errorContext: ErrorContext): ResultError;

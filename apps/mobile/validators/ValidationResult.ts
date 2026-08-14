@@ -1,4 +1,4 @@
-import type { ValidationError } from 'result-pattern-typescript';
+import type { ValidationError } from 'result-pattern-typescript/legacy';
 
 export interface ValidationResult {
   readonly isValid: boolean;

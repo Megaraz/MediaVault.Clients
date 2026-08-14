@@ -4,7 +4,7 @@ import {
   OperationType,
   Result,
   ResultOf,
-} from 'result-pattern-typescript';
+} from 'result-pattern-typescript/legacy';
 
 export function errorContext(
   serviceName: string,

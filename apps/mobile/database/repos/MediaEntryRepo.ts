@@ -4,7 +4,7 @@ import {
   Result,
   Error as ResultErrorFactory,
   ResultOf,
-} from 'result-pattern-typescript';
+} from 'result-pattern-typescript/legacy';
 import type { BookEntry } from '../../models/BookEntry';
 import type { GameEntry } from '../../models/GameEntry';
 import type { MangaEntry } from '../../models/MangaEntry';

@@ -3,7 +3,7 @@ import {
   isNullOrWhiteSpaceFromContext,
   type ErrorContext,
   type ValidationError,
-} from 'result-pattern-typescript';
+} from 'result-pattern-typescript/legacy';
 import type { MediaEntryCreateDto, MediaEntryUpdateDto } from '../../types/dtos/MediaEntryBase';
 import { validationResult, type ValidationResult } from '../ValidationResult';
 

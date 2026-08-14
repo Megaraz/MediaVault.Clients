@@ -1,7 +1,7 @@
 import {
   OperationType,
   type ErrorContext,
-} from 'result-pattern-typescript';
+} from 'result-pattern-typescript/legacy';
 import BookEntriesClient from '../clients/BookEntriesClient';
 import GameEntriesClient from '../clients/GameEntriesClient';
 import MangaEntriesClient from '../clients/MangaEntriesClient';

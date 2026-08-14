@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useUser } from '../../shared/UserContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, S } from '../../constants/theme';
-import { OperationType } from 'result-pattern-typescript';
+import { OperationType } from 'result-pattern-typescript/legacy';
 import { UserDtoValidator } from '../../validators/User/UserDtoValidator';
 
 const userValidator = new UserDtoValidator();

@@ -15,6 +15,7 @@
     "typecheck:mobile": "npm exec --workspace=media-vault-android -- tsc --noEmit",
     "doctor:mobile": "npm exec --workspace=media-vault-android -- expo-doctor",
     "build:web": "npm run build --workspace=media-vault-app.client",
+    "test:contracts": "npm test --workspace=@mediavault/contracts",
     "test:result-pattern": "npm test --workspace=result-pattern-typescript"
   }
 }

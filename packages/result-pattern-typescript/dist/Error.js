@@ -21,13 +21,15 @@ class ResultError {
     description;
     type;
     userMessage;
-    exception;
     constructor(code, description, type, userMessage = "", exception) {
         this.code = code;
-        this.description = description;
+        // Preserve the legacy shape without retaining technical descriptions or
+        // exception objects that could later be rendered or serialized.
+        this.description = userMessage || "The operation could not be completed.";
         this.type = type;
         this.userMessage = userMessage;
-        this.exception = exception;
+        void description;
+        void exception;
     }
     toString() {
         return `Error Code: ${this.code}\nDescription: ${this.description}`;

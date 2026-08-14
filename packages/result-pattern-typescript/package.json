@@ -1,31 +1,25 @@
 {
   "name": "result-pattern-typescript",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "TypeScript port of Rasmus.SharedKernel.ResultPattern",
+  "description": "Safe, platform-neutral TypeScript Result Pattern for MediaVault clients",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "engines": {
-    "node": ">=18"
-  },
   "exports": {
     ".": {
-      "react-native": {
-        "types": "./dist/index.react-native.d.ts",
-        "default": "./dist/index.react-native.js"
-      },
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./node": {
-      "types": "./dist/node.d.ts",
-      "require": "./dist/node.js",
-      "default": "./dist/node.js"
+    "./legacy": {
+      "types": "./dist/legacy.d.ts",
+      "require": "./dist/legacy.js",
+      "default": "./dist/legacy.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "COMPATIBILITY.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -38,7 +32,6 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^26.1.1",
     "typescript": "^7.0.2"
   }
 }

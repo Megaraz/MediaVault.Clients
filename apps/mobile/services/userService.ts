@@ -1,4 +1,4 @@
-import { OperationType, type ErrorContext } from 'result-pattern-typescript';
+import { OperationType, type ErrorContext } from 'result-pattern-typescript/legacy';
 import UsersClient from '../clients/UsersClient';
 import { UserRepo } from '../database/repos/UserRepo';
 import { UserDtoMapper } from '../mappers/User/UserDtoMapper';

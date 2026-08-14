@@ -86,6 +86,10 @@ MediaVault.Clients/
 The npm workspace establishes repository-level dependency installation and
 script orchestration. Application DTOs and other TypeScript contracts have not
 yet been consolidated into shared packages; that remains separate work.
+`packages/result-pattern-typescript` now provides the platform-neutral, safe
+Result contract intended for both clients. Existing mobile workflows remain on
+its deprecated compatibility entry point until the separately scoped client
+core and frontend migrations adopt the new API.
 
 ## Architecture
 

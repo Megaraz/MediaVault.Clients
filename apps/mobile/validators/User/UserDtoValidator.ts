@@ -4,7 +4,7 @@ import {
   requiredFieldsAreNullOrWhiteSpace,
   type ErrorContext,
   type ValidationError,
-} from 'result-pattern-typescript';
+} from 'result-pattern-typescript/legacy';
 import type { UserLoginDto, UserRegisterDto, UserUpdateDto } from '../../types/dtos/User';
 import { validationResult, type ValidationResult } from '../ValidationResult';
 

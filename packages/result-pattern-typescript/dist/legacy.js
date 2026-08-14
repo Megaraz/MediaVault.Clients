@@ -14,15 +14,14 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @deprecated Compatibility surface for the existing Android client. New code
+ * should import the platform-neutral API from `result-pattern-typescript`.
+ */
 __exportStar(require("./DatabaseError"), exports);
 __exportStar(require("./Error"), exports);
 __exportStar(require("./ErrorCode"), exports);
-__exportStar(require("./ErrorLogPolicy"), exports);
 __exportStar(require("./ErrorReasonCodeExtensions"), exports);
-__exportStar(require("./HttpError"), exports);
-__exportStar(require("./HttpResponseToResultExtensions"), exports);
-__exportStar(require("./HttpResultMapper"), exports);
-__exportStar(require("./MappedHttpResponse"), exports);
 __exportStar(require("./PaginationParameters"), exports);
 __exportStar(require("./Result"), exports);
 __exportStar(require("./ResultExtensions"), exports);

@@ -1,12 +1,11 @@
+/**
+ * @deprecated Compatibility surface for the existing Android client. New code
+ * should import the platform-neutral API from `result-pattern-typescript`.
+ */
 export * from "./DatabaseError";
 export * from "./Error";
 export * from "./ErrorCode";
-export * from "./ErrorLogPolicy";
 export * from "./ErrorReasonCodeExtensions";
-export * from "./HttpError";
-export * from "./HttpResponseToResultExtensions";
-export * from "./HttpResultMapper";
-export * from "./MappedHttpResponse";
 export * from "./PaginationParameters";
 export * from "./Result";
 export * from "./ResultExtensions";

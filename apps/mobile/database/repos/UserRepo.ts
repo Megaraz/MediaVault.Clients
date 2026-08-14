@@ -3,7 +3,7 @@ import {
   OperationType,
   Result,
   ResultOf,
-} from 'result-pattern-typescript';
+} from 'result-pattern-typescript/legacy';
 import type { User } from '../../models/User';
 import { getOfflineDatabase } from '../SQLite';
 import {

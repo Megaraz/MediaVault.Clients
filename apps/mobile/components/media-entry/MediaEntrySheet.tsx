@@ -35,7 +35,7 @@ import RawgApiClient from '../../clients/RawgApiClient';
 import GoogleBooksApiClient from '../../clients/GoogleBooksApiClient';
 import type { SearchResult } from './TitleSearchInput';
 import type { GoogleBooksDetailedDto } from '../../clients/GoogleBooksApiClient';
-import { OperationType } from 'result-pattern-typescript';
+import { OperationType } from 'result-pattern-typescript/legacy';
 import { MediaEntryDtoValidator } from '../../validators/MediaEntry/MediaEntryDtoValidator';
 
 const SUCCESS_DELAY_MS = 1200;

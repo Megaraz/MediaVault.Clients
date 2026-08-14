@@ -78,18 +78,20 @@ MediaVault.Clients/
 │   ├── mobile/       Expo, React Native, and Expo Router
 │   └── web/          React, TypeScript, Vite, and Tailwind
 ├── packages/
-│   └── result-pattern-typescript/
+│   ├── contracts/                    Shared API DTOs and enum values
+│   └── result-pattern-typescript/    ResultPattern v2 for client runtimes
 ├── package.json      npm workspace configuration and shared scripts
 └── package-lock.json one lock file for all workspaces
 ```
 
 The npm workspace establishes repository-level dependency installation and
-script orchestration. Application DTOs and other TypeScript contracts have not
-yet been consolidated into shared packages; that remains separate work.
-`packages/result-pattern-typescript` now provides the platform-neutral, safe
-Result contract intended for both clients. Existing mobile workflows remain on
-its deprecated compatibility entry point until the separately scoped client
-core and frontend migrations adopt the new API.
+script orchestration. `packages/contracts` is the API-owned source of truth for
+shared DTOs and numeric enum values; web and mobile migration to those exports
+is tracked separately. Presentation labels, form/view state, and persistence
+models remain application-owned. `packages/result-pattern-typescript` provides
+the platform-neutral, safe Result contract intended for both clients. Existing
+mobile workflows remain on its deprecated compatibility entry point until the
+separately scoped client-core and frontend migrations adopt the new API.
 
 ## Architecture
 
@@ -186,6 +188,7 @@ npm run lint
 npm run typecheck:mobile
 npm run doctor:mobile
 npm run build:web
+npm run test:contracts
 npm run test:result-pattern
 git diff --check
 ```
@@ -201,9 +204,9 @@ automated UI test suite.
 - The mobile SQLite path is not a general synchronization implementation.
 - iOS and Expo web scripts exist, but this repository does not claim they have
   been manually validated.
-- Shared DTO/type consolidation, React Query adoption, offline sync,
-  production telemetry, and AI recommendations remain future work unless the
-  checked-in code proves otherwise.
+- Client adoption of the shared contracts and client core, React Query,
+  offline sync, production telemetry, and AI recommendations remain future
+  work unless the checked-in code proves otherwise.
 
 Current work is tracked in the
 [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2).

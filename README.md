@@ -78,6 +78,7 @@ MediaVault.Clients/
 │   ├── mobile/       Expo, React Native, and Expo Router
 │   └── web/          React, TypeScript, Vite, and Tailwind
 ├── packages/
+│   ├── client-core/                  Pure operations, validation, and mapping
 │   ├── contracts/                    Shared API DTOs and enum values
 │   └── result-pattern-typescript/    ResultPattern v2 for client runtimes
 ├── package.json      npm workspace configuration and shared scripts
@@ -92,6 +93,8 @@ models remain application-owned. `packages/result-pattern-typescript` provides
 the platform-neutral, safe Result contract intended for both clients. Existing
 mobile workflows remain on its deprecated compatibility entry point until the
 separately scoped client-core and frontend migrations adopt the new API.
+`packages/client-core` establishes that shared behavior and injected capability
+boundary; application adoption remains in the dedicated web and Android issues.
 
 ## Architecture
 
@@ -188,6 +191,7 @@ npm run lint
 npm run typecheck:mobile
 npm run doctor:mobile
 npm run build:web
+npm run test:client-core
 npm run test:contracts
 npm run test:result-pattern
 git diff --check

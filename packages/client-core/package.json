@@ -1,0 +1,32 @@
+{
+  "name": "@mediavault/client-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Platform-neutral operations, validation, and mapping for MediaVault clients",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "test": "npm run build && npm run typecheck && node --test test/client-core.test.cjs"
+  },
+  "dependencies": {
+    "@mediavault/contracts": "1.0.0",
+    "result-pattern-typescript": "2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}

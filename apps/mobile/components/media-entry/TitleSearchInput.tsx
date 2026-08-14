@@ -13,13 +13,17 @@ import {
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { Colors, ST } from '../../constants/theme';
-import { MediaType } from '../../clients/MediaEntriesClient';
+import { MediaType } from '@mediavault/contracts';
 import TmdbApiClient from '../../clients/TmdbApiClient';
 import RawgApiClient from '../../clients/RawgApiClient';
-import GoogleBooksApiClient, { type GoogleBooksDetailedDto } from '../../clients/GoogleBooksApiClient';
-import type { MediaEntrySearchResultDto } from '../../types/dtos/MediaEntryBase';
+import GoogleBooksApiClient from '../../clients/GoogleBooksApiClient';
 
-export type SearchResult = MediaEntrySearchResultDto;
+// Provider clients map their API DTOs to this Android-local search view model.
+export type SearchResult = {
+  idExternal: string;
+  title: string;
+  coverImageUrl: string | null;
+};
 
 type Props = {
   value: string;
@@ -34,7 +38,7 @@ const DEBOUNCE_MS = 400;
 const MIN_LEN = 3;
 
 const isSearchEnabled = (mediaType: number) =>
-  [MediaType.Movie, MediaType.Series, MediaType.Book, MediaType.Game].includes(mediaType as any);
+  [MediaType.Movie, MediaType.TvSeries, MediaType.Book, MediaType.Game].includes(mediaType as any);
 
 export default function TitleSearchInput({ value, onChange, onSelectResult, mediaType, isEditMode, placeholder }: Props) {
   const [tmdbClient] = useState(() => new TmdbApiClient());
@@ -63,13 +67,13 @@ export default function TitleSearchInput({ value, onChange, onSelectResult, medi
       try {
         let data: SearchResult[];
         if (mediaType === MediaType.Movie) {
-          data = await tmdbClient.searchMovies(value);
-        } else if (mediaType === MediaType.Series) {
-          data = await tmdbClient.searchTvSeries(value);
+          data = await tmdbClient.searchMovies({ query: value });
+        } else if (mediaType === MediaType.TvSeries) {
+          data = await tmdbClient.searchTvSeries({ query: value });
         } else if (mediaType === MediaType.Book) {
-          data = await booksClient.searchBooks(value);
+          data = await booksClient.searchBooks({ query: value });
         } else {
-          data = await rawgClient.searchGames(value);
+          data = await rawgClient.searchGames({ query: value });
         }
         setResults(data);
         setShowDropdown(data.length > 0);

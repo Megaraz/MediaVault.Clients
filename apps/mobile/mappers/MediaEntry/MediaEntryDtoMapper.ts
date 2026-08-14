@@ -1,10 +1,25 @@
 import * as Crypto from 'expo-crypto';
-import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from '../../types/dtos/BookEntry';
-import type { GameEntryCreateDto, GameEntryDetailedDto, GameEntryUpdateDto } from '../../types/dtos/GameEntry';
-import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from '../../types/dtos/MangaEntry';
-import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from '../../types/dtos/MovieEntry';
-import type { Season as SeasonDto } from '../../types/dtos/Season';
-import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from '../../types/dtos/TvSeriesEntry';
+import { MediaType } from '@mediavault/contracts';
+import type {
+  BookEntryCreateDto,
+  BookEntryDetailedDto,
+  BookEntryUpdateDto,
+  GameEntryCreateDto,
+  GameEntryDetailedDto,
+  GameEntryUpdateDto,
+  MangaEntryCreateDto,
+  MangaEntryDetailedDto,
+  MangaEntryUpdateDto,
+  MovieEntryCreateDto,
+  MovieEntryDetailedDto,
+  MovieEntryUpdateDto,
+  SeasonCreateDto,
+  SeasonMinimalDto,
+  SeasonUpdateDto,
+  TvSeriesEntryCreateDto,
+  TvSeriesEntryDetailedDto,
+  TvSeriesEntryUpdateDto,
+} from '@mediavault/contracts';
 import { Rating } from '../../models/Rating';
 import type { Season } from '../../models/Season';
 import type { MediaEntryDetailedDtoUnion, MediaEntryEntity } from './MediaEntryEntityMapper';
@@ -66,30 +81,30 @@ export class MediaEntryDtoMapper {
     };
 
     switch (mediaType) {
-      case 0:
-        return { ...base, runtimeMinutes: (dto as MovieEntryCreateDto | MovieEntryUpdateDto).runtimeMinutes };
-      case 1: {
+      case MediaType.Movie:
+        return { ...base, runtimeMinutes: (dto as MovieEntryCreateDto | MovieEntryUpdateDto).runtimeMinutes ?? 0 };
+      case MediaType.TvSeries: {
         const series = dto as TvSeriesEntryCreateDto | TvSeriesEntryUpdateDto;
         return {
           ...base,
           backdropImageUrl: series.backdropImageUrl ?? null,
           lastAirDate: series.lastAirDate ?? null,
-          numberOfSeasons: series.numberOfSeasons,
-          numberOfEpisodes: series.numberOfEpisodes,
+          numberOfSeasons: series.numberOfSeasons ?? 0,
+          numberOfEpisodes: series.numberOfEpisodes ?? 0,
           airingStatus: series.airingStatus ?? null,
-          totalWatchedEpisodes: series.totalWatchedEpisodes,
+          totalWatchedEpisodes: series.totalWatchedEpisodes ?? 0,
           seasons: (series.seasons ?? []).map((season) => toSeason(season, base.id, now)),
         };
       }
-      case 2:
+      case MediaType.Book:
         return { ...base, author: (dto as BookEntryCreateDto | BookEntryUpdateDto).author ?? null };
-      case 3:
+      case MediaType.Manga:
         return { ...base, author: (dto as MangaEntryCreateDto | MangaEntryUpdateDto).author ?? null };
-      case 4: {
+      case MediaType.Game: {
         const game = dto as GameEntryCreateDto | GameEntryUpdateDto;
         return {
           ...base,
-          hoursPlayed: game.hoursPlayed,
+          hoursPlayed: game.hoursPlayed ?? 0,
           metacriticRating: game.metacriticRating ?? 0,
           platforms: game.platforms ?? [],
           website: game.website ?? null,
@@ -133,11 +148,11 @@ export class MediaEntryDtoMapper {
     };
 
     switch (dto.mediaType) {
-      case 0: {
+      case MediaType.Movie: {
         const movie = dto as MovieEntryDetailedDto;
         return { ...base, runtimeMinutes: movie.runtimeMinutes };
       }
-      case 1: {
+      case MediaType.TvSeries: {
         const series = dto as TvSeriesEntryDetailedDto;
         return {
           ...base,
@@ -150,11 +165,11 @@ export class MediaEntryDtoMapper {
           seasons: (series.seasons ?? []).map((season) => toSeason(season, dto.id, dto.createdAtUtc)),
         };
       }
-      case 2:
+      case MediaType.Book:
         return { ...base, author: (dto as BookEntryDetailedDto).author };
-      case 3:
+      case MediaType.Manga:
         return { ...base, author: (dto as MangaEntryDetailedDto).author };
-      case 4: {
+      case MediaType.Game: {
         const game = dto as GameEntryDetailedDto;
         return {
           ...base,
@@ -172,15 +187,15 @@ export class MediaEntryDtoMapper {
 }
 
 function toSeason(
-  input: SeasonDto,
+  input: SeasonCreateDto | SeasonMinimalDto | SeasonUpdateDto,
   tvSeriesEntryId: string,
   timestamp: string,
 ): Season {
   return {
-    id: Crypto.randomUUID(),
+    id: 'id' in input ? input.id : Crypto.randomUUID(),
     tvSeriesEntryId,
     tvSeriesEntry: undefined as never,
-    idExternal: null,
+    idExternal: input.idExternal,
     name: input.name,
     overview: input.overview,
     imageUrl: input.imageUrl,

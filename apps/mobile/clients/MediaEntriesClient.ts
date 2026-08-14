@@ -1,21 +1,14 @@
-import type { BookEntryDetailedDto } from '../types/dtos/BookEntry';
-import type { GameEntryDetailedDto } from '../types/dtos/GameEntry';
-import type { MangaEntryDetailedDto } from '../types/dtos/MangaEntry';
 import type {
+  BookEntryDetailedDto,
+  GameEntryDetailedDto,
+  MangaEntryDetailedDto,
   MediaEntryDetailedDto,
   MediaEntryMinimalDto,
-  MediaEntrySearchRequestDto,
-} from '../types/dtos/MediaEntryBase';
-import type { MovieEntryDetailedDto } from '../types/dtos/MovieEntry';
-import type { TvSeriesEntryDetailedDto } from '../types/dtos/TvSeriesEntry';
+  SearchRequestDto,
+  MovieEntryDetailedDto,
+  TvSeriesEntryDetailedDto,
+} from '@mediavault/contracts';
 import { apiFetch } from '../shared/apiFetch';
-
-export { MediaType, MediaTypeLabels, StatusLabels, StatusType } from '../types/dtos/MediaEntryBase';
-export type {
-  MediaEntryCreateDto, MediaEntryDetailedDto,
-  MediaEntryMinimalDto,
-  MediaEntrySearchRequestDto, MediaEntryUpdateDto
-} from '../types/dtos/MediaEntryBase';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 
@@ -23,7 +16,7 @@ export default class MediaEntriesClient {
   private baseUrl = `${API_BASE_URL}/mediaentries`;
 
   async searchMediaEntries(
-    request: MediaEntrySearchRequestDto,
+    request: SearchRequestDto,
     page: number = 1,
     pageSize: number = 10
   ): Promise<MediaEntryMinimalDto[]> {

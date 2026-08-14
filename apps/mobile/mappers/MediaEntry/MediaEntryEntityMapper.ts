@@ -1,10 +1,13 @@
-import type { BookEntryDetailedDto } from '../../types/dtos/BookEntry';
-import type { GameEntryDetailedDto } from '../../types/dtos/GameEntry';
-import type { MangaEntryDetailedDto } from '../../types/dtos/MangaEntry';
-import type { MediaEntryMinimalDto } from '../../types/dtos/MediaEntryBase';
-import type { MovieEntryDetailedDto } from '../../types/dtos/MovieEntry';
-import type { Season as SeasonDto } from '../../types/dtos/Season';
-import type { TvSeriesEntryDetailedDto } from '../../types/dtos/TvSeriesEntry';
+import { MediaType, type Status } from '@mediavault/contracts';
+import type {
+  BookEntryDetailedDto,
+  GameEntryDetailedDto,
+  MangaEntryDetailedDto,
+  MediaEntryMinimalDto,
+  MovieEntryDetailedDto,
+  SeasonMinimalDto,
+  TvSeriesEntryDetailedDto,
+} from '@mediavault/contracts';
 import type { BookEntry } from '../../models/BookEntry';
 import type { GameEntry } from '../../models/GameEntry';
 import type { MangaEntry } from '../../models/MangaEntry';
@@ -32,27 +35,26 @@ export class MediaEntryEntityMapper {
       id: entity.id,
       idExternal: entity.idExternal,
       userId: entity.ownerId,
-      status: entity.status,
+      status: entity.status as Status,
       title: entity.title,
       rating: entity.rating.value,
       review: entity.review,
       genres: entity.genres,
       overview: entity.overview,
-      releaseDate: entity.releaseDate,
+      releaseDate: entity.releaseDate ?? '',
       imageUrl: entity.imageUrl,
-      mediaType: entity.mediaType,
+      mediaType: entity.mediaType as MediaType,
       createdAtUtc: entity.createdAtUtc,
     };
 
     switch (entity.mediaType) {
-      case 0:
+      case MediaType.Movie:
         return { ...base, runtimeMinutes: asMovie(entity).runtimeMinutes };
-      case 1: {
+      case MediaType.TvSeries: {
         const series = asTvSeries(entity);
         return {
           ...base,
           backdropImageUrl: series.backdropImageUrl,
-          firstAirDate: series.releaseDate,
           lastAirDate: series.lastAirDate,
           numberOfSeasons: series.numberOfSeasons,
           numberOfEpisodes: series.numberOfEpisodes,
@@ -61,11 +63,11 @@ export class MediaEntryEntityMapper {
           seasons: series.seasons.map(toSeasonDto),
         };
       }
-      case 2:
+      case MediaType.Book:
         return { ...base, author: asBook(entity).author };
-      case 3:
+      case MediaType.Manga:
         return { ...base, author: asManga(entity).author };
-      case 4: {
+      case MediaType.Game: {
         const game = asGame(entity);
         return {
           ...base,
@@ -91,10 +93,10 @@ export class MediaEntryEntityMapper {
       title: entity.title,
       imageUrl: entity.imageUrl,
       rating: entity.rating.value,
-      releaseDate: entity.releaseDate,
+      releaseDate: entity.releaseDate ?? '',
       genres: entity.genres,
-      mediaType: entity.mediaType,
-      status: entity.status,
+      mediaType: entity.mediaType as MediaType,
+      status: entity.status as Status,
       createdAtUtc: entity.createdAtUtc,
     };
   }
@@ -104,8 +106,11 @@ export class MediaEntryEntityMapper {
   }
 }
 
-function toSeasonDto(season: Season): SeasonDto {
+function toSeasonDto(season: Season): SeasonMinimalDto {
   return {
+    id: season.id,
+    tvSeriesId: season.tvSeriesEntryId,
+    idExternal: season.idExternal,
     seasonNumber: season.seasonNumber,
     name: season.name,
     overview: season.overview,
@@ -113,8 +118,10 @@ function toSeasonDto(season: Season): SeasonDto {
     airDate: season.airDate,
     episodes: season.episodes,
     watchedEpisodes: season.watchedEpisodes,
-    status: season.status,
+    status: season.status as Status,
     rating: season.rating.value,
+    createdAtUtc: season.createdAtUtc,
+    updatedAtUtc: season.updatedAtUtc,
   };
 }
 
@@ -144,21 +151,21 @@ function asGame(entity: MediaEntryEntity): GameEntry {
 }
 
 function isMovie(entity: MediaEntryEntity): entity is MovieEntry {
-  return entity.mediaType === 0 && 'runtimeMinutes' in entity;
+  return entity.mediaType === MediaType.Movie && 'runtimeMinutes' in entity;
 }
 
 function isTvSeries(entity: MediaEntryEntity): entity is TvSeriesEntry {
-  return entity.mediaType === 1 && 'seasons' in entity;
+  return entity.mediaType === MediaType.TvSeries && 'seasons' in entity;
 }
 
 function isBook(entity: MediaEntryEntity): entity is BookEntry {
-  return entity.mediaType === 2 && 'author' in entity;
+  return entity.mediaType === MediaType.Book && 'author' in entity;
 }
 
 function isManga(entity: MediaEntryEntity): entity is MangaEntry {
-  return entity.mediaType === 3 && 'author' in entity;
+  return entity.mediaType === MediaType.Manga && 'author' in entity;
 }
 
 function isGame(entity: MediaEntryEntity): entity is GameEntry {
-  return entity.mediaType === 4 && 'hoursPlayed' in entity;
+  return entity.mediaType === MediaType.Game && 'hoursPlayed' in entity;
 }

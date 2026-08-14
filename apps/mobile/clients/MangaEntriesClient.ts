@@ -1,4 +1,4 @@
-import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from '../types/dtos/MangaEntry';
+import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from '@mediavault/contracts';
 import { apiFetch } from '../shared/apiFetch';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';

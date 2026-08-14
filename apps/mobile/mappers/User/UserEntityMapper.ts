@@ -1,4 +1,4 @@
-import type { UserDetailedDto, UserMinimalDto } from '../../types/dtos/User';
+import type { UserDetailedDto, UserMinimalDto } from '@mediavault/contracts';
 import type { User } from '../../models/User';
 
 export class UserEntityMapper {

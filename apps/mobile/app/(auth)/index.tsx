@@ -18,7 +18,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     const validation = userValidator.validateLoginDto(
-      { userNameOrEmail, password },
+      { usernameOrEmail: userNameOrEmail, password },
       {
         layer: 'Presentation',
         serviceName: 'LoginScreen',
@@ -34,7 +34,7 @@ export default function LoginScreen() {
     setErrorMessage(null);
     setIsSubmitting(true);
     try {
-      await login({ userNameOrEmail, password });
+      await login({ usernameOrEmail: userNameOrEmail, password });
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {

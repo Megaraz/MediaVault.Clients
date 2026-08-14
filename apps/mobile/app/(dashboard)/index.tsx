@@ -2,23 +2,62 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Ima
 import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  type MediaEntryMinimalDto,
   MediaType,
-  MediaTypeLabels,
-} from '../../clients/MediaEntriesClient';
+  Status,
+  type MediaEntryDetailedDto,
+  type MediaEntryMinimalDto,
+  type SeasonCreateDto,
+  type SeasonUpdateDto,
+} from '@mediavault/contracts';
 import { MediaEntryService } from '../../services/mediaEntryService';
 import { useUser } from '../../shared/UserContext';
-import { statusSections } from '../../shared/mediaConstants';
+import { ALL_MEDIA_TYPE, MediaTypeLabels, statusSections } from '../../shared/mediaConstants';
 import { Colors, S } from '../../constants/theme';
 import MediaEntrySheet from '../../components/media-entry/MediaEntrySheet';
-import type { MediaEntryFormData } from '../../components/media-entry/MediaEntryForm';
-import type { MediaEntryDetailedDto } from '../../types/dtos/MediaEntryBase';
+import type { MediaEntryFormData, SeasonFormData } from '../../components/media-entry/MediaEntryForm';
+
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+const DEFAULT_API_DATE = '0001-01-01T00:00:00.000Z';
+
+// The API's season request fields are non-required CLR value types. Retain
+// the server's existing defaults while satisfying the shared contract's
+// explicit fields.
+function toSeasonCreateDto(
+  season: SeasonFormData,
+  tvSeriesId: string,
+): SeasonCreateDto {
+  return {
+    tvSeriesId,
+    idExternal: season.idExternal ?? null,
+    name: season.name || null,
+    overview: season.overview || null,
+    imageUrl: season.imageUrl || null,
+    seasonNumber: parseInt(season.seasonNumber) || 0,
+    airDate: season.airDate || null,
+    watchedEpisodes: parseInt(season.watchedEpisodes) || 0,
+    episodes: parseInt(season.episodes) || 0,
+    status: season.status as Status,
+    rating: season.rating,
+    createdAtUtc: season.createdAtUtc ?? DEFAULT_API_DATE,
+    updatedAtUtc: season.updatedAtUtc ?? DEFAULT_API_DATE,
+  };
+}
+
+function toSeasonUpdateDto(
+  season: SeasonFormData,
+  entryId: string,
+): SeasonUpdateDto {
+  return {
+    id: season.id ?? EMPTY_GUID,
+    ...toSeasonCreateDto(season, season.tvSeriesId ?? entryId),
+  };
+}
 
 export default function DashboardScreen() {
   const { currentUser } = useUser();
   const [entries, setEntries] = useState<MediaEntryMinimalDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [mediaTypeFilter, setMediaTypeFilter] = useState<number>(MediaType.All);
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<number>(ALL_MEDIA_TYPE);
 
   const [mediaEntryService] = useState(() => new MediaEntryService());
 
@@ -43,7 +82,7 @@ export default function DashboardScreen() {
   const loadDetailedEntry = async (entry: Pick<MediaEntryMinimalDto, 'id' | 'mediaType'>): Promise<MediaEntryDetailedDto> => {
     switch (entry.mediaType) {
       case MediaType.Movie: return mediaEntryService.getMovieByIdAsync(currentUser!.id, entry.id);
-      case MediaType.Series: return mediaEntryService.getTvSeriesByIdAsync(currentUser!.id, entry.id);
+      case MediaType.TvSeries: return mediaEntryService.getTvSeriesByIdAsync(currentUser!.id, entry.id);
       case MediaType.Game: return mediaEntryService.getGameByIdAsync(currentUser!.id, entry.id);
       case MediaType.Book: return mediaEntryService.getBookByIdAsync(currentUser!.id, entry.id);
       case MediaType.Manga: return mediaEntryService.getMangaByIdAsync(currentUser!.id, entry.id);
@@ -76,30 +115,18 @@ export default function DashboardScreen() {
     const baseFields = {
       idExternal: formData.idExternal ?? null,
       title: formData.title ?? '',
-      status: formData.status,
+      status: formData.status as Status,
       rating: formData.rating,
       imageUrl: formData.imageUrl?.trim() || null,
       review: formData.review || null,
       overview: formData.overview || null,
       genres: formData.genres,
-      releaseDate: formData.releaseDate || null,
+      ...(formData.releaseDate ? { releaseDate: formData.releaseDate } : {}),
     };
 
     const gamePlatforms = formData.platforms
       ? formData.platforms.split(',').map(s => s.trim()).filter(Boolean)
       : undefined;
-
-    const buildSeasons = () => formData.seasons?.map(s => ({
-      seasonNumber: parseInt(s.seasonNumber) || 0,
-      name: s.name || null,
-      overview: s.overview || null,
-      imageUrl: s.imageUrl || null,
-      airDate: s.airDate || null,
-      episodes: parseInt(s.episodes) || 0,
-      watchedEpisodes: parseInt(s.watchedEpisodes) || 0,
-      status: s.status,
-      rating: s.rating,
-    }));
 
     if (entryId) {
       // UPDATE
@@ -107,17 +134,18 @@ export default function DashboardScreen() {
         case MediaType.Movie:
           await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Movie, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
           break;
-        case MediaType.Series:
-          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Series, {
+        case MediaType.TvSeries:
+          await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.TvSeries, {
             ...baseFields,
             numberOfSeasons: Number(formData.numberOfSeasons) || 0,
             numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
             totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
             backdropImageUrl: formData.backdropImageUrl ?? null,
-            firstAirDate: formData.firstAirDate ?? null,
             lastAirDate: formData.lastAirDate ?? null,
             airingStatus: formData.airingStatus ?? null,
-            seasons: buildSeasons(),
+            seasons: (formData.seasons ?? []).map((season) =>
+              toSeasonUpdateDto(season, entryId),
+            ),
           });
           break;
         case MediaType.Game:
@@ -141,17 +169,18 @@ export default function DashboardScreen() {
         case MediaType.Movie:
           created = await mediaEntryService.createAsync(currentUser.id, MediaType.Movie, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
           break;
-        case MediaType.Series:
-          created = await mediaEntryService.createAsync(currentUser.id, MediaType.Series, {
+        case MediaType.TvSeries:
+          created = await mediaEntryService.createAsync(currentUser.id, MediaType.TvSeries, {
             ...baseFields,
             numberOfSeasons: Number(formData.numberOfSeasons) || 0,
             numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
             totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
             backdropImageUrl: formData.backdropImageUrl ?? null,
-            firstAirDate: formData.firstAirDate ?? null,
             lastAirDate: formData.lastAirDate ?? null,
             airingStatus: formData.airingStatus ?? null,
-            seasons: buildSeasons(),
+            seasons: (formData.seasons ?? []).map((season) =>
+              toSeasonCreateDto(season, EMPTY_GUID),
+            ),
           });
           break;
         case MediaType.Game:
@@ -176,14 +205,14 @@ export default function DashboardScreen() {
     setEntries(prev => prev.filter(e => e.id !== entryId));
   };
 
-  const filteredEntries = mediaTypeFilter === MediaType.All
+  const filteredEntries = mediaTypeFilter === ALL_MEDIA_TYPE
     ? entries
     : entries.filter(e => e.mediaType === mediaTypeFilter);
 
   const mediaTypeFilters = [
-    { value: MediaType.All, label: 'All' },
+    { value: ALL_MEDIA_TYPE, label: 'All' },
     { value: MediaType.Movie, label: 'Movies' },
-    { value: MediaType.Series, label: 'Series' },
+    { value: MediaType.TvSeries, label: 'Series' },
     { value: MediaType.Book, label: 'Books' },
     { value: MediaType.Manga, label: 'Manga' },
     { value: MediaType.Game, label: 'Games' },

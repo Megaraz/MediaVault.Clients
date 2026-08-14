@@ -1,4 +1,4 @@
-import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from '../types/dtos/BookEntry';
+import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from '@mediavault/contracts';
 import { apiFetch } from '../shared/apiFetch';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';

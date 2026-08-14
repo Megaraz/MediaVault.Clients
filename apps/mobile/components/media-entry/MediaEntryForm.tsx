@@ -15,11 +15,17 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Colors, ST } from '../../constants/theme';
-import { MediaType, MediaTypeLabels, StatusLabels } from '../../clients/MediaEntriesClient';
+import { MediaType } from '@mediavault/contracts';
+import { MediaTypeLabels, StatusLabels } from '../../shared/mediaConstants';
 import StarRating from './StarRating';
 import TitleSearchInput, { type SearchResult } from './TitleSearchInput';
 
 export type SeasonFormData = {
+  id?: string;
+  tvSeriesId?: string;
+  idExternal?: string | null;
+  createdAtUtc?: string;
+  updatedAtUtc?: string;
   seasonNumber: string;
   name: string;
   overview: string;
@@ -49,7 +55,6 @@ export type MediaEntryFormData = {
   numberOfEpisodes?: string;
   totalWatchedEpisodes?: string;
   backdropImageUrl?: string | null;
-  firstAirDate?: string | null;
   lastAirDate?: string | null;
   numberOfSeasons?: string;
   airingStatus?: string | null;
@@ -203,7 +208,7 @@ export default function MediaEntryForm({ formData, onChange, onSeasonsChange, on
       </>}
 
       {/* ── TV Series-specific ─────────────────── */}
-      {formData.mediaType === MediaType.Series && <>
+      {formData.mediaType === MediaType.TvSeries && <>
         <View style={styles.row}>
           <View style={styles.rowHalf}>
             <FormSection label="Seasons">
@@ -324,7 +329,7 @@ function SegmentRow({ options, value, onChange }: {
 function typeIcon(type: number): string {
   switch (type) {
     case MediaType.Movie: return '🎬';
-    case MediaType.Series: return '📺';
+    case MediaType.TvSeries: return '📺';
     case MediaType.Book: return '📚';
     case MediaType.Manga: return '📖';
     case MediaType.Game: return '🎮';

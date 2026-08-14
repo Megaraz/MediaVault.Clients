@@ -5,7 +5,7 @@ import {
   type ErrorContext,
   type ValidationError,
 } from 'result-pattern-typescript/legacy';
-import type { UserLoginDto, UserRegisterDto, UserUpdateDto } from '../../types/dtos/User';
+import type { UserLoginDto, UserRegisterDto, UserUpdateDto } from '@mediavault/contracts';
 import { validationResult, type ValidationResult } from '../ValidationResult';
 
 export class UserDtoValidator {
@@ -19,7 +19,7 @@ export class UserDtoValidator {
 
     const requiredCheck = requiredFieldsAreNullOrWhiteSpace(
       [
-        { fieldName: 'Username or Email', value: dto.userNameOrEmail },
+        { fieldName: 'Username or Email', value: dto.usernameOrEmail },
         { fieldName: 'Password', value: dto.password },
       ],
       errorContext,

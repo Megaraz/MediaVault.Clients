@@ -11,7 +11,7 @@ import type {
   UserDetailedDto,
   UserLoginDto,
   UserRegisterDto,
-} from '../types/dtos/User';
+} from '@mediavault/contracts';
 import { UserDtoValidator } from '../validators/User/UserDtoValidator';
 
 export class AuthService {
@@ -37,7 +37,7 @@ export class AuthService {
     this.throwIfInvalid(validation.validationErrors, 'Invalid username/email or password.');
 
     if (featureFlags.useClientDatabase) {
-      const result = await this.userRepository.getByUsernameOrEmailAsync(credentials.userNameOrEmail);
+      const result = await this.userRepository.getByUsernameOrEmailAsync(credentials.usernameOrEmail);
       if (!result.isSuccess || !(await verifyPassword(credentials.password, result.value.passwordHash))) {
         throw new Error('Invalid username/email or password.');
       }

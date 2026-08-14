@@ -4,7 +4,7 @@ import {
   type ErrorContext,
   type ValidationError,
 } from 'result-pattern-typescript/legacy';
-import type { MediaEntryCreateDto, MediaEntryUpdateDto } from '../../types/dtos/MediaEntryBase';
+import type { MediaEntryCreateDto, MediaEntryUpdateDto } from '@mediavault/contracts';
 import { validationResult, type ValidationResult } from '../ValidationResult';
 
 export class MediaEntryDtoValidator {

@@ -1,4 +1,4 @@
-import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from '../types/dtos/MovieEntry';
+import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from '@mediavault/contracts';
 import { apiFetch } from '../shared/apiFetch';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';

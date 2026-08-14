@@ -8,16 +8,26 @@ import MangaEntriesClient from '../clients/MangaEntriesClient';
 import MediaEntriesClient from '../clients/MediaEntriesClient';
 import MovieEntriesClient from '../clients/MovieEntriesClient';
 import TvSeriesEntriesClient from '../clients/TvSeriesEntriesClient';
-import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from '../types/dtos/BookEntry';
-import type { GameEntryCreateDto, GameEntryDetailedDto, GameEntryUpdateDto } from '../types/dtos/GameEntry';
-import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from '../types/dtos/MangaEntry';
+import { MediaType } from '@mediavault/contracts';
 import type {
+  BookEntryCreateDto,
+  BookEntryDetailedDto,
+  BookEntryUpdateDto,
+  GameEntryCreateDto,
+  GameEntryDetailedDto,
+  GameEntryUpdateDto,
+  MangaEntryCreateDto,
+  MangaEntryDetailedDto,
+  MangaEntryUpdateDto,
   MediaEntryDetailedDto,
   MediaEntryMinimalDto,
-} from '../types/dtos/MediaEntryBase';
-import type { MovieEntryCreateDto, MovieEntryDetailedDto, MovieEntryUpdateDto } from '../types/dtos/MovieEntry';
-import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from '../types/dtos/TvSeriesEntry';
-import { MediaType } from '../types/dtos/MediaEntryBase';
+  MovieEntryCreateDto,
+  MovieEntryDetailedDto,
+  MovieEntryUpdateDto,
+  TvSeriesEntryCreateDto,
+  TvSeriesEntryDetailedDto,
+  TvSeriesEntryUpdateDto,
+} from '@mediavault/contracts';
 import { MediaEntryRepo } from '../database/repos/MediaEntryRepo';
 import { UserRepo } from '../database/repos/UserRepo';
 import { featureFlags } from '../shared/featureFlags';
@@ -32,6 +42,7 @@ import {
   type MediaEntryEntity,
 } from '../mappers/MediaEntry/MediaEntryEntityMapper';
 import { MediaEntryDtoValidator } from '../validators/MediaEntry/MediaEntryDtoValidator';
+import { ALL_MEDIA_TYPE } from '../shared/mediaConstants';
 
 export type UserId = string;
 export type MediaEntryCreateDto = CreateDto;
@@ -100,7 +111,7 @@ export class MediaEntryService {
   }
 
   public async getTvSeriesByIdAsync(userId: UserId, id: string): Promise<TvSeriesEntryDetailedDto> {
-    return this.getTypedByIdAsync(userId, id, MediaType.Series, 'TV series');
+    return this.getTypedByIdAsync(userId, id, MediaType.TvSeries, 'TV series');
   }
 
   public async getGameByIdAsync(userId: UserId, id: string): Promise<GameEntryDetailedDto> {
@@ -270,7 +281,7 @@ export class MediaEntryService {
     switch (mediaType) {
       case MediaType.Movie:
         return this.movieEntriesClient.createMovie(dto as MovieEntryCreateDto);
-      case MediaType.Series:
+      case MediaType.TvSeries:
         return this.tvSeriesEntriesClient.createTvSeries(dto as TvSeriesEntryCreateDto);
       case MediaType.Game:
         return this.gameEntriesClient.createGame(dto as GameEntryCreateDto);
@@ -291,7 +302,7 @@ export class MediaEntryService {
     switch (mediaType) {
       case MediaType.Movie:
         return this.movieEntriesClient.updateMovie(id, dto as MovieEntryUpdateDto);
-      case MediaType.Series:
+      case MediaType.TvSeries:
         return this.tvSeriesEntriesClient.updateTvSeries(id, dto as TvSeriesEntryUpdateDto);
       case MediaType.Game:
         return this.gameEntriesClient.updateGame(id, dto as GameEntryUpdateDto);
@@ -325,7 +336,7 @@ export class MediaEntryService {
 
   private validateMediaType(mediaType: number): void {
     if (
-      mediaType === MediaType.All ||
+      mediaType === ALL_MEDIA_TYPE ||
       !Object.values(MediaType).includes(mediaType as (typeof MediaType)[keyof typeof MediaType])
     ) {
       throw new Error(`Unknown media type: ${mediaType}`);

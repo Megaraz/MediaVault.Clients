@@ -1,5 +1,5 @@
 import * as Crypto from 'expo-crypto';
-import type { UserDetailedDto, UserRegisterDto, UserUpdateDto } from '../../types/dtos/User';
+import type { UserDetailedDto, UserRegisterDto, UserUpdateDto } from '@mediavault/contracts';
 import type { User } from '../../models/User';
 
 export class UserDtoMapper {

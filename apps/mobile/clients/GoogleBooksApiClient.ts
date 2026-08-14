@@ -1,16 +1,25 @@
 import { apiFetch } from '../shared/apiFetch';
-import type { MediaEntrySearchResultDto } from '../types/dtos/MediaEntryBase';
+import type { GoogleBooksDetailedDto, SearchRequestDto } from '@mediavault/contracts';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 
-export interface GoogleBooksDetailedDto extends MediaEntrySearchResultDto {
+// Google Books uses externalId in the API contract. The mobile search UI uses
+// the local idExternal field shared by its other provider adapters.
+export type GoogleBooksSearchResult = {
+  idExternal: string;
+  title: string;
+  coverImageUrl: string | null;
   author: string;
-}
+};
 
 export default class GoogleBooksApiClient {
   private baseUrl = `${API_BASE_URL}/googlebooksapi`;
 
-  async searchBooks(query: string, page = 1, pageSize = 8): Promise<GoogleBooksDetailedDto[]> {
+  async searchBooks(
+    request: SearchRequestDto,
+    page = 1,
+    pageSize = 8,
+  ): Promise<GoogleBooksSearchResult[]> {
     const params = new URLSearchParams({
       page: page.toString(),
       pageSize: pageSize.toString(),
@@ -18,10 +27,16 @@ export default class GoogleBooksApiClient {
     const response = await apiFetch(`${this.baseUrl}/search?${params}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify(request),
     });
     if (!response.ok) throw new Error('Failed to search books: ' + await response.text());
-    return response.json();
+    const books = (await response.json()) as GoogleBooksDetailedDto[];
+    return books.map((book) => ({
+      idExternal: book.externalId,
+      title: book.title,
+      coverImageUrl: book.coverImageUrl,
+      author: book.author,
+    }));
   }
 
   async getBookById(volumeId: string): Promise<GoogleBooksDetailedDto> {

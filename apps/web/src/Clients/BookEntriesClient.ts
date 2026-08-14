@@ -1,37 +1,24 @@
-// Handles create and update API calls for Book entries.
-// Hits /mediaentries/books which expects BookEntryCreateDto / BookEntryUpdateDto.
-import type {
-    BookEntryCreateDto,
-    BookEntryDetailedDto,
-    BookEntryUpdateDto,
+import {
+    MediaType,
+    type BookEntryCreateDto,
+    type BookEntryDetailedDto,
+    type BookEntryUpdateDto,
 } from "@mediavault/contracts";
-import { apiFetch } from "./apiFetch";
+import {
+    createMediaEntryOperation,
+    updateMediaEntryOperation,
+    validateMediaEntry,
+} from "@mediavault/client-core";
+import { executeWebOperation, throwOnFailure } from "./apiFetch";
 
 export default class BookEntriesClient {
-    private baseUrl = "/mediaentries/books";
-
-    async createBook(dto: BookEntryCreateDto): Promise<BookEntryDetailedDto> {
-        const response = await apiFetch(this.baseUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to create book entry: " + errorMessage);
-        }
-        return response.json();
+    async createBook(dto: BookEntryCreateDto, signal?: AbortSignal): Promise<BookEntryDetailedDto> {
+        throwOnFailure(validateMediaEntry(dto));
+        return executeWebOperation(createMediaEntryOperation(MediaType.Book, dto), signal);
     }
 
-    async updateBook(id: string, dto: BookEntryUpdateDto): Promise<void> {
-        const response = await apiFetch(`${this.baseUrl}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to update book entry: " + errorMessage);
-        }
+    async updateBook(id: string, dto: BookEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+        throwOnFailure(validateMediaEntry(dto));
+        await executeWebOperation(updateMediaEntryOperation(MediaType.Book, id, dto), signal);
     }
 }

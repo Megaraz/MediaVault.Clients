@@ -82,5 +82,10 @@ export default defineConfig({
             key: fs.readFileSync(keyFilePath),
             cert: fs.readFileSync(certFilePath),
         }
+    },
+    build: {
+        commonjsOptions: {
+            include: [/node_modules/, /packages[\\/]result-pattern-typescript[\\/]/],
+        },
     }
 })

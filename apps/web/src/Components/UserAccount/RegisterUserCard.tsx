@@ -1,30 +1,9 @@
 import { useState } from "react";
 import type { UserRegisterDto } from "@mediavault/contracts";
+import { validateUserRegistration } from "@mediavault/client-core";
 import ModalWindow from "../Shared/ModalWindow";
 import RegisterUserForm, { RegisterUserFormData } from "./RegisterUserForm";
 import UsersClient from "../../Clients/UsersClient";
-
-function isMatch(fieldName: string, value1: string, value2: string): boolean {
-  if (value1 !== value2) {
-    alert(`${fieldName} do not match`);
-    return false;
-  }
-  return true;
-}
-
-function isValidFormData(data: RegisterUserFormData): boolean {
-  if (
-    !data.username ||
-    !data.email ||
-    !data.confirmEmail ||
-    !data.password ||
-    !data.confirmPassword
-  ) {
-    alert("Please fill in all fields");
-    return false;
-  }
-  return true;
-}
 
 const defaultCardClassName: string =
   "w-full max-w-[480px] bg-slate-100 dark:bg-[#182634] rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden";
@@ -47,21 +26,6 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
     setErrorMessage(null);
     setIsSubmitting(true);
 
-    if (!isValidFormData(formData)) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!isMatch("Emails", formData.email, formData.confirmEmail)) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!isMatch("Passwords", formData.password, formData.confirmPassword)) {
-      setIsSubmitting(false);
-      return;
-    }
-
     const dto: UserRegisterDto = {
       username: formData.username,
       email: formData.email,
@@ -69,6 +33,13 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
       password: formData.password,
       confirmPassword: formData.confirmPassword,
     };
+
+    const validation = validateUserRegistration(dto);
+    if (!validation.ok) {
+      setErrorMessage(validation.validationErrors.map((error) => error.message).join(" "));
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       await client.registerUser(dto);

@@ -1,37 +1,24 @@
-// Handles create and update API calls for TV Series entries.
-// Hits /mediaentries/tv-series which expects TvSeriesEntryCreateDto / TvSeriesEntryUpdateDto.
-import type {
-    TvSeriesEntryCreateDto,
-    TvSeriesEntryDetailedDto,
-    TvSeriesEntryUpdateDto,
+import {
+    MediaType,
+    type TvSeriesEntryCreateDto,
+    type TvSeriesEntryDetailedDto,
+    type TvSeriesEntryUpdateDto,
 } from "@mediavault/contracts";
-import { apiFetch } from "./apiFetch";
+import {
+    createMediaEntryOperation,
+    updateMediaEntryOperation,
+    validateMediaEntry,
+} from "@mediavault/client-core";
+import { executeWebOperation, throwOnFailure } from "./apiFetch";
 
 export default class TvSeriesEntriesClient {
-    private baseUrl = "/mediaentries/tv-series";
-
-    async createTvSeries(dto: TvSeriesEntryCreateDto): Promise<TvSeriesEntryDetailedDto> {
-        const response = await apiFetch(this.baseUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to create TV series entry: " + errorMessage);
-        }
-        return response.json();
+    async createTvSeries(dto: TvSeriesEntryCreateDto, signal?: AbortSignal): Promise<TvSeriesEntryDetailedDto> {
+        throwOnFailure(validateMediaEntry(dto));
+        return executeWebOperation(createMediaEntryOperation(MediaType.TvSeries, dto), signal);
     }
 
-    async updateTvSeries(id: string, dto: TvSeriesEntryUpdateDto): Promise<void> {
-        const response = await apiFetch(`${this.baseUrl}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to update TV series entry: " + errorMessage);
-        }
+    async updateTvSeries(id: string, dto: TvSeriesEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+        throwOnFailure(validateMediaEntry(dto));
+        await executeWebOperation(updateMediaEntryOperation(MediaType.TvSeries, id, dto), signal);
     }
 }

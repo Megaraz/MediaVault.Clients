@@ -71,3 +71,17 @@ export default defineConfig([
   },
 ])
 ```
+
+## MediaVault client boundaries
+
+The web API clients import approved platform-neutral behavior from
+`@mediavault/client-core`. Operation factories, response/error mapping,
+cancellation handling, user/media validation, and provider metadata
+normalization belong to that package.
+
+`src/Clients/apiFetch.ts` is the browser adapter. It owns the `localStorage`
+token store and the browser `fetch` transport; the core receives those
+capabilities through dependency injection and never accesses browser globals.
+The web clients keep their class methods and DTO return shapes as adapters for
+the existing UI and router flows. Web-only form conversion, search-result view
+models, routing, hooks, components, and UI state remain under `apps/web`.

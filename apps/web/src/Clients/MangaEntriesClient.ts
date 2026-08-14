@@ -1,37 +1,24 @@
-// Handles create and update API calls for Manga entries.
-// Hits /mediaentries/manga which expects MangaEntryCreateDto / MangaEntryUpdateDto.
-import type {
-    MangaEntryCreateDto,
-    MangaEntryDetailedDto,
-    MangaEntryUpdateDto,
+import {
+    MediaType,
+    type MangaEntryCreateDto,
+    type MangaEntryDetailedDto,
+    type MangaEntryUpdateDto,
 } from "@mediavault/contracts";
-import { apiFetch } from "./apiFetch";
+import {
+    createMediaEntryOperation,
+    updateMediaEntryOperation,
+    validateMediaEntry,
+} from "@mediavault/client-core";
+import { executeWebOperation, throwOnFailure } from "./apiFetch";
 
 export default class MangaEntriesClient {
-    private baseUrl = "/mediaentries/manga";
-
-    async createManga(dto: MangaEntryCreateDto): Promise<MangaEntryDetailedDto> {
-        const response = await apiFetch(this.baseUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to create manga entry: " + errorMessage);
-        }
-        return response.json();
+    async createManga(dto: MangaEntryCreateDto, signal?: AbortSignal): Promise<MangaEntryDetailedDto> {
+        throwOnFailure(validateMediaEntry(dto));
+        return executeWebOperation(createMediaEntryOperation(MediaType.Manga, dto), signal);
     }
 
-    async updateManga(id: string, dto: MangaEntryUpdateDto): Promise<void> {
-        const response = await apiFetch(`${this.baseUrl}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to update manga entry: " + errorMessage);
-        }
+    async updateManga(id: string, dto: MangaEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+        throwOnFailure(validateMediaEntry(dto));
+        await executeWebOperation(updateMediaEntryOperation(MediaType.Manga, id, dto), signal);
     }
 }

@@ -132,7 +132,7 @@ export default function Dashboard() {
       case MediaType.Manga:
         return client.getMangaById(entry.id);
       default:
-        return client.getMediaEntryById(entry.id);
+        throw new Error("Unknown media type: " + entry.mediaType);
     }
   };
 
@@ -249,7 +249,10 @@ export default function Dashboard() {
           default:
             throw new Error("Unknown media type: " + formData.mediaType);
         }
-        const fetched = await client.getMediaEntryById(entryId);
+        const fetched = await loadDetailedEntry({
+          id: entryId,
+          mediaType: formData.mediaType as MediaType,
+        });
         setEntries((prev) => prev.map((e) => (e.id === entryId ? fetched : e)));
       } else {
         // ── CREATE ──

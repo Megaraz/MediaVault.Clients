@@ -1,37 +1,24 @@
-// Handles create and update API calls for Game entries.
-// Hits /mediaentries/games which expects GameEntryCreateDto / GameEntryUpdateDto.
-import type {
-    GameEntryCreateDto,
-    GameEntryDetailedDto,
-    GameEntryUpdateDto,
+import {
+    MediaType,
+    type GameEntryCreateDto,
+    type GameEntryDetailedDto,
+    type GameEntryUpdateDto,
 } from "@mediavault/contracts";
-import { apiFetch } from "./apiFetch";
+import {
+    createMediaEntryOperation,
+    updateMediaEntryOperation,
+    validateMediaEntry,
+} from "@mediavault/client-core";
+import { executeWebOperation, throwOnFailure } from "./apiFetch";
 
 export default class GameEntriesClient {
-    private baseUrl = "/mediaentries/games";
-
-    async createGame(dto: GameEntryCreateDto): Promise<GameEntryDetailedDto> {
-        const response = await apiFetch(this.baseUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to create game entry: " + errorMessage);
-        }
-        return response.json();
+    async createGame(dto: GameEntryCreateDto, signal?: AbortSignal): Promise<GameEntryDetailedDto> {
+        throwOnFailure(validateMediaEntry(dto));
+        return executeWebOperation(createMediaEntryOperation(MediaType.Game, dto), signal);
     }
 
-    async updateGame(id: string, dto: GameEntryUpdateDto): Promise<void> {
-        const response = await apiFetch(`${this.baseUrl}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dto),
-        });
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error("Failed to update game entry: " + errorMessage);
-        }
+    async updateGame(id: string, dto: GameEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+        throwOnFailure(validateMediaEntry(dto));
+        await executeWebOperation(updateMediaEntryOperation(MediaType.Game, id, dto), signal);
     }
 }

@@ -12,10 +12,9 @@
 //      type-specific fields at the bottom (e.g. runtime for movies).
 // ─────────────────────────────────────────────────────────────
 import {
-  MediaTypeLabels,
-  StatusLabels,
   MediaType,
-} from "../../Clients/MediaEntriesClient";
+} from "@mediavault/contracts";
+import { ALL_MEDIA_TYPE, MediaTypeLabels, StatusLabels } from "../../Shared/mediaConstants";
 import type { SelectOptionItem } from "../../Components/Shared/SelectOption";
 import InputText from "../../Components/Shared/InputText";
 import SelectOption from "../../Components/Shared/SelectOption";
@@ -75,7 +74,7 @@ type MediaEntryFormProps = {
 // Build dropdown option lists once (outside the component) so they
 // are not recreated on every render.
 const mediaTypeOptions: SelectOptionItem[] = [
-  { value: -1, label: "-- Select Type of Media --" },
+  { value: ALL_MEDIA_TYPE, label: "-- Select Type of Media --" },
   ...Object.entries(MediaTypeLabels).map(([value, label]) => ({
     value: Number(value),
     label,
@@ -271,7 +270,7 @@ export default function MediaEntryForm({
         )}
 
         {/* TV Series-specific fields */}
-        {formData.mediaType === MediaType.Series && (
+        {formData.mediaType === MediaType.TvSeries && (
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -411,7 +410,7 @@ export default function MediaEntryForm({
       </div>
 
       {/* ── FULL WIDTH: Seasons section (TV Series only) ─────────── */}
-      {formData.mediaType === MediaType.Series && (
+      {formData.mediaType === MediaType.TvSeries && (
         <div className="col-span-full">
           <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Seasons

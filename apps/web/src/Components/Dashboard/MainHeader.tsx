@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import MediaEntriesClient, {
-  type MediaEntryMinimalDto,
-  MediaTypeLabels,
-} from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "@mediavault/contracts";
+import MediaEntriesClient from "../../Clients/MediaEntriesClient";
+import { MediaTypeLabels } from "../../Shared/mediaConstants";
 
 type Props = {
   onClickAddEntry: () => void;
@@ -106,7 +105,7 @@ export default function MainHeader({
                     {entry.imageUrl && (
                       <img
                         src={entry.imageUrl}
-                        alt={entry.title}
+                        alt={entry.title ?? ""}
                         className="h-10 w-10 rounded object-cover shrink-0"
                       />
                     )}

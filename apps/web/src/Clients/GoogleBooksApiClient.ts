@@ -1,8 +1,15 @@
-import type { SearchResult } from "../Components/MediaEntry/TitleSearchInput";
-import type { SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
+import type {
+    GoogleBooksDetailedDto,
+    SearchRequestDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
-export interface GoogleBooksDetailedDto extends SearchResult {
+// Google Books' API contract uses externalId. The web search dropdown uses a
+// local idExternal view-model field shared with the other provider adapters.
+export type GoogleBooksSearchResult = {
+    idExternal: string;
+    title: string;
+    coverImageUrl: string | null;
     author: string;
 };
 
@@ -13,7 +20,7 @@ export default class GoogleBooksApiClient {
         request: SearchRequestDto,
         page: number = 1,
         pageSize: number = 8
-    ): Promise<GoogleBooksDetailedDto[]> {
+    ): Promise<GoogleBooksSearchResult[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
         params.set("pageSize", pageSize.toString());
@@ -29,7 +36,13 @@ export default class GoogleBooksApiClient {
             throw new Error("Failed to search books: " + errorMessage);
         }
 
-        return response.json();
+        const books = (await response.json()) as GoogleBooksDetailedDto[];
+        return books.map((book) => ({
+            idExternal: book.externalId,
+            title: book.title,
+            coverImageUrl: book.coverImageUrl,
+            author: book.author,
+        }));
     }
 
     async getBookById(volumeId: string): Promise<GoogleBooksDetailedDto> {

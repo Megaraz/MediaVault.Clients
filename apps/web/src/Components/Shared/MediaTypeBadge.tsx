@@ -1,9 +1,7 @@
 // Small coloured pill that displays the media type label (Movie, Game, etc.).
 // Each type has its own colour defined in mediaTypeBadgeStyles.
-import {
-  MediaType,
-  MediaTypeLabels,
-} from "../../Clients/MediaEntriesClient";
+import { MediaType } from "@mediavault/contracts";
+import { MediaTypeLabels } from "../../Shared/mediaConstants";
 
 type MediaTypeBadgeProps = {
   mediaType: number;
@@ -12,7 +10,7 @@ type MediaTypeBadgeProps = {
 
 const mediaTypeBadgeStyles: Record<number, string> = {
   [MediaType.Movie]: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  [MediaType.Series]: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  [MediaType.TvSeries]: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
   [MediaType.Book]: "bg-green-500/10 text-green-600 dark:text-green-400",
   [MediaType.Manga]: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
   [MediaType.Game]: "bg-primary/10 text-primary",

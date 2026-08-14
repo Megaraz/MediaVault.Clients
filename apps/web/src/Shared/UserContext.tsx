@@ -4,10 +4,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import UsersClient, {
-  type UserDetailedDto,
-  type UserLoginDto,
-} from "../Clients/UsersClient";
+import type { UserDetailedDto, UserLoginDto } from "@mediavault/contracts";
+import UsersClient from "../Clients/UsersClient";
 import { UserContext } from "./UserContextDefinition";
 
 type UserProviderProps = {

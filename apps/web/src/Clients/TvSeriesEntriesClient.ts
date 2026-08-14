@@ -1,6 +1,10 @@
 // Handles create and update API calls for TV Series entries.
 // Hits /mediaentries/tv-series which expects TvSeriesEntryCreateDto / TvSeriesEntryUpdateDto.
-import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from "../Types/DTOs/TvSeriesEntry";
+import type {
+    TvSeriesEntryCreateDto,
+    TvSeriesEntryDetailedDto,
+    TvSeriesEntryUpdateDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
 export default class TvSeriesEntriesClient {

@@ -1,6 +1,6 @@
-import { MediaType } from "../../Clients/MediaEntriesClient";
+import { MediaType } from "@mediavault/contracts";
 import { useUser } from "../../Shared/useUser";
-import { mediaSections } from "../../Shared/mediaConstants";
+import { ALL_MEDIA_TYPE, mediaSections } from "../../Shared/mediaConstants";
 
 type Props = {
   onChangeMediaTypeFilter: (mediaType: number | undefined) => void;
@@ -9,7 +9,7 @@ type Props = {
 
 export default function Sidebar({
   onChangeMediaTypeFilter,
-  currentMainMediaTypeFilter = MediaType.All,
+  currentMainMediaTypeFilter = ALL_MEDIA_TYPE,
 }: Props) {
   const { currentUser } = useUser();
 
@@ -23,11 +23,11 @@ export default function Sidebar({
         return "menu_book";
       case MediaType.Movie:
         return "movie";
-      case MediaType.Series:
+      case MediaType.TvSeries:
         return "tv";
       case MediaType.Manga:
         return "auto_stories";
-      case MediaType.All:
+      case ALL_MEDIA_TYPE:
         return "globe";
       default:
         return "help_outline";

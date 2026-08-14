@@ -1,6 +1,10 @@
 // Handles create and update API calls for Book entries.
 // Hits /mediaentries/books which expects BookEntryCreateDto / BookEntryUpdateDto.
-import type { BookEntryCreateDto, BookEntryDetailedDto, BookEntryUpdateDto } from "../Types/DTOs/BookEntry";
+import type {
+    BookEntryCreateDto,
+    BookEntryDetailedDto,
+    BookEntryUpdateDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
 export default class BookEntriesClient {

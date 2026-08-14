@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  type UserDetailedDto,
-  type UserCreateDto,
-} from "../../Clients/UsersClient";
+import type { UserDetailedDto, UserRegisterDto } from "@mediavault/contracts";
 import UsersClient from "../../Clients/UsersClient";
 
 export default function UsersApiTest() {
@@ -22,7 +19,7 @@ export default function UsersApiTest() {
     });
   };
 
-  const createUser = async (newUser: UserCreateDto) => {
+  const createUser = async (newUser: UserRegisterDto) => {
     setLoading(true);
     try {
       await client.registerUser(newUser);

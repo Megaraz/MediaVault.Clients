@@ -26,7 +26,7 @@ export default function Login({ onCancel }: LoginProps) {
     setIsSubmitting(true);
 
     try {
-      await login({ userNameOrEmail, password });
+      await login({ usernameOrEmail: userNameOrEmail, password });
       onCancel(false); // Close the login modal
       navigate("/dashboard"); // Redirect to the dashboard after successful login
 

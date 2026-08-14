@@ -1,26 +1,9 @@
-import type { MediaEntrySearchResultDto, SearchRequestDto } from "../Types/DTOs/MediaEntryBase";
+import type {
+    RawgGameDetailedDto,
+    RawgSearchResultDto,
+    SearchRequestDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
-
-export interface RawgGameDetailedDto {
-    rawgId: number;
-    rawgSlug?: string;
-    rawgName?: string;
-    rawgDescription?: string;
-    rawgMetacritic: number;
-    rawgReleased?: string;
-    rawgBackgroundImage?: string;
-    rawgWebsite?: string;
-    rawgPlatforms?: string[];
-    rawgRequirements?: GamePcRequirementsDto;
-}
-export interface GamePcRequirementsDto {
-    minimum?: string;
-    recommended?: string;
-    high?: string;
-    veryHigh?: string;
-    ultra?: string;
-}
-
 
 export default class RawgApiClient {
     private baseUrl = "/rawgapi";
@@ -32,7 +15,7 @@ export default class RawgApiClient {
         searchPrecise?: boolean,
         searchExact?: boolean,
         ordering?: string
-    ): Promise<MediaEntrySearchResultDto[]> {
+    ): Promise<RawgSearchResultDto[]> {
         const params = new URLSearchParams();
         params.set("page", page.toString());
         params.set("pageSize", pageSize.toString());

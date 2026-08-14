@@ -2,10 +2,9 @@
 // Supports sorting (by rating or date added) and filtering by media type.
 // The media type filter is driven externally by the sidebar but can also
 // be overridden locally within this section via a dropdown.
-import type { MediaEntryMinimalDto } from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "@mediavault/contracts";
 import MediaItem from "./MediaItem";
-import { MediaType } from "../../Clients/MediaEntriesClient";
-import { mediaSections } from "../../Shared/mediaConstants";
+import { ALL_MEDIA_TYPE, mediaSections } from "../../Shared/mediaConstants";
 import { useEffect, useMemo, useState } from "react";
 import Dropdown from "../Shared/Dropdown";
 import type { DropdownItem } from "../Shared/Dropdown";
@@ -34,7 +33,7 @@ export default function EntriesSectionMain({
   mediaEntries,
   onClickEntry,
   statusSectionType,
-  currentMainMediaTypeFilter = MediaType.All,
+  currentMainMediaTypeFilter = ALL_MEDIA_TYPE,
 }: Props) {
   const [internalMediaTypeFilter, setSectionMediaTypeFilter] = useState<number>(
     currentMainMediaTypeFilter,
@@ -48,7 +47,7 @@ export default function EntriesSectionMain({
   const filteredEntries = useMemo(() => {
     const entriesToSort =
       internalMediaTypeFilter === undefined ||
-      internalMediaTypeFilter === MediaType.All
+      internalMediaTypeFilter === ALL_MEDIA_TYPE
         ? [...mediaEntries]
         : mediaEntries.filter(
             (entry) => entry.mediaType === internalMediaTypeFilter,

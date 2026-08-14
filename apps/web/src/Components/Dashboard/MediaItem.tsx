@@ -1,6 +1,6 @@
 // Card used in the grid sections (On Going, Completed, etc.).
 // Shows a poster image, title, media type badge, and rating.
-import type { MediaEntryMinimalDto } from "../../Clients/MediaEntriesClient";
+import type { MediaEntryMinimalDto } from "@mediavault/contracts";
 import MediaTypeBadge from "../Shared/MediaTypeBadge";
 
 type MediaEntrySmallProps = {

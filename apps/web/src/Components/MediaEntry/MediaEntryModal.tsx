@@ -14,13 +14,14 @@
 import { useState } from "react";
 import {
   MediaType,
+  type BookEntryDetailedDto,
+  type GameEntryDetailedDto,
+  type MangaEntryDetailedDto,
   type MediaEntryDetailedDto,
-} from "../../Clients/MediaEntriesClient";
-import type { GameEntryDetailedDto } from "../../Types/DTOs/GameEntry";
-import type { MovieEntryDetailedDto } from "../../Types/DTOs/MovieEntry";
-import type { TvSeriesEntryDetailedDto } from "../../Types/DTOs/TvSeriesEntry";
-import type { BookEntryDetailedDto } from "../../Types/DTOs/BookEntry";
-import type { MangaEntryDetailedDto } from "../../Types/DTOs/MangaEntry";
+  type MovieEntryDetailedDto,
+  type TvSeriesEntryDetailedDto,
+} from "@mediavault/contracts";
+import { ALL_MEDIA_TYPE } from "../../Shared/mediaConstants";
 import DetailedHeader from "./DetailedHeader";
 import MediaEntryForm from "./MediaEntryForm";
 import type { MediaEntryFormData } from "./MediaEntryForm";
@@ -29,7 +30,7 @@ import FormFooter from "./FormFooter";
 import ModalWindow from "../Shared/ModalWindow";
 import type { SearchResult } from "./TitleSearchInput";
 import TmdbApiClient from "../../Clients/TmdbApiClient";
-import { type GoogleBooksDetailedDto } from "../../Clients/GoogleBooksApiClient";
+import type { GoogleBooksSearchResult } from "../../Clients/GoogleBooksApiClient";
 import RawgApiClient from "../../Clients/RawgApiClient";
 
 // How long to show the success screen before closing the modal.
@@ -61,7 +62,7 @@ function buildInitialFormData(
     title: entry?.title ?? "",
     imageUrl: entry?.imageUrl ?? "",
     backdropUrl: "",
-    mediaType: entry?.mediaType ?? -1, // -1 = no type selected yet (new entry sentinel)
+    mediaType: entry?.mediaType ?? ALL_MEDIA_TYPE, // -1 = no type selected yet (new entry sentinel)
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? "",
@@ -73,10 +74,12 @@ function buildInitialFormData(
     totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? "",
     numberOfSeasons: series?.numberOfSeasons?.toString() ?? "",
     backdropImageUrl: series?.backdropImageUrl ?? null,
-    firstAirDate: series?.firstAirDate ?? null,
     lastAirDate: series?.lastAirDate ?? null,
     airingStatus: series?.airingStatus ?? null,
     seasons: series?.seasons?.map((s) => ({
+      id: s.id,
+      tvSeriesId: s.tvSeriesId,
+      idExternal: s.idExternal,
       seasonNumber: s.seasonNumber.toString(),
       name: s.name ?? "",
       overview: s.overview ?? "",
@@ -86,6 +89,8 @@ function buildInitialFormData(
       watchedEpisodes: s.watchedEpisodes.toString(),
       status: s.status,
       rating: s.rating,
+      createdAtUtc: s.createdAtUtc,
+      updatedAtUtc: s.updatedAtUtc,
     })) ?? [],
     metacriticRating: game?.metacriticRating ?? 0,
     hoursPlayed: game?.hoursPlayed?.toString() ?? "",
@@ -208,7 +213,7 @@ export default function MediaEntryModal({
 
   function isGoogleBooksResult(
     result: SearchResult,
-  ): result is GoogleBooksDetailedDto {
+  ): result is GoogleBooksSearchResult {
     return "author" in result;
   }
 
@@ -259,7 +264,7 @@ export default function MediaEntryModal({
       });
     }
 
-    if (formData.mediaType === MediaType.Series) {
+    if (formData.mediaType === MediaType.TvSeries) {
       tmdbClient.getTvSeriesById(Number(result.idExternal)).then((series) => {
         setFormData((prev) => ({
           ...prev,

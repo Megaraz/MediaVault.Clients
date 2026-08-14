@@ -1,6 +1,10 @@
 // Handles create and update API calls for Game entries.
 // Hits /mediaentries/games which expects GameEntryCreateDto / GameEntryUpdateDto.
-import type { GameEntryCreateDto, GameEntryDetailedDto, GameEntryUpdateDto } from "../Types/DTOs/GameEntry";
+import type {
+    GameEntryCreateDto,
+    GameEntryDetailedDto,
+    GameEntryUpdateDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
 
 export default class GameEntriesClient {

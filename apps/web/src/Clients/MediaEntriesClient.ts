@@ -11,37 +11,27 @@
 // type-specific — each media type has its own endpoint and DTO.
 // See MovieEntriesClient, GameEntriesClient etc. for those.
 //
-// Also re-exports shared types and constants from MediaEntryBase
-// so other files can do a single import from this module.
+// Shared API contracts are imported directly from @mediavault/contracts by
+// callers. This client owns only request execution and response handling.
 // ─────────────────────────────────────────────────────────────
-import type { BookEntryDetailedDto } from "../Types/DTOs/BookEntry";
-import type { GameEntryDetailedDto } from "../Types/DTOs/GameEntry";
-import type { MangaEntryDetailedDto } from "../Types/DTOs/MangaEntry";
 import type {
+    BookEntryDetailedDto,
+    GameEntryDetailedDto,
+    MangaEntryDetailedDto,
     MediaEntryDetailedDto,
     MediaEntryMinimalDto,
-    MediaEntrySearchRequestDto,
-} from "../Types/DTOs/MediaEntryBase";
-import type { MovieEntryDetailedDto } from "../Types/DTOs/MovieEntry";
-import type { TvSeriesEntryDetailedDto } from "../Types/DTOs/TvSeriesEntry";
+    MovieEntryDetailedDto,
+    SearchRequestDto,
+    TvSeriesEntryDetailedDto,
+} from "@mediavault/contracts";
 import { apiFetch } from "./apiFetch";
-
-// Re-export shared types and constants so existing component imports keep working
-export type {
-    MediaEntryDetailedDto,
-    MediaEntryMinimalDto,
-    MediaEntrySearchRequestDto,
-    MediaEntryCreateDto,
-    MediaEntryUpdateDto,
-} from "../Types/DTOs/MediaEntryBase";
-export { StatusLabels, MediaTypeLabels, StatusType, MediaType } from "../Types/DTOs/MediaEntryBase";
 
 
 export default class MediaEntriesClient {
     private baseUrl = "/mediaentries";
 
     async searchMediaEntries(
-        request: MediaEntrySearchRequestDto,
+        request: SearchRequestDto,
         page: number = 1,
         pageSize: number = 10
     ): Promise<MediaEntryMinimalDto[]> {

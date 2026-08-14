@@ -1,36 +1,11 @@
-
+import type {
+    ErrorResponseBody,
+    LoginResponseDto,
+    UserDetailedDto,
+    UserLoginDto,
+    UserRegisterDto,
+} from "@mediavault/contracts";
 import { apiFetch, saveToken, clearToken } from "./apiFetch";
-
-export type UserDetailedDto = {
-    id: string;
-    username: string;
-    email: string;
-    createdAt: string;
-}
-
-export type UserCreateDto = {
-    username: string;
-    email: string;
-    confirmEmail: string;
-    password: string;
-    confirmPassword: string;
-}
-
-export type UserLoginDto = {
-    userNameOrEmail: string;
-    password: string;
-}
-
-type LoginResponseDto = {
-    user: UserDetailedDto;
-    token: string;
-}
-
-type ApiErrorResponse = {
-    message?: string;
-    errorCode?: string;
-    errors?: string[];
-}
 
 export default class UsersClient {
     private authBaseUrl = "/auth";
@@ -41,8 +16,8 @@ export default class UsersClient {
             let errorMessage = "Request failed";
 
             try {
-                const error = (await response.json()) as ApiErrorResponse;
-                errorMessage = error.message ?? error.errors?.join(", ") ?? errorMessage;
+                const error = (await response.json()) as ErrorResponseBody;
+                errorMessage = error.message || error.code || errorMessage;
             } catch {
                 errorMessage = response.statusText || errorMessage;
             }
@@ -77,7 +52,7 @@ export default class UsersClient {
         return data.user;
     }
 
-    async registerUser(user: UserCreateDto): Promise<void> {
+    async registerUser(user: UserRegisterDto): Promise<void> {
         const response = await fetch(this.authBaseUrl + "/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

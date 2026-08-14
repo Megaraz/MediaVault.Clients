@@ -1,25 +1,15 @@
 import { apiFetch } from '../shared/apiFetch';
 import { saveToken, clearToken } from '../shared/tokenStore';
 import type {
+  ErrorResponseBody,
+  LoginResponseDto,
   UserDetailedDto,
   UserLoginDto,
   UserRegisterDto,
   UserUpdateDto,
-} from '../types/dtos/User';
+} from '@mediavault/contracts';
 
-export type { UserDetailedDto, UserLoginDto };
-export type UserCreateDto = UserRegisterDto;
-
-type LoginResponseDto = {
-  user: UserDetailedDto;
-  token: string;
-};
-
-type ApiErrorResponse = {
-  message?: string;
-  errorCode?: string;
-  errors?: string[];
-};
+type ApiErrorResponse = Partial<ErrorResponseBody> & { errors?: string[] };
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 export default class UsersClient {
@@ -63,7 +53,7 @@ export default class UsersClient {
     await clearToken();
   }
 
-  async register(dto: UserCreateDto): Promise<void> {
+  async register(dto: UserRegisterDto): Promise<void> {
     const response = await fetch(`${this.authBaseUrl}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

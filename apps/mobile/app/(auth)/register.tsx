@@ -1,7 +1,7 @@
 import { ScrollView, TextInput, TouchableOpacity, View, Text, ActivityIndicator } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { useState } from 'react';
-import type { UserRegisterDto } from '../../types/dtos/User';
+import type { UserRegisterDto } from '@mediavault/contracts';
 import { AuthService } from '../../services/authService';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, S } from '../../constants/theme';

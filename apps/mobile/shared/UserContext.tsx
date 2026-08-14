@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import type { UserDetailedDto, UserLoginDto } from '../types/dtos/User';
+import type { UserDetailedDto, UserLoginDto } from '@mediavault/contracts';
 import { AuthService } from '../services/authService';
 
 type UserContextType = {

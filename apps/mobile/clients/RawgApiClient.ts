@@ -1,24 +1,20 @@
 import { apiFetch } from '../shared/apiFetch';
-import type { MediaEntrySearchResultDto } from '../types/dtos/MediaEntryBase';
+import type {
+  RawgGameDetailedDto,
+  RawgSearchResultDto,
+  SearchRequestDto,
+} from '@mediavault/contracts';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
-
-export interface RawgGameDetailedDto {
-  rawgId: number;
-  rawgSlug?: string;
-  rawgName?: string;
-  rawgDescription?: string;
-  rawgMetacritic: number;
-  rawgReleased?: string;
-  rawgBackgroundImage?: string;
-  rawgWebsite?: string;
-  rawgPlatforms?: string[];
-}
 
 export default class RawgApiClient {
   private baseUrl = `${API_BASE_URL}/rawgapi`;
 
-  async searchGames(query: string, page = 1, pageSize = 8): Promise<MediaEntrySearchResultDto[]> {
+  async searchGames(
+    request: SearchRequestDto,
+    page = 1,
+    pageSize = 8,
+  ): Promise<RawgSearchResultDto[]> {
     const params = new URLSearchParams({
       page: page.toString(),
       pageSize: pageSize.toString(),
@@ -26,7 +22,7 @@ export default class RawgApiClient {
     const response = await apiFetch(`${this.baseUrl}/search?${params}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify(request),
     });
     if (!response.ok) throw new Error('Failed to search games: ' + await response.text());
     return response.json();

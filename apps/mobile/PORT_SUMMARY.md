@@ -4,7 +4,8 @@
 
 ### API & Types Layer
 - ✅ User authentication types and client
-- ✅ Media entries DTOs for all types (Movie, TV Series, Book, Manga, Game)
+- ✅ Shared API DTOs and numeric enum values imported from `@mediavault/contracts`
+- ✅ Android-local domain, persistence, and form models remain app-owned
 - ✅ API clients for all entity types with proper error handling
 - ✅ Type-safe fetch wrapper with response handling
 - ✅ Environment-based API URL configuration
@@ -50,7 +51,7 @@
 1. **File-based Routing**: Used Expo Router for clean, predictable navigation
 2. **Protected Routes**: Implemented route guards via layout components
 3. **Context API**: Chose React Context for auth state (simplicity for small app)
-4. **Relative Imports**: Used relative paths for all local imports (TypeScript path aliases not working reliably)
+4. **Import Boundaries**: Use `@mediavault/contracts` for API DTOs/enums and relative paths for app-local modules
 5. **Minimal Styling**: Used React Native inline styles to maintain flexibility
 6. **Type Safety**: Maintained full TypeScript support throughout
 
@@ -127,7 +128,8 @@ The foundation is set up for easy addition of:
 
 **API Layer**:
 - Clients: `app/clients/*.ts`
-- Types: `app/types/dtos/*.ts`
+- Shared API contracts: `@mediavault/contracts` from `packages/contracts`
+- Android-local models: `app/models/*.ts`
 - Context: `app/shared/UserContext.tsx`
 - Constants: `app/shared/mediaConstants.ts`
 

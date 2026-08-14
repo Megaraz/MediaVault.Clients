@@ -22,19 +22,23 @@ import {
 import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, SV, ST } from '../../constants/theme';
-import { MediaType } from '../../clients/MediaEntriesClient';
-import type { MediaEntryDetailedDto } from '../../types/dtos/MediaEntryBase';
-import type { GameEntryDetailedDto } from '../../types/dtos/GameEntry';
-import type { MovieEntryDetailedDto } from '../../types/dtos/MovieEntry';
-import type { TvSeriesEntryDetailedDto } from '../../types/dtos/TvSeriesEntry';
-import type { BookEntryDetailedDto } from '../../types/dtos/BookEntry';
-import type { MangaEntryDetailedDto } from '../../types/dtos/MangaEntry';
+import {
+  MediaType,
+  type Status,
+  type BookEntryDetailedDto,
+  type GameEntryDetailedDto,
+  type MangaEntryDetailedDto,
+  type MediaEntryDetailedDto,
+  type MovieEntryDetailedDto,
+  type TvSeriesEntryDetailedDto,
+} from '@mediavault/contracts';
+import { ALL_MEDIA_TYPE } from '../../shared/mediaConstants';
 import MediaEntryForm, { type MediaEntryFormData, type SeasonFormData } from './MediaEntryForm';
 import TmdbApiClient from '../../clients/TmdbApiClient';
 import RawgApiClient from '../../clients/RawgApiClient';
 import GoogleBooksApiClient from '../../clients/GoogleBooksApiClient';
 import type { SearchResult } from './TitleSearchInput';
-import type { GoogleBooksDetailedDto } from '../../clients/GoogleBooksApiClient';
+import type { GoogleBooksSearchResult } from '../../clients/GoogleBooksApiClient';
 import { OperationType } from 'result-pattern-typescript/legacy';
 import { MediaEntryDtoValidator } from '../../validators/MediaEntry/MediaEntryDtoValidator';
 
@@ -66,7 +70,7 @@ function buildInitialFormData(entry?: MediaEntryDetailedDto): MediaEntryFormData
     title: entry?.title ?? '',
     imageUrl: entry?.imageUrl ?? '',
     backdropUrl: '',
-    mediaType: entry?.mediaType ?? -1,
+    mediaType: entry?.mediaType ?? ALL_MEDIA_TYPE,
     status: entry?.status ?? 0,
     rating: entry?.rating ?? 0,
     review: entry?.review ?? '',
@@ -78,10 +82,12 @@ function buildInitialFormData(entry?: MediaEntryDetailedDto): MediaEntryFormData
     totalWatchedEpisodes: series?.totalWatchedEpisodes?.toString() ?? '',
     numberOfSeasons: series?.numberOfSeasons?.toString() ?? '',
     backdropImageUrl: series?.backdropImageUrl ?? null,
-    firstAirDate: series?.firstAirDate ?? null,
     lastAirDate: series?.lastAirDate ?? null,
     airingStatus: series?.airingStatus ?? null,
     seasons: series?.seasons?.map((s) => ({
+      id: s.id,
+      tvSeriesId: s.tvSeriesId,
+      idExternal: s.idExternal,
       seasonNumber: s.seasonNumber.toString(),
       name: s.name ?? '',
       overview: s.overview ?? '',
@@ -91,6 +97,8 @@ function buildInitialFormData(entry?: MediaEntryDetailedDto): MediaEntryFormData
       watchedEpisodes: s.watchedEpisodes.toString(),
       status: s.status,
       rating: s.rating,
+      createdAtUtc: s.createdAtUtc,
+      updatedAtUtc: s.updatedAtUtc,
     })) ?? [],
     metacriticRating: game?.metacriticRating ?? 0,
     hoursPlayed: game?.hoursPlayed?.toString() ?? '',
@@ -157,13 +165,12 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
       }).catch(() => {});
     }
 
-    if (formData.mediaType === MediaType.Series) {
+    if (formData.mediaType === MediaType.TvSeries) {
       tmdbClient.getTvSeriesById(Number(result.idExternal)).then((series) => {
         setFormData(prev => ({
           ...prev,
           overview: series.tmdbOverview ?? prev.overview,
           releaseDate: series.tmdbFirstAirDate ? formatDateForInput(series.tmdbFirstAirDate) : prev.releaseDate,
-          firstAirDate: series.tmdbFirstAirDate ?? prev.firstAirDate,
           lastAirDate: series.tmdbLastAirDate ?? prev.lastAirDate,
           backdropImageUrl: series.tmdbBackdropPath ?? prev.backdropImageUrl,
           genres: series.tmdbGenres ? series.tmdbGenres.map(g => g.tmdbGenreName ?? '') : prev.genres,
@@ -185,8 +192,8 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
       }).catch(() => {});
     }
 
-    // Books: author is already in the SearchResult via GoogleBooksDetailedDto
-    const books = result as GoogleBooksDetailedDto;
+    // Books: author is already in the Android-local search view model.
+    const books = result as GoogleBooksSearchResult;
     if ((formData.mediaType === MediaType.Book || formData.mediaType === MediaType.Manga) && books.author) {
       handleChange('author', books.author);
     }
@@ -199,7 +206,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
       ? mediaEntryValidator.validateUpdateDto(
         {
           title: formData.title ?? '',
-          status: formData.status,
+          status: formData.status as Status,
           rating: formData.rating,
         },
         {
@@ -213,7 +220,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
       : mediaEntryValidator.validateCreateDto(
         {
           title: formData.title ?? '',
-          status: formData.status,
+          status: formData.status as Status,
           rating: formData.rating,
         },
         {

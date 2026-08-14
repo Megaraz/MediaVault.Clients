@@ -10,7 +10,7 @@ The following components and features from the web app have been successfully ad
 - **User Authentication**: Login and registration screens with validation
 - **User Context & State Management**: Auth state management using React Context
 - **API Clients**: All backend API clients (Users, Media Entries, Movies, TV Series, Games, Books, Manga)
-- **Type System**: Complete TypeScript DTOs and type definitions from the web app
+- **Type System**: Shared API DTOs and enum values from `@mediavault/contracts`, plus Android-local models
 - **Media Entries Management**: View, search, and filter media entries by status and type
 
 ### ✅ Screens Implemented
@@ -112,14 +112,6 @@ app/
 │   ├── GameEntriesClient.ts
 │   ├── BookEntriesClient.ts
 │   └── MangaEntriesClient.ts
-├── types/dtos/                 # Type definitions
-│   ├── MediaEntryBase.ts
-│   ├── MovieEntry.ts
-│   ├── TvSeriesEntry.ts
-│   ├── GameEntry.ts
-│   ├── BookEntry.ts
-│   ├── MangaEntry.ts
-│   └── Season.ts
 └── shared/                     # Shared utilities
     ├── UserContext.tsx         # Auth context and hook
     └── mediaConstants.ts       # Status and media type constants
@@ -204,8 +196,8 @@ The app has been validated with:
 - Check network connectivity (for device testing)
 
 ### TypeScript errors
-- Run `npx tsc --noEmit` to check for compilation errors
-- Ensure all imports use relative paths from app root
+- Run `npm run typecheck:mobile` to check for compilation errors
+- Import API DTOs and enum values from `@mediavault/contracts`; use relative paths for app-local modules
 
 ## Environment Variables
 
@@ -219,7 +211,7 @@ Note: All `EXPO_PUBLIC_*` prefixed variables are available in the client code.
 ## Contributing
 
 When making changes:
-1. Ensure TypeScript compiles: `npx tsc --noEmit`
+1. Ensure TypeScript compiles: `npm run typecheck:mobile`
 2. Run linter: `npm run lint`
 3. Test on physical device or emulator
 

@@ -87,10 +87,11 @@ MediaVault.Clients/
 
 The npm workspace establishes repository-level dependency installation and
 script orchestration. `packages/contracts` is the API-owned source of truth for
-shared DTOs and numeric enum values. The web client imports those contracts from
-`@mediavault/contracts`; its presentation labels, `All = -1` filter sentinel,
-form/view state, and persistence models remain application-owned. Android
-migration to the same exports is tracked separately.
+shared DTOs and numeric enum values. Both clients import those contracts from
+`@mediavault/contracts`; their presentation labels, `All = -1` filter sentinel,
+form/view state, and persistence models remain application-owned. Android's
+contract boundary and Metro verification are documented in
+`apps/mobile/docs/shared-contracts.md`.
 `packages/result-pattern-typescript` provides
 the platform-neutral, safe Result contract intended for both clients. Existing
 mobile workflows remain on its deprecated compatibility entry point until the

@@ -9,7 +9,7 @@ import type {
   UserMinimalDto,
   UserRegisterDto,
   UserUpdateDto,
-} from '../types/dtos/User';
+} from '@mediavault/contracts';
 import { featureFlags } from '../shared/featureFlags';
 import { hashPassword } from '../shared/passwordHash';
 import { UserDtoValidator } from '../validators/User/UserDtoValidator';

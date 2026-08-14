@@ -1,10 +1,10 @@
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
-import { type MediaEntryMinimalDto } from '../../types/dtos/MediaEntryBase';
-import { MediaTypeLabels } from '../../types/dtos/MediaEntryBase';
+import type { MediaEntryMinimalDto } from '@mediavault/contracts';
 import { useUser } from '../../shared/UserContext';
 import { MediaEntryService } from '../../services/mediaEntryService';
+import { MediaTypeLabels } from '../../shared/mediaConstants';
 import { Colors, S } from '../../constants/theme';
 
 const DEBOUNCE_DELAY_MS = 400;

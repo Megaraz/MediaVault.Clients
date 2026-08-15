@@ -21,6 +21,43 @@ The workflows do not create an Android build, upload artifacts, start the API,
 or access an emulator. Each job has a bounded timeout, and a newer run for the
 same pull request or branch cancels an older run.
 
+## Mobile Oxlint configuration
+
+The Android workspace uses Oxlint `1.78.0` through its `lint` script. The script
+targets the full mobile source tree; TypeScript checking remains a separate
+repository gate for type correctness.
+
+The native `import`, `react`, and TypeScript plugins replace the equivalent
+ESLint plugins. Expo-specific rules continue through `eslint-plugin-expo` as an
+Oxlint JavaScript plugin. `no-undef` is enabled explicitly because it is still
+an Oxlint nursery rule. The configuration keeps browser, built-in, ES2022, and
+React Native globals, the Metro Node override, and the existing
+`android/app/build` and `dist` exclusions. Oxlint's correctness category stays
+disabled so this migration does not silently introduce a broader policy.
+
+The migration intentionally omits `import/no-unresolved`: the Oxlint
+JavaScript-plugin bridge reports false positives for valid TypeScript path
+aliases and extensionless imports in this Expo workspace, while TypeScript
+checking remains the reliable module-resolution gate. Native Oxlint also reports
+duplicate imports once per file rather than ESLint's two diagnostics; this is a
+diagnostic-count difference only and does not change the warning-level policy.
+The remaining unsupported mappings are intentional: `import/named` and
+`import/export` and `react/require-render-return` are unavailable nursery
+rules; `no-dupe-args` is superseded by strict mode; the React JSX-use rules are
+unnecessary with the React 17+ transform and native unused-variable analysis;
+and `react/no-deprecated` is covered by the native `typescript/no-deprecated`
+rule.
+
+The compatibility research was recorded on 2026-08-15. Oxlint `1.78.0` is
+compatible with the mobile CI Node.js 20.19.x runtime and is also the version
+used by the web workspace. The research used the [Oxlint release
+history](https://github.com/oxc-project/oxc/releases), [ESLint migration
+guide](https://oxc.rs/docs/guide/usage/linter/migrate-from-eslint),
+[compatibility matrix](https://oxc.rs/compatibility), [built-in plugin
+documentation](https://oxc.rs/docs/guide/usage/linter/plugins), [JavaScript
+plugin documentation](https://oxc.rs/docs/guide/usage/linter/js-plugins.html),
+and [versioning policy](https://oxc.rs/docs/guide/usage/linter/versioning).
+
 ## Permissions and configuration
 
 The checked-in workflows grant the GitHub token read-only repository-content

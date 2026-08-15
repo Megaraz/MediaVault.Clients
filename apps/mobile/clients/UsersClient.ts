@@ -1,50 +1,28 @@
-import { apiFetch } from '../shared/apiFetch';
-import { saveToken, clearToken } from '../shared/tokenStore';
 import type {
-  ErrorResponseBody,
-  LoginResponseDto,
   UserDetailedDto,
   UserLoginDto,
   UserRegisterDto,
   UserUpdateDto,
 } from '@mediavault/contracts';
+import {
+  currentUserOperation,
+  deleteUserOperation,
+  loginOperation,
+  registerOperation,
+  userByIdOperation,
+  usersOperation,
+  validateUserLogin,
+  validateUserRegistration,
+  validateUserUpdate,
+  type ApiOperation,
+} from '@mediavault/client-core';
+import { clearToken, saveToken } from '../shared/tokenStore';
+import { executeMobileOperation, throwOnFailure } from '../shared/apiFetch';
 
-type ApiErrorResponse = Partial<ErrorResponseBody> & { errors?: string[] };
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 export default class UsersClient {
-  private authBaseUrl = `${API_BASE_URL}/auth`;
-  private usersBaseUrl = `${API_BASE_URL}/users`;
-
-  private async readResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      let errorMessage = 'Request failed';
-
-      try {
-        const error = (await response.json()) as ApiErrorResponse;
-        errorMessage = error.message ?? error.errors?.join(', ') ?? errorMessage;
-      } catch {
-        errorMessage = response.statusText || errorMessage;
-      }
-
-      throw new Error(errorMessage);
-    }
-
-    if (response.status === 204) {
-      return undefined as T;
-    }
-
-    return response.json() as Promise<T>;
-  }
-
-  async login(credentials: UserLoginDto): Promise<UserDetailedDto> {
-    const response = await fetch(`${this.authBaseUrl}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
-
-    const data = await this.readResponse<LoginResponseDto>(response);
+  async login(credentials: UserLoginDto, signal?: AbortSignal): Promise<UserDetailedDto> {
+    throwOnFailure(validateUserLogin(credentials));
+    const data = await executeMobileOperation(loginOperation(credentials), signal);
     await saveToken(data.token);
     return data.user;
   }
@@ -53,54 +31,62 @@ export default class UsersClient {
     await clearToken();
   }
 
-  async register(dto: UserRegisterDto): Promise<void> {
-    const response = await fetch(`${this.authBaseUrl}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-
-    return this.readResponse<void>(response);
+  async register(dto: UserRegisterDto, signal?: AbortSignal): Promise<void> {
+    throwOnFailure(validateUserRegistration(dto));
+    await executeMobileOperation(registerOperation(dto), signal);
   }
 
-  async getCurrentUser(): Promise<UserDetailedDto> {
-    const response = await apiFetch(`${this.authBaseUrl}/me`);
-    return this.readResponse<UserDetailedDto>(response);
+  async getCurrentUser(signal?: AbortSignal): Promise<UserDetailedDto> {
+    return executeMobileOperation(currentUserOperation(), signal);
   }
 
-  async getUserById(id: string): Promise<UserDetailedDto> {
-    const response = await apiFetch(`${this.usersBaseUrl}/${id}`);
-    return this.readResponse<UserDetailedDto>(response);
+  async getUserById(id: string, signal?: AbortSignal): Promise<UserDetailedDto> {
+    return executeMobileOperation(userByIdOperation(id), signal);
   }
 
-  async getUsers(pageNumber = 1, pageSize = 10): Promise<UserDetailedDto[]> {
-    const response = await apiFetch(
-      `${this.usersBaseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    );
-    return this.readResponse<UserDetailedDto[]>(response);
+  async getUsers(pageNumber = 1, pageSize = 10, signal?: AbortSignal): Promise<UserDetailedDto[]> {
+    // The current API endpoint is an unpaged collection. Preserve the Android
+    // service signature while delegating its authoritative route to the core.
+    void pageNumber;
+    void pageSize;
+    return executeMobileOperation(usersOperation(), signal);
   }
 
-  async createUser(dto: UserRegisterDto): Promise<UserDetailedDto> {
-    const response = await apiFetch(this.usersBaseUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    return this.readResponse<UserDetailedDto>(response);
+  async createUser(dto: UserRegisterDto, signal?: AbortSignal): Promise<UserDetailedDto> {
+    throwOnFailure(validateUserRegistration(dto));
+    return executeMobileOperation(createUserOperation(dto), signal);
   }
 
-  async updateUser(id: string, dto: UserUpdateDto): Promise<void> {
-    const response = await apiFetch(`${this.usersBaseUrl}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    await this.readResponse<void>(response);
+  async updateUser(id: string, dto: UserUpdateDto, signal?: AbortSignal): Promise<void> {
+    throwOnFailure(validateUserUpdate(dto));
+    await executeMobileOperation(updateUserOperation(id, dto), signal);
   }
 
-  async deleteUser(id: string): Promise<void> {
-    const response = await apiFetch(`${this.usersBaseUrl}/${id}`, { method: 'DELETE' });
-    await this.readResponse<void>(response);
+  async deleteUser(id: string, signal?: AbortSignal): Promise<void> {
+    await executeMobileOperation(deleteUserOperation(id), signal);
   }
+}
 
+// These authenticated administrative endpoints are still Android-only service
+// operations. The shared core deliberately exposes no public factories for
+// them, so retain their exact established API contracts locally while using the
+// core's request execution and safe response mapping.
+function createUserOperation(dto: UserRegisterDto): ApiOperation<UserDetailedDto> {
+  return Object.freeze({
+    method: 'POST',
+    path: '/users',
+    body: dto,
+    responseKind: 'json',
+    requiresAuthentication: true,
+  });
+}
+
+function updateUserOperation(id: string, dto: UserUpdateDto): ApiOperation<void> {
+  return Object.freeze({
+    method: 'PUT',
+    path: `/users/${encodeURIComponent(id)}`,
+    body: dto,
+    responseKind: 'empty',
+    requiresAuthentication: true,
+  });
 }

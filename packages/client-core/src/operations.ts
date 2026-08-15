@@ -69,8 +69,8 @@ export function loginOperation(body: UserLoginDto): ApiOperation<LoginResponseDt
   return json('POST', '/auth/login', body, false);
 }
 
-export function registerOperation(body: UserRegisterDto): ApiOperation<UserDetailedDto> {
-  return json('POST', '/auth/register', body, false);
+export function registerOperation(body: UserRegisterDto): ApiOperation<void> {
+  return empty('POST', '/auth/register', body, false);
 }
 
 export function currentUserOperation(): ApiOperation<UserDetailedDto> {

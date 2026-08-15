@@ -48,6 +48,30 @@ test('public auth operations never request or attach a token', async () => {
   assert.equal(request.url, '/auth/login');
 });
 
+test('accepts the API empty success response for registration', async () => {
+  const { executeOperation, registerOperation } = await core();
+  let request;
+  const result = await executeOperation(registerOperation({
+    username: 'new-user', email: 'new@example.invalid', password: 'password',
+  }), {
+    baseUrl: '',
+    accessToken: { getAccessToken: () => { throw new Error('registration must be public'); } },
+    transport: {
+      send: async (value) => {
+        request = value;
+        return new Response(null, { status: 204 });
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(request.url, '/auth/register');
+  assert.equal(request.headers.Authorization, undefined);
+  assert.equal(request.body, JSON.stringify({
+    username: 'new-user', email: 'new@example.invalid', password: 'password',
+  }));
+});
+
 test('builds deterministic routes, query strings, and JSON bodies', async () => {
   const { executeOperation, searchRawgGamesOperation } = await core();
   let request;

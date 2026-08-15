@@ -3,7 +3,7 @@ export function loginOperation(body) {
     return json('POST', '/auth/login', body, false);
 }
 export function registerOperation(body) {
-    return json('POST', '/auth/register', body, false);
+    return empty('POST', '/auth/register', body, false);
 }
 export function currentUserOperation() {
     return json('GET', '/auth/me');

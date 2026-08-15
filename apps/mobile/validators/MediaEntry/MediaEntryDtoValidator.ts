@@ -1,36 +1,27 @@
 import {
-  isNull,
-  isNullOrWhiteSpaceFromContext,
+  validateMediaEntry,
+} from '@mediavault/client-core';
+import {
   type ErrorContext,
-  type ValidationError,
 } from 'result-pattern-typescript/legacy';
 import type { MediaEntryCreateDto, MediaEntryUpdateDto } from '@mediavault/contracts';
-import { validationResult, type ValidationResult } from '../ValidationResult';
+import { validationResultFromCore, type ValidationResult } from '../ValidationResult';
 
 export class MediaEntryDtoValidator {
   public validateCreateDto(
     dto: MediaEntryCreateDto | null | undefined,
     errorContext: ErrorContext,
   ): ValidationResult {
-    const nullCheck = isNull(dto, errorContext);
-    if (nullCheck.failed) return validationResult([nullCheck.error]);
-    if (dto === null || dto === undefined) return validationResult([]);
-
-    return validationResult(this.validateTitle(dto.title, errorContext));
+    void errorContext;
+    return validationResultFromCore(validateMediaEntry(dto));
   }
 
   public validateUpdateDto(
     dto: MediaEntryUpdateDto | null | undefined,
     errorContext: ErrorContext,
   ): ValidationResult {
-    const nullCheck = isNull(dto, errorContext);
-    if (nullCheck.failed) return validationResult([nullCheck.error]);
-    if (dto === null || dto === undefined) return validationResult([]);
-
-    return validationResult(this.validateTitle(dto.title, {
-      ...errorContext,
-      fieldName: 'Title',
-    }));
+    void errorContext;
+    return validationResultFromCore(validateMediaEntry(dto));
   }
 
   public isValidCreateDto(
@@ -45,13 +36,5 @@ export class MediaEntryDtoValidator {
     errorContext: ErrorContext,
   ): boolean {
     return this.validateUpdateDto(dto, errorContext).isValid;
-  }
-
-  private validateTitle(title: string | null | undefined, errorContext: ErrorContext): ValidationError[] {
-    const titleCheck = isNullOrWhiteSpaceFromContext(title, {
-      ...errorContext,
-      fieldName: 'Title',
-    });
-    return titleCheck.failed ? [titleCheck.error] : [];
   }
 }

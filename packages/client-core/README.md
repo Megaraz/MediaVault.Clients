@@ -53,6 +53,11 @@ header values are rejected locally as unexpected failures.
 
 ```powershell
 npm ci
+npm run lint --workspace=@mediavault/client-core
 npm run test:result-pattern
 npm run test:client-core
 ```
+
+The lint command uses the shared package Oxlint configuration, checks maintained
+`src/` and `test/` files, and excludes checked-in `dist/` output because it is
+generated from the source during package builds.

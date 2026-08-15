@@ -57,5 +57,10 @@ From the repository root:
 
 ```powershell
 npm ci
+npm run lint --workspace=@mediavault/contracts
 npm run test:contracts
 ```
+
+The lint command uses the shared package Oxlint configuration, checks maintained
+`src/` and `test/` files, and excludes checked-in `dist/` output because it is
+generated from the source during package builds.

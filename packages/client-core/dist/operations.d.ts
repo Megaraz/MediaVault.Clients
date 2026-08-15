@@ -32,7 +32,7 @@ export type MediaDetailedByType = {
     [MediaType.Game]: GameEntryDetailedDto;
 };
 export declare function loginOperation(body: UserLoginDto): ApiOperation<LoginResponseDto>;
-export declare function registerOperation(body: UserRegisterDto): ApiOperation<UserDetailedDto>;
+export declare function registerOperation(body: UserRegisterDto): ApiOperation<void>;
 export declare function currentUserOperation(): ApiOperation<UserDetailedDto>;
 export declare function updateCurrentUserOperation(body: UserUpdateDto): ApiOperation<void>;
 export declare function usersOperation(): ApiOperation<UserDetailedDto[]>;

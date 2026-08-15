@@ -39,6 +39,11 @@ import RawgApiClient from '../../clients/RawgApiClient';
 import GoogleBooksApiClient from '../../clients/GoogleBooksApiClient';
 import type { SearchResult } from './TitleSearchInput';
 import type { GoogleBooksSearchResult } from '../../clients/GoogleBooksApiClient';
+import {
+  mapRawgGameMetadata,
+  mapTmdbMovieMetadata,
+  mapTmdbTvSeriesMetadata,
+} from '@mediavault/client-core';
 import { OperationType } from 'result-pattern-typescript/legacy';
 import { MediaEntryDtoValidator } from '../../validators/MediaEntry/MediaEntryDtoValidator';
 
@@ -148,46 +153,49 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
   const handleExternalResult = (result: SearchResult) => {
     if (formData.mediaType === MediaType.Game) {
       rawgClient.getGameById(Number(result.idExternal)).then((game) => {
-        if (game.rawgDescription) handleChange('overview', game.rawgDescription);
-        if (game.rawgReleased) handleChange('releaseDate', formatDateForInput(game.rawgReleased));
-        if (game.rawgMetacritic != null) handleChange('metacriticRating', game.rawgMetacritic);
-        if (game.rawgPlatforms) handleChange('platforms', game.rawgPlatforms.join(', '));
-        handleChange('website', game.rawgWebsite ?? '');
+        const metadata = mapRawgGameMetadata(game);
+        if (metadata.overview) handleChange('overview', metadata.overview);
+        if (metadata.releaseDate) handleChange('releaseDate', formatDateForInput(metadata.releaseDate));
+        handleChange('metacriticRating', metadata.metacriticRating);
+        handleChange('platforms', metadata.platforms.join(', '));
+        handleChange('website', metadata.website ?? '');
       }).catch(() => {});
     }
 
     if (formData.mediaType === MediaType.Movie) {
       tmdbClient.getMovieById(Number(result.idExternal)).then((movie) => {
-        if (movie.tmdbRunTimeMinutes) handleChange('runtimeMinutes', movie.tmdbRunTimeMinutes.toString());
-        if (movie.tmdbReleaseDate) handleChange('releaseDate', formatDateForInput(movie.tmdbReleaseDate));
-        if (movie.tmdbGenres) handleChange('genres', movie.tmdbGenres.map(g => g.tmdbGenreName ?? ''));
-        if (movie.tmdbOverview) handleChange('overview', movie.tmdbOverview);
+        const metadata = mapTmdbMovieMetadata(movie);
+        if (metadata.runtimeMinutes) handleChange('runtimeMinutes', metadata.runtimeMinutes.toString());
+        if (metadata.releaseDate) handleChange('releaseDate', formatDateForInput(metadata.releaseDate));
+        handleChange('genres', [...metadata.genres]);
+        if (metadata.overview) handleChange('overview', metadata.overview);
       }).catch(() => {});
     }
 
     if (formData.mediaType === MediaType.TvSeries) {
       tmdbClient.getTvSeriesById(Number(result.idExternal)).then((series) => {
+        const metadata = mapTmdbTvSeriesMetadata(series);
         setFormData(prev => ({
           ...prev,
-          overview: series.tmdbOverview ?? prev.overview,
-          releaseDate: series.tmdbFirstAirDate ? formatDateForInput(series.tmdbFirstAirDate) : prev.releaseDate,
-          lastAirDate: series.tmdbLastAirDate ?? prev.lastAirDate,
-          backdropImageUrl: series.tmdbBackdropPath ?? prev.backdropImageUrl,
-          genres: series.tmdbGenres ? series.tmdbGenres.map(g => g.tmdbGenreName ?? '') : prev.genres,
-          numberOfEpisodes: series.tmdbNumberOfEpisodes.toString(),
-          numberOfSeasons: series.tmdbNumberOfSeasons.toString(),
-          airingStatus: series.tmdbStatus ?? prev.airingStatus,
-          seasons: series.tmdbSeasons?.map(s => ({
-            seasonNumber: s.tmdbSeasonNumber.toString(),
-            name: s.tmdbName ?? '',
-            overview: s.tmdbOverview ?? '',
-            imageUrl: s.tmdbPosterPath ?? '',
-            airDate: s.tmdbAirDate ? formatDateForInput(s.tmdbAirDate) : '',
-            episodes: s.tmdbEpisodeCount.toString(),
+          overview: metadata.overview ?? prev.overview,
+          releaseDate: metadata.releaseDate ? formatDateForInput(metadata.releaseDate) : prev.releaseDate,
+          lastAirDate: metadata.lastAirDate ?? prev.lastAirDate,
+          backdropImageUrl: metadata.backdropImageUrl ?? prev.backdropImageUrl,
+          genres: metadata.genres.length > 0 ? [...metadata.genres] : prev.genres,
+          numberOfEpisodes: metadata.numberOfEpisodes.toString(),
+          numberOfSeasons: metadata.numberOfSeasons.toString(),
+          airingStatus: metadata.airingStatus ?? prev.airingStatus,
+          seasons: metadata.seasons.map((season) => ({
+            seasonNumber: season.seasonNumber.toString(),
+            name: season.name ?? '',
+            overview: season.overview ?? '',
+            imageUrl: season.imageUrl ?? '',
+            airDate: season.airDate ? formatDateForInput(season.airDate) : '',
+            episodes: season.episodes.toString(),
             watchedEpisodes: '0',
             status: 0,
             rating: 0,
-          })) ?? prev.seasons,
+          })),
         }));
       }).catch(() => {});
     }

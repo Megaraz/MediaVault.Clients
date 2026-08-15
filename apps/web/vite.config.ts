@@ -43,7 +43,12 @@ export default defineConfig({
     plugins: [plugin(), tailwindcss()],
     resolve: {
         alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url))
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+            // The shared ResultPattern package is intentionally CommonJS for
+            // Node consumers. Vite's dev server serves workspace packages
+            // directly to the browser, so resolve it to its typed source
+            // entry instead of exposing the CommonJS dist entry as ESM.
+            'result-pattern-typescript': fileURLToPath(new URL('../../packages/result-pattern-typescript/src/index.ts', import.meta.url)),
         }
     },
     server: {

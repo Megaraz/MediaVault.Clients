@@ -1,33 +1,15 @@
-import type { GameEntryCreateDto, GameEntryDetailedDto, GameEntryUpdateDto } from '@mediavault/contracts';
-import { apiFetch } from '../shared/apiFetch';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+import { MediaType, type GameEntryCreateDto, type GameEntryDetailedDto, type GameEntryUpdateDto } from '@mediavault/contracts';
+import { createMediaEntryOperation, updateMediaEntryOperation, validateMediaEntry } from '@mediavault/client-core';
+import { executeMobileOperation, throwOnFailure } from '../shared/apiFetch';
 
 export default class GameEntriesClient {
-  private baseUrl = `${API_BASE_URL}/mediaentries/games`;
-
-  async createGame(dto: GameEntryCreateDto): Promise<GameEntryDetailedDto> {
-    const response = await apiFetch(this.baseUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to create game entry: ' + errorMessage);
-    }
-    return response.json();
+  async createGame(dto: GameEntryCreateDto, signal?: AbortSignal): Promise<GameEntryDetailedDto> {
+    throwOnFailure(validateMediaEntry(dto));
+    return executeMobileOperation(createMediaEntryOperation(MediaType.Game, dto), signal);
   }
 
-  async updateGame(id: string, dto: GameEntryUpdateDto): Promise<void> {
-    const response = await apiFetch(`${this.baseUrl}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to update game entry: ' + errorMessage);
-    }
+  async updateGame(id: string, dto: GameEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+    throwOnFailure(validateMediaEntry(dto));
+    await executeMobileOperation(updateMediaEntryOperation(MediaType.Game, id, dto), signal);
   }
 }

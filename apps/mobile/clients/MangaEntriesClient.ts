@@ -1,33 +1,15 @@
-import type { MangaEntryCreateDto, MangaEntryDetailedDto, MangaEntryUpdateDto } from '@mediavault/contracts';
-import { apiFetch } from '../shared/apiFetch';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+import { MediaType, type MangaEntryCreateDto, type MangaEntryDetailedDto, type MangaEntryUpdateDto } from '@mediavault/contracts';
+import { createMediaEntryOperation, updateMediaEntryOperation, validateMediaEntry } from '@mediavault/client-core';
+import { executeMobileOperation, throwOnFailure } from '../shared/apiFetch';
 
 export default class MangaEntriesClient {
-  private baseUrl = `${API_BASE_URL}/mediaentries/manga`;
-
-  async createManga(dto: MangaEntryCreateDto): Promise<MangaEntryDetailedDto> {
-    const response = await apiFetch(this.baseUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to create manga entry: ' + errorMessage);
-    }
-    return response.json();
+  async createManga(dto: MangaEntryCreateDto, signal?: AbortSignal): Promise<MangaEntryDetailedDto> {
+    throwOnFailure(validateMediaEntry(dto));
+    return executeMobileOperation(createMediaEntryOperation(MediaType.Manga, dto), signal);
   }
 
-  async updateManga(id: string, dto: MangaEntryUpdateDto): Promise<void> {
-    const response = await apiFetch(`${this.baseUrl}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to update manga entry: ' + errorMessage);
-    }
+  async updateManga(id: string, dto: MangaEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+    throwOnFailure(validateMediaEntry(dto));
+    await executeMobileOperation(updateMediaEntryOperation(MediaType.Manga, id, dto), signal);
   }
 }

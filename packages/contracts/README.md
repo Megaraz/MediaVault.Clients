@@ -8,8 +8,11 @@ ResultPattern package.
 
 The ASP.NET Core API is authoritative. The baseline reviewed for version 1.0.0
 is `Megaraz/MediaVault.Api` main commit
-`a75bbb105edf99a01baa3ebb32a9b2fc4507c10f`. System.Text.Json's web defaults
-produce camel-case JSON property names and numeric enum values.
+`63f3599282c764c2019e33d9a20ae6f46e6dce90` on 2026-08-15. System.Text.Json's
+web defaults produce camel-case JSON property names and numeric enum values.
+That baseline also makes `POST /auth/register` a `204 No Content` operation;
+registration therefore has no response DTO in this package. Login continues to
+return `LoginResponseDto`.
 
 ## Ownership boundary
 

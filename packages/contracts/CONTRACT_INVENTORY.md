@@ -1,13 +1,13 @@
 # Shared contract inventory
 
 Reviewed against `Megaraz/MediaVault.Api` main commit
-`a75bbb105edf99a01baa3ebb32a9b2fc4507c10f` on 2026-08-14.
+`63f3599282c764c2019e33d9a20ae6f46e6dce90` on 2026-08-15.
 
 | Concern | API authority | Package decision |
 | --- | --- | --- |
 | Media entry base, concrete create/update/detail, minimal, and search DTOs | `media-vault-app.Application/DTOs/MediaEntry/` | Shared; web and Android call the same endpoints. |
 | Season create/update/detail/minimal DTOs | `media-vault-app.Application/DTOs/Season/` | Shared; these are nested TV-series wire contracts, not SQLite models. |
-| User auth and user DTOs | `media-vault-app.Application/DTOs/User/` | Shared; inline client copies currently disagree on `usernameOrEmail` and `createdAtUtc`. |
+| User auth and user DTOs | `media-vault-app.Application/DTOs/User/` | Shared; the package preserves `usernameOrEmail`, `createdAtUtc`, and the `204 No Content` registration response boundary. |
 | TMDB, RAWG, and Google Books app-facing DTOs | `media-vault-app.Application/DTOs/Tmdb/`, `Rawg/`, and `GoogleBooks/` | Shared; these are MediaVault's normalized responses, not upstream provider JSON. |
 | Ordinary and validation error bodies | `media-vault-app.API/Controllers/ResultResponseBodies.cs` | Shared; used by future ResultPattern-based client response mapping. |
 | `MediaType` and `Status` numeric values | `media-vault-app.Domain/Enums/` | Shared with backend names: `TvSeries` and `Ongoing`. |
@@ -17,19 +17,16 @@ Reviewed against `Megaraz/MediaVault.Api` main commit
 | Android `models/`, `database/`, and mapper entity types | Android application | Local domain/persistence contracts; never treat SQLite rows as API DTOs. |
 | Clients, services, validators, mappers, and capability adapters | each app, then `@mediavault/client-core` where approved | Excluded from this package; #27 owns the pure-core inventory. |
 
-## Known drift to resolve in migration issues
+## Migration outcomes
 
-- Both apps use `StatusType.OnGoing`; the API contract is `Status.Ongoing`.
-- Both apps use `MediaType.Series` and add `MediaType.All`; the API contract is
-  `MediaType.TvSeries`, while `All` remains a local filter sentinel.
-- Web uses `createdAt` for `UserDetailedDto`; the API returns `createdAtUtc`.
-- Client search results omit the backend-owned `mediaType` discriminator.
-- Web season DTOs use `ownerId`; the API uses `tvSeriesId`.
-- Client DTOs make several non-null API collections nullable and represent
-  request/TV-series season shapes inconsistently.
-- Provider detail DTOs use optional properties where the API returns required
-  properties whose values may be null.
+Issues #24 and #25 completed the web and Android migrations to this package.
+Both clients now use the shared API names and wire fields, including
+`Status.Ongoing`, `MediaType.TvSeries`, `createdAtUtc`, `mediaType`, and
+`tvSeriesId`. Application-local display labels such as `OnGoing` and `Series`,
+along with `All = -1`, remain presentation policy where applicable; they are
+not shared wire-contract values.
 
-Issues #24 and #25 must migrate imports and fix only the mechanical consumer
-assumptions exposed by these authoritative types. User-visible labels, forms,
-storage models, and platform behavior remain local.
+The clients also retain explicit local boundaries for forms, view models,
+SQLite rows/entities, provider presentation, and other application behavior.
+Future API changes should update this package and its inventory first, then
+coordinate the consumers using the process in the package README.

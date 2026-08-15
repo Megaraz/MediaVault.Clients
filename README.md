@@ -209,9 +209,10 @@ automated UI test suite.
 - The mobile SQLite path is not a general synchronization implementation.
 - iOS and Expo web scripts exist, but this repository does not claim they have
   been manually validated.
-- Client adoption of the shared contracts and client core, React Query,
-  offline sync, production telemetry, and AI recommendations remain future
-  work unless the checked-in code proves otherwise.
+- The shared contracts and client core are adopted for the approved
+  platform-neutral concerns. React Query, offline sync, production telemetry,
+  and AI recommendations remain future work unless the checked-in code proves
+  otherwise.
 
 Current work is tracked in the
 [MediaVault GitHub Project](https://github.com/users/Megaraz/projects/2).

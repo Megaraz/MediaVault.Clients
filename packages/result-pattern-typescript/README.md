@@ -92,12 +92,20 @@ From the repository root:
 ```powershell
 npm ci
 npm run test:result-pattern
+npm run lint --workspace=result-pattern-typescript
 npm run lint --workspace=media-vault-android
 npm run typecheck:mobile
 npm run doctor:mobile
 npm run lint --workspace=media-vault-app.client
 npm run build:web
 ```
+
+The package lint command uses the shared Oxlint configuration, checks maintained
+`src/` and `test/` files, and excludes checked-in `dist/` output because it is
+generated from the source during package builds.
+The baseline intentionally retains one warning, `no-control-regex` at
+`src/client.ts:164`, because that regex rejects control characters from public
+messages; it remains warning-level while the package boundary is established.
 
 An Android export remains the runtime-resolution proof for changes to package
 entry points or workspace resolution.

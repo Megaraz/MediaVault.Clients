@@ -8,110 +8,67 @@ import type {
   MovieEntryDetailedDto,
   TvSeriesEntryDetailedDto,
 } from '@mediavault/contracts';
-import { apiFetch } from '../shared/apiFetch';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+import { MediaType } from '@mediavault/contracts';
+import {
+  deleteMediaEntryOperation,
+  mediaEntriesOperation,
+  mediaEntryByIdOperation,
+  searchMediaEntriesOperation,
+  type ApiOperation,
+} from '@mediavault/client-core';
+import { executeMobileOperation } from '../shared/apiFetch';
 
 export default class MediaEntriesClient {
-  private baseUrl = `${API_BASE_URL}/mediaentries`;
-
   async searchMediaEntries(
     request: SearchRequestDto,
     page: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    signal?: AbortSignal,
   ): Promise<MediaEntryMinimalDto[]> {
-    const params = new URLSearchParams();
-    params.set('page', page.toString());
-    params.set('pageSize', pageSize.toString());
-
-    const response = await apiFetch(`${this.baseUrl}/search?${params}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to search media entries: ' + errorMessage);
-    }
-
-    return response.json();
+    return executeMobileOperation(searchMediaEntriesOperation(request, page, pageSize), signal);
   }
 
-  async getMediaEntries(pageNumber = 1, pageSize = 25): Promise<MediaEntryMinimalDto[]> {
-    const response = await apiFetch(
-      `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
-    );
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entries: ' + errorMessage);
-    }
-    return response.json();
+  async getMediaEntries(pageNumber = 1, pageSize = 25, signal?: AbortSignal): Promise<MediaEntryMinimalDto[]> {
+    return executeMobileOperation(mediaEntriesOperation(pageNumber, pageSize), signal);
   }
 
-  async getMangaById(entryId: string): Promise<MangaEntryDetailedDto> {
-    const response = await apiFetch(`${this.baseUrl}/manga/${entryId}`);
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entry: ' + errorMessage);
-    }
-    return response.json();
+  async getMangaById(entryId: string, signal?: AbortSignal): Promise<MangaEntryDetailedDto> {
+    return executeMobileOperation(mediaEntryByIdOperation(MediaType.Manga, entryId), signal);
   }
 
-  async getTvSeriesById(entryId: string): Promise<TvSeriesEntryDetailedDto> {
-    const response = await apiFetch(`${this.baseUrl}/tv-series/${entryId}`);
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entry: ' + errorMessage);
-    }
-    return response.json();
+  async getTvSeriesById(entryId: string, signal?: AbortSignal): Promise<TvSeriesEntryDetailedDto> {
+    return executeMobileOperation(mediaEntryByIdOperation(MediaType.TvSeries, entryId), signal);
   }
 
-  async getMovieById(entryId: string): Promise<MovieEntryDetailedDto> {
-    const response = await apiFetch(`${this.baseUrl}/movies/${entryId}`);
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entry: ' + errorMessage);
-    }
-    return response.json();
+  async getMovieById(entryId: string, signal?: AbortSignal): Promise<MovieEntryDetailedDto> {
+    return executeMobileOperation(mediaEntryByIdOperation(MediaType.Movie, entryId), signal);
   }
 
-  async getGameById(entryId: string): Promise<GameEntryDetailedDto> {
-    const response = await apiFetch(`${this.baseUrl}/games/${entryId}`);
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entry: ' + errorMessage);
-    }
-    return response.json();
+  async getGameById(entryId: string, signal?: AbortSignal): Promise<GameEntryDetailedDto> {
+    return executeMobileOperation(mediaEntryByIdOperation(MediaType.Game, entryId), signal);
   }
 
-  async getBookById(entryId: string): Promise<BookEntryDetailedDto> {
-    const response = await apiFetch(`${this.baseUrl}/books/${entryId}`);
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entry: ' + errorMessage);
-    }
-    return response.json();
+  async getBookById(entryId: string, signal?: AbortSignal): Promise<BookEntryDetailedDto> {
+    return executeMobileOperation(mediaEntryByIdOperation(MediaType.Book, entryId), signal);
   }
 
-  async getMediaEntryById(entryId: string): Promise<MediaEntryDetailedDto> {
-    const response = await apiFetch(`${this.baseUrl}/${entryId}`);
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to fetch media entry: ' + errorMessage);
-    }
-    return response.json();
+  async getMediaEntryById(entryId: string, signal?: AbortSignal): Promise<MediaEntryDetailedDto> {
+    return executeMobileOperation(mediaEntryByUnknownTypeOperation(entryId), signal);
   }
 
-  async deleteMediaEntry(entryId: string): Promise<void> {
-    const response = await apiFetch(`${this.baseUrl}/${entryId}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to delete media entry: ' + errorMessage);
-    }
+  async deleteMediaEntry(entryId: string, signal?: AbortSignal): Promise<void> {
+    await executeMobileOperation(deleteMediaEntryOperation(entryId), signal);
   }
+}
+
+// The generic detail endpoint cannot select a type-specific core operation.
+// Keep this service-facing adapter local until the core exposes a verified
+// generic detail factory; execution and safe error mapping remain shared.
+function mediaEntryByUnknownTypeOperation(entryId: string): ApiOperation<MediaEntryDetailedDto> {
+  return Object.freeze({
+    method: 'GET',
+    path: `/mediaentries/${encodeURIComponent(entryId)}`,
+    responseKind: 'json',
+    requiresAuthentication: true,
+  });
 }

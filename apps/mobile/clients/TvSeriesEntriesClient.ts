@@ -1,33 +1,15 @@
-import type { TvSeriesEntryCreateDto, TvSeriesEntryDetailedDto, TvSeriesEntryUpdateDto } from '@mediavault/contracts';
-import { apiFetch } from '../shared/apiFetch';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
+import { MediaType, type TvSeriesEntryCreateDto, type TvSeriesEntryDetailedDto, type TvSeriesEntryUpdateDto } from '@mediavault/contracts';
+import { createMediaEntryOperation, updateMediaEntryOperation, validateMediaEntry } from '@mediavault/client-core';
+import { executeMobileOperation, throwOnFailure } from '../shared/apiFetch';
 
 export default class TvSeriesEntriesClient {
-  private baseUrl = `${API_BASE_URL}/mediaentries/tv-series`;
-
-  async createTvSeries(dto: TvSeriesEntryCreateDto): Promise<TvSeriesEntryDetailedDto> {
-    const response = await apiFetch(this.baseUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to create TV series entry: ' + errorMessage);
-    }
-    return response.json();
+  async createTvSeries(dto: TvSeriesEntryCreateDto, signal?: AbortSignal): Promise<TvSeriesEntryDetailedDto> {
+    throwOnFailure(validateMediaEntry(dto));
+    return executeMobileOperation(createMediaEntryOperation(MediaType.TvSeries, dto), signal);
   }
 
-  async updateTvSeries(id: string, dto: TvSeriesEntryUpdateDto): Promise<void> {
-    const response = await apiFetch(`${this.baseUrl}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dto),
-    });
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error('Failed to update TV series entry: ' + errorMessage);
-    }
+  async updateTvSeries(id: string, dto: TvSeriesEntryUpdateDto, signal?: AbortSignal): Promise<void> {
+    throwOnFailure(validateMediaEntry(dto));
+    await executeMobileOperation(updateMediaEntryOperation(MediaType.TvSeries, id, dto), signal);
   }
 }

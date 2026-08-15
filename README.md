@@ -92,12 +92,10 @@ shared DTOs and numeric enum values. Both clients import those contracts from
 form/view state, and persistence models remain application-owned. Android's
 contract boundary and Metro verification are documented in
 `apps/mobile/docs/shared-contracts.md`.
-`packages/result-pattern-typescript` provides
-the platform-neutral, safe Result contract intended for both clients. Existing
-mobile workflows remain on its deprecated compatibility entry point until the
-separately scoped client-core and frontend migrations adopt the new API.
-`packages/client-core` establishes that shared behavior and injected capability
-boundary; application adoption remains in the dedicated web and Android issues.
+`packages/result-pattern-typescript` provides the platform-neutral, safe Result
+contract consumed by `packages/client-core`. Both applications use the core for
+approved API operations, validation, and provider metadata mapping; their
+storage, transport, UI, and persistence adapters remain application-owned.
 
 ## Architecture
 

@@ -119,8 +119,8 @@ Books credentials.
 
 ### Prerequisites
 
-- [Node.js 24](https://nodejs.org/) and npm. Expo SDK 54 requires at least
-  Node.js 20.19.x.
+- [Node.js 24](https://nodejs.org/) and npm. Expo SDK 57 and React Native 0.86
+  require at least Node.js 20.19.4.
 - A running local [MediaVault API](https://github.com/Megaraz/MediaVault.Api).
 - For mobile development, an Android emulator or physical Android device.
 - For the HTTPS web development server, a trusted ASP.NET Core development

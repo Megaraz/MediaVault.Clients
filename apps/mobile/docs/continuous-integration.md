@@ -6,7 +6,8 @@ pull request and on pushes to `main`.
 ## Checks
 
 - **Expo quality gates** uses Node.js 20.19.x and the root workspace lock file
-  to run `npm ci`, mobile lint, TypeScript checking, and Expo Doctor.
+  to run `npm ci`, mobile lint, TypeScript checking, and Expo Doctor for Expo
+  SDK 57.
 - **Web (Node 24)** uses the same root workspace lock file to run `npm ci`, web
   lint, and the production build.
 - **Dependency review** runs on pull requests and rejects newly introduced
@@ -20,6 +21,52 @@ pull request and on pushes to `main`.
 The workflows do not create an Android build, upload artifacts, start the API,
 or access an emulator. Each job has a bounded timeout, and a newer run for the
 same pull request or branch cancels an older run.
+
+## Expo SDK 57 dependency baseline
+
+The mobile workspace targets Expo `57.0.13` with React Native `0.86.2` and
+React `19.2.3`. Expo SDK 55 and later always use the New Architecture, so the
+obsolete `newArchEnabled` app-config field is not present. Android
+edge-to-edge is mandatory for the supported SDK/runtime, so the removed
+`android.edgeToEdgeEnabled` field is not replaced with a legacy system-bar
+setting. The existing `predictiveBackGestureEnabled` setting remains explicit.
+
+The web workspace uses React and React DOM `19.2.3` to share one React runtime
+with the mobile workspace. The platform-neutral `packages/*` workspaces have no
+React runtime or peer dependency and remain unchanged. The root `postcss`
+development dependency and override pin all workspace consumers to `8.5.26`,
+covering Expo Metro, Vite, Tailwind, and NativeWind without adding a nested
+older runtime.
+
+The root development dependencies also anchor the optional peers installed by
+the hoisted Expo CLI (`expo-router`, React Native, Reanimated, Worklets, and
+Metro config) to the SDK 57 versions. This keeps npm's workspace peer
+resolution on the same native runtime as `apps/mobile`; these are install-time
+deduplication anchors, not a second application dependency boundary.
+
+When changing the Expo SDK, run the supported alignment flow from the mobile
+workspace and then commit the resulting root lockfile:
+
+```powershell
+Push-Location apps\mobile
+npx expo install expo@^57.0.0 --fix
+Pop-Location
+npx expo-doctor@latest
+```
+
+Run the Android export from `apps/mobile/` so Expo resolves that workspace's
+`app.json`:
+
+```powershell
+Push-Location apps\mobile
+npx expo export --platform android --output-dir $exportPath
+Pop-Location
+```
+
+The migration also requires `npm ci`, the repository mobile and web quality
+gates, shared-package tests, and an Android Expo export. Do not commit
+generated native projects, Expo state, build output, local databases, or
+environment files.
 
 ## Mobile Oxlint configuration
 

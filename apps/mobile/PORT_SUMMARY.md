@@ -59,7 +59,7 @@
 
 ```bash
 # Install dependencies
-npm install
+npm ci
 
 # Set up environment
 cp .env.example .env.local
@@ -67,6 +67,9 @@ cp .env.example .env.local
 # Run on Android
 npm run android
 ```
+
+Expo SDK 57 requires Node.js 20.19.4 or newer. The workspace uses React Native
+0.86.2 and React 19.2.3.
 
 ## 📝 Next Steps (Not Included)
 

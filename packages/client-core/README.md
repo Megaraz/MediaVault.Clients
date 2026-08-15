@@ -29,8 +29,9 @@ generation, timestamps, and SQLite semantics; web has no equivalent domain
 model. Sharing them would turn the core into an Android persistence package.
 
 The duplicated provider-to-form logic in both clients is genuinely pure. The
-core therefore exposes provider-to-metadata mappers, while #28 and #29 remain
-responsible for adapting normalized numbers/dates/strings into local form state.
+core therefore exposes provider-to-metadata mappers, while the web and Android
+adopters remain responsible for adapting normalized numbers/dates/strings into
+local form state.
 
 ## Adapter shape
 

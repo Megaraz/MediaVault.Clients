@@ -15,11 +15,12 @@
 
 ## Adoption notes
 
-- #28 should implement a browser adapter and replace route construction, raw
-  response text errors, validation, and provider mapping only where this public
-  API fits.
-- #29 should implement an async SecureStore/fetch adapter and preserve the
-  Android services and SQLite mappers around the core.
-- Both migrations must use `@mediavault/contracts` names (`Ongoing`,
-  `TvSeries`, `usernameOrEmail`) and remove superseded local code only after
-  behavior is verified.
+- The web and Android migrations are complete in #28 and #29. Their adapters
+  use this public API for approved operations, validation, response/error
+  mapping, cancellation, and provider metadata while retaining the documented
+  browser and Android boundaries.
+- The remaining local services, compatibility validators, form conversion,
+  Android entity mappers, and persistence code are intentional. Do not remove
+  them without a separate boundary review.
+- The completed migrations use `@mediavault/contracts` names (`Ongoing`,
+  `TvSeries`, `usernameOrEmail`) and preserve the backend API contracts.

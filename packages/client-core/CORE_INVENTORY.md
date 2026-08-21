@@ -9,7 +9,7 @@
 | TMDB/RAWG/Google Books detail mapping | Share normalized metadata | The same deterministic mapping is embedded in both rendered UI components. |
 | Android DTO/entity mappers | Keep Android-local | Depend on Expo UUID generation, Android models, `Rating`, timestamps, relationships, and SQLite semantics; web has no equivalent target. |
 | Web/Android form serialization | Keep app-local | String/number conversion and empty-field behavior are presentation policy and should adapt to shared DTOs explicitly. |
-| Token persistence, request transport, base URL source | Keep app-local adapters | Browser `localStorage`, SecureStore, Vite proxying, and Expo environment configuration are platform capabilities. |
+| Token persistence, request transport, base URL source | Keep app-local adapters | Browser `sessionStorage`, SecureStore, Vite proxying/production environment configuration, and Expo environment configuration are platform capabilities. |
 | Services, hooks, navigation, UI, SQLite repositories and synchronization | Keep app-local | Application orchestration and platform behavior, not deterministic cross-client policy. |
 | Retry and timeout policy | Defer | No approved client policy exists; cancellation must be preserved and non-idempotent retries require a separate decision. |
 

@@ -16,7 +16,7 @@ Android can share without importing either runtime. It depends only on
 - provider DTO mappers normalize metadata into immutable primitives that an
   app can adapt to its own form or model.
 
-The package does not own `localStorage`, SecureStore, `fetch`, base URL
+The package does not own browser storage, SecureStore, `fetch`, base URL
 configuration, React, hooks, navigation, Expo, SQLite, UI state, rendered error
 messages, retries, or logging. Each app supplies a small transport adapter and
 retains its platform-specific orchestration.

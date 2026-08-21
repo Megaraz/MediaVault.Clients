@@ -57,9 +57,62 @@ The web API clients import approved platform-neutral behavior from
 cancellation handling, user/media validation, and provider metadata
 normalization belong to that package.
 
-`src/Clients/apiFetch.ts` is the browser adapter. It owns the `localStorage`
+`src/Clients/apiFetch.ts` is the browser adapter. It owns the `sessionStorage`
 token store and the browser `fetch` transport; the core receives those
 capabilities through dependency injection and never accesses browser globals.
 The web clients keep their class methods and DTO return shapes as adapters for
 the existing UI and router flows. Web-only form conversion, search-result view
 models, routing, hooks, components, and UI state remain under `apps/web`.
+
+## Production configuration
+
+Development uses relative API paths through Vite's HTTPS proxy. Production
+builds instead require an explicit public API origin:
+
+```powershell
+$env:VITE_MEDIA_VAULT_API_URL = 'https://api.example.com'
+npm run build:web
+```
+
+`VITE_MEDIA_VAULT_API_URL` must be an absolute HTTPS URL and cannot contain
+credentials, a query, a fragment, or a localhost host. A missing or invalid
+value stops the build before the application can issue an authenticated
+request. Copy `.env.example` to the ignored `.env.local` only for safe local
+values. Vite embeds every `VITE_*` value in browser assets, so this variable
+must never contain JWTs, passwords, API keys, or other secrets.
+
+The generated `dist` directory is a single-page application. Vite preview uses
+SPA fallback behavior, but the real static host must also rewrite every unknown
+application route, such as `/dashboard`, to `/index.html` while serving real
+asset files normally. Configure that equivalent fallback in the selected host;
+this repository does not currently select or deploy to a hosting provider.
+
+Verify the production artifact and a direct route refresh with:
+
+```powershell
+$env:VITE_MEDIA_VAULT_API_URL = 'https://api.example.com'
+npm run build:web
+npm run preview --workspace=media-vault-app.client -- --host 127.0.0.1
+```
+
+Open both `/` and `/dashboard` on the preview origin. Each route must return the
+same application shell, and `dist/index.html` must not contain the Tailwind CDN
+script or a localhost API target.
+
+## Web authentication storage
+
+The API contract remains JWT bearer authentication. The web adapter stores the
+token in same-tab `sessionStorage`, reads it only to attach the centralized
+`Authorization: Bearer` header, and removes it during logout. Closing the tab
+ends the browser session, and adapter startup removes tokens left in
+`localStorage` by older releases. The UI no longer promises a 30-day remembered
+login. This reduces persistence but does not make a token inaccessible to
+JavaScript, so XSS prevention remains security-critical. Do not log tokens or
+place them in Vite configuration.
+
+Initial current-user failures leave the UI unauthenticated under the existing
+backend response contract. Centralized authenticated-401 cleanup, expiry races,
+and cross-client session restoration are intentionally owned by
+[MediaVault.Clients issue #51](https://github.com/Megaraz/MediaVault.Clients/issues/51),
+not by this production-hosting change. An HttpOnly-cookie migration would need
+a separate coordinated API decision covering CORS, CSRF, and logout.

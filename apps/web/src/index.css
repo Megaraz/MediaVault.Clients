@@ -69,6 +69,10 @@ body {
 }
 
 @theme {
+  --color-primary: #0d7ff2;
+  --color-background-light: #f5f7f8;
+  --color-background-dark: #101922;
+  --font-display: Inter, "Segoe UI", sans-serif;
   --animate-fade-in: fadeIn 0.2s ease-out;
 }
 

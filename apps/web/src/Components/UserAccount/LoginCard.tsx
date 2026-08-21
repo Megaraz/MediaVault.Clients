@@ -119,20 +119,6 @@ export default function Login({ onCancel }: LoginProps) {
             </div>
           </div>
 
-          {/* Remember Me */}
-          <div className="flex items-center">
-            <input
-              className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] text-primary focus:ring-primary focus:ring-offset-0"
-              id="remember"
-              type="checkbox"
-            />
-            <label
-              className="ml-3 text-sm font-medium text-slate-600 dark:text-slate-400"
-              htmlFor="remember"
-            >
-              Remember me for 30 days
-            </label>
-          </div>
           {/* Submit */}
           {errorMessage && (
             <p className="text-sm text-red-400">{errorMessage}</p>

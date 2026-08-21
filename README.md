@@ -142,6 +142,24 @@ Open `https://localhost:61366`. Vite proxies API routes to
 `http://localhost:5210` by default. `ASPNETCORE_HTTPS_PORT` or
 `ASPNETCORE_URLS` can override the target.
 
+### Build the web client for production
+
+Production builds do not use the development proxy or its localhost fallback.
+Set the public HTTPS API origin explicitly:
+
+```powershell
+$env:VITE_MEDIA_VAULT_API_URL = 'https://api.example.com'
+npm run build:web
+```
+
+The build rejects a missing, invalid, credential-bearing, non-HTTPS, or
+localhost URL. `VITE_*` values are embedded in browser assets and must contain
+only public configuration. The selected static host must rewrite unknown
+application routes such as `/dashboard` to `/index.html`; see
+[the web production guide](apps/web/README.md#production-configuration) for
+artifact and direct-route verification. No production hosting provider or
+deployment is currently selected by this repository.
+
 ### Configure and start the mobile client
 
 Copy the safe example and edit the ignored local file:
@@ -175,8 +193,13 @@ must be configured safely to listen on that interface.
 ## Authentication and local data
 
 Both clients attach JWT bearer tokens through centralized transport helpers.
-The mobile client stores its token with `expo-secure-store`; tokens must never
-be moved to AsyncStorage, source code, logs, or `EXPO_PUBLIC_*` values.
+The web client keeps its token in same-tab `sessionStorage` until logout or tab
+closure and removes legacy `localStorage` tokens at startup. This limits
+persistence but does not protect a token from successful same-origin script
+injection. The mobile client stores its token with `expo-secure-store`. Tokens
+must never be moved to AsyncStorage, source code, logs, or public Vite/Expo
+variables. Cross-client expiry and authenticated-401 lifecycle work remains
+tracked in issue #51.
 
 The optional mobile database is experimental local persistence, not offline
 synchronization. The API remains authoritative, and local database files are

@@ -51,6 +51,8 @@ jobs:
     name: Web (Node 24)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      VITE_MEDIA_VAULT_API_URL: https://api.example.invalid
 
     steps:
       - name: Check out repository

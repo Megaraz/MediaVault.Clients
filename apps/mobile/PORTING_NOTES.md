@@ -146,14 +146,19 @@ The app uses **React Context API** for authentication state:
 ```typescript
 const { 
   currentUser,           // Current logged-in user object
+  authenticationStatus, // restoring | authenticated | unauthenticated
   isAuthenticated,       // Boolean auth status
-  isLoading,            // Loading state during auth check
-  login,                // Async login function
-  logout,               // Async logout function
-  refreshCurrentUser,   // Refresh user data from server
-  setCurrentUser        // Direct state setter
+  isLoading,             // Compatibility flag for the restoring state
+  login,                 // Async login function
+  logout,                // Async logout function
+  refreshCurrentUser    // Refresh user data from server
 } = useUser();
 ```
+
+The route-group guards wait while the session is restoring. Authenticated
+`401` responses and logout both clear SecureStore and the in-memory user through
+the centralized session lifecycle; transition identities prevent late startup
+or login responses from restoring stale state.
 
 ## Known Limitations & Future Enhancements
 

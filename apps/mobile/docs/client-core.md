@@ -7,8 +7,11 @@ validation, and provider-to-metadata mapping.
 `shared/apiFetch.ts` is the Android capability adapter. It supplies the Expo
 public API base URL, resolves the bearer token asynchronously through
 `tokenStore.ts`, and performs `fetch`. It does not log tokens or authorization
-headers. SecureStore, Expo Router, React Native components, form state, SQLite
-repositories, entity mappers, and synchronization stay Android-owned.
+headers. Authenticated `401` responses invoke the adapter's session-invalidated
+hook. The adapter clears the token only when the failed request still matches
+the current token, then notifies `UserContext` so persisted and in-memory state
+cannot diverge. SecureStore, Expo Router, React Native components, form state,
+SQLite repositories, entity mappers, and synchronization stay Android-owned.
 
 The existing validator classes remain small compatibility adapters so services
 and components can retain their local presentation-facing validation shape;

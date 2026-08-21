@@ -1,7 +1,8 @@
 import { useState } from "react";
 import ModalWindow from "../Shared/ModalWindow";
 import { useUser } from "../../Shared/useUser";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getAuthenticationReturnPath } from "../../Shared/authRedirect";
 
 type LoginProps = {
   onCancel: (toRegister: boolean) => void;
@@ -18,6 +19,7 @@ export default function Login({ onCancel }: LoginProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -28,7 +30,9 @@ export default function Login({ onCancel }: LoginProps) {
     try {
       await login({ usernameOrEmail: userNameOrEmail, password });
       onCancel(false); // Close the login modal
-      navigate("/dashboard"); // Redirect to the dashboard after successful login
+      navigate(getAuthenticationReturnPath(location.state) ?? "/dashboard", {
+        replace: true,
+      });
 
     } catch (error) {
       setErrorMessage(

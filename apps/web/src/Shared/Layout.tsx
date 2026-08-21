@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import RegisterUserCard from "../Components/UserAccount/RegisterUserCard";
 import Login from "../Components/UserAccount/LoginCard";
 import { useUser } from "./useUser";
+import { shouldOpenLogin } from "./authRedirect";
 
 export default function Layout() {
+  const location = useLocation();
   const [showRegisterPopup, setShowRegisterPopup] = useState(false);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(() =>
+    shouldOpenLogin(location.state),
+  );
   const { currentUser, isAuthenticated, isLoading, logout } = useUser();
 
   const openRegisterWindow = () => {

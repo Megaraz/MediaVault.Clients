@@ -110,9 +110,11 @@ login. This reduces persistence but does not make a token inaccessible to
 JavaScript, so XSS prevention remains security-critical. Do not log tokens or
 place them in Vite configuration.
 
-Initial current-user failures leave the UI unauthenticated under the existing
-backend response contract. Centralized authenticated-401 cleanup, expiry races,
-and cross-client session restoration are intentionally owned by
-[MediaVault.Clients issue #51](https://github.com/Megaraz/MediaVault.Clients/issues/51),
-not by this production-hosting change. An HttpOnly-cookie migration would need
-a separate coordinated API decision covering CORS, CSRF, and logout.
+The authentication context exposes restoring, authenticated, and unauthenticated
+states. Protected routes wait for restoration before redirecting and carry only
+a validated same-origin return path to the login flow. Any authenticated `401`
+invalidates the matching request session, removes the session token, and clears
+the current user. Transition identities prevent late restoration or login
+responses from resurrecting a session after logout or a newer login attempt.
+An HttpOnly-cookie migration would still need a separate coordinated API
+decision covering CORS, CSRF, and logout.

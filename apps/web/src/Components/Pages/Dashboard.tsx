@@ -9,7 +9,6 @@
 //   - Routing create/update calls to the correct type-specific client
 // ─────────────────────────────────────────────────────────────
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import {
   MediaType,
   Status,
@@ -112,10 +111,6 @@ export default function Dashboard() {
 
     void fetchMediaEntries();
   }, [client, currentUser, isAuthenticated]);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/" />;
-  }
 
   const loadDetailedEntry = async (
     entry: Pick<MediaEntryMinimalDto, "id" | "mediaType">,

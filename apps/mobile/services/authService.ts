@@ -5,7 +5,7 @@ import { UserDtoMapper } from '../mappers/User/UserDtoMapper';
 import { UserEntityMapper } from '../mappers/User/UserEntityMapper';
 import type { User } from '../models/User';
 import { featureFlags } from '../shared/featureFlags';
-import { createOfflineToken, getOfflineUserId, saveToken } from '../shared/tokenStore';
+import { createOfflineToken, getOfflineUserId } from '../shared/tokenStore';
 import { hashPassword, verifyPassword } from '../shared/passwordHash';
 import type {
   UserDetailedDto,
@@ -29,7 +29,7 @@ export class AuthService {
     this.userRepository = userRepository;
   }
 
-  public async loginAsync(credentials: UserLoginDto): Promise<UserDetailedDto> {
+  public async loginAsync(credentials: UserLoginDto): Promise<AuthenticatedSession> {
     const validation = this.userDtoValidator.validateLoginDto(
       credentials,
       this.errorContext('loginAsync', OperationType.Login),
@@ -41,8 +41,10 @@ export class AuthService {
       if (!result.isSuccess || !(await verifyPassword(credentials.password, result.value.passwordHash))) {
         throw new Error('Invalid username/email or password.');
       }
-      await saveToken(createOfflineToken(result.value.id));
-      return this.userEntityMapper.toDetailedDto(result.value);
+      return {
+        token: createOfflineToken(result.value.id),
+        user: this.userEntityMapper.toDetailedDto(result.value),
+      };
     }
 
     return this.usersClient.login(credentials);
@@ -108,3 +110,8 @@ export class AuthService {
     };
   }
 }
+
+export type AuthenticatedSession = {
+  readonly token: string;
+  readonly user: UserDetailedDto;
+};

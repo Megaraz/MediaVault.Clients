@@ -1,16 +1,20 @@
 import { Tabs, Redirect } from 'expo-router';
-import { Text } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { useUser } from '../../shared/UserContext';
 import { Colors } from '../../constants/theme';
 
 export default function DashboardLayout() {
-  const { isAuthenticated, isLoading } = useUser();
+  const { authenticationStatus } = useUser();
 
-  if (isLoading) {
-    return null;
+  if (authenticationStatus === 'restoring') {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator />
+      </View>
+    );
   }
 
-  if (!isAuthenticated) {
+  if (authenticationStatus === 'unauthenticated') {
     return <Redirect href={'/(auth)' as any} />;
   }
 

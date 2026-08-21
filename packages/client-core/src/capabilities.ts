@@ -29,6 +29,7 @@ export interface ClientCapabilities {
   readonly baseUrl: string;
   readonly accessToken: AccessTokenProvider;
   readonly transport: RequestTransport;
+  readonly onUnauthorized?: (request: CoreRequest) => MaybePromise<void>;
 }
 
 export async function executeOperation<TValue>(
@@ -45,6 +46,9 @@ export async function executeOperation<TValue>(
 
   try {
     const response = await capabilities.transport.send(request);
+    if (operation.requiresAuthentication && response.status === 401) {
+      await capabilities.onUnauthorized?.(request);
+    }
     return operation.responseKind === 'empty'
       ? emptyResultFromResponse(response) as Promise<Result<TValue>>
       : resultFromResponse<TValue>(response);

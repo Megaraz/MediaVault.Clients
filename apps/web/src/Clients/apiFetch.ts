@@ -4,26 +4,12 @@ import {
     type ClientCapabilities,
     type CoreRequest,
 } from "@mediavault/client-core";
+import { clearSessionForRequest } from "../Shared/sessionLifecycle";
+import { getToken } from "./tokenStore";
 
-const TOKEN_KEY = 'media_vault_auth_token';
 const API_BASE_URL = import.meta.env.DEV
     ? ""
     : import.meta.env.VITE_MEDIA_VAULT_API_URL;
-
-// Remove tokens persisted by releases before the session-scoped storage policy.
-localStorage.removeItem(TOKEN_KEY);
-
-export function saveToken(token: string): void {
-    sessionStorage.setItem(TOKEN_KEY, token);
-}
-
-export function getToken(): string | null {
-    return sessionStorage.getItem(TOKEN_KEY);
-}
-
-export function clearToken(): void {
-    sessionStorage.removeItem(TOKEN_KEY);
-}
 
 const webClientCapabilities: ClientCapabilities = {
     baseUrl: API_BASE_URL,
@@ -31,6 +17,7 @@ const webClientCapabilities: ClientCapabilities = {
     transport: {
         send: (request: CoreRequest) => fetch(request.url, toRequestInit(request)),
     },
+    onUnauthorized: (request) => clearSessionForRequest(request.headers.Authorization),
 };
 
 export type ClientFailure = {

@@ -40,6 +40,7 @@ const capabilities = {
   baseUrl,
   accessToken: { getAccessToken },
   transport: { send: (request) => fetch(request.url, request) },
+  onUnauthorized: (request) => clearSessionForRequest(request.headers.Authorization),
 };
 
 const result = await executeOperation(currentUserOperation(), capabilities, signal);
@@ -48,6 +49,13 @@ const result = await executeOperation(currentUserOperation(), capabilities, sign
 Adapters must not log tokens or request authorization headers. An absent token
 is allowed so the API can return its authoritative 401 response. Invalid token
 header values are rejected locally as unexpected failures.
+
+The optional `onUnauthorized` capability runs only for authenticated operations
+that receive `401`. Each platform compares the request token with its current
+token before clearing storage, so a late response from an older request cannot
+sign out a newer session. `SessionTransitionCoordinator` provides the shared,
+deterministic request-identity primitive used to reject stale restoration and
+login completions; token storage and UI state remain platform-owned.
 
 ## Verification
 

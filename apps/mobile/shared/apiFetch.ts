@@ -5,6 +5,7 @@ import {
   type CoreRequest,
 } from '@mediavault/client-core';
 import { getToken } from './tokenStore';
+import { clearSessionForRequest } from './sessionLifecycle';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_VAULT_API_URL || 'http://localhost:5210';
 
@@ -14,6 +15,7 @@ const mobileClientCapabilities: ClientCapabilities = {
   transport: {
     send: (request: CoreRequest) => fetch(request.url, toRequestInit(request)),
   },
+  onUnauthorized: (request) => clearSessionForRequest(request.headers.Authorization),
 };
 
 type MobileClientFailure = {

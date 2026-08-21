@@ -1,4 +1,5 @@
 import type {
+  LoginResponseDto,
   UserDetailedDto,
   UserLoginDto,
   UserRegisterDto,
@@ -16,19 +17,17 @@ import {
   validateUserUpdate,
   type ApiOperation,
 } from '@mediavault/client-core';
-import { clearToken, saveToken } from '../shared/tokenStore';
+import { clearSession } from '../shared/sessionLifecycle';
 import { executeMobileOperation, throwOnFailure } from '../shared/apiFetch';
 
 export default class UsersClient {
-  async login(credentials: UserLoginDto, signal?: AbortSignal): Promise<UserDetailedDto> {
+  async login(credentials: UserLoginDto, signal?: AbortSignal): Promise<LoginResponseDto> {
     throwOnFailure(validateUserLogin(credentials));
-    const data = await executeMobileOperation(loginOperation(credentials), signal);
-    await saveToken(data.token);
-    return data.user;
+    return executeMobileOperation(loginOperation(credentials), signal);
   }
 
   async logout(): Promise<void> {
-    await clearToken();
+    await clearSession();
   }
 
   async register(dto: UserRegisterDto, signal?: AbortSignal): Promise<void> {

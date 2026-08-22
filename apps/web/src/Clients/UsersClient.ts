@@ -1,4 +1,5 @@
 import type {
+    LoginResponseDto,
     UserDetailedDto,
     UserLoginDto,
     UserRegisterDto,
@@ -12,11 +13,10 @@ import {
     validateUserRegistration,
 } from "@mediavault/client-core";
 import {
-    clearToken,
     executeWebOperation,
-    saveToken,
     throwOnFailure,
 } from "./apiFetch";
+import { clearSession } from "../Shared/sessionLifecycle";
 
 export default class UsersClient {
     async getUsers(pageNumber: number = 1, pageSize: number = 10, signal?: AbortSignal): Promise<UserDetailedDto[]> {
@@ -28,11 +28,9 @@ export default class UsersClient {
         return executeWebOperation(usersOperation(), signal);
     }
 
-    async login(credentials: UserLoginDto, signal?: AbortSignal): Promise<UserDetailedDto> {
+    async login(credentials: UserLoginDto, signal?: AbortSignal): Promise<LoginResponseDto> {
         throwOnFailure(validateUserLogin(credentials));
-        const data = await executeWebOperation(loginOperation(credentials), signal);
-        saveToken(data.token);
-        return data.user;
+        return executeWebOperation(loginOperation(credentials), signal);
     }
 
     async registerUser(user: UserRegisterDto, signal?: AbortSignal): Promise<void> {
@@ -41,7 +39,7 @@ export default class UsersClient {
     }
 
     async logout(): Promise<void> {
-        clearToken();
+        await clearSession();
     }
 
     async getCurrentUser(signal?: AbortSignal): Promise<UserDetailedDto> {

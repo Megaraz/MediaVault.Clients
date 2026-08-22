@@ -18,6 +18,7 @@ export interface ClientCapabilities {
     readonly baseUrl: string;
     readonly accessToken: AccessTokenProvider;
     readonly transport: RequestTransport;
+    readonly onUnauthorized?: (request: CoreRequest) => MaybePromise<void>;
 }
 export declare function executeOperation<TValue>(operation: ApiOperation<TValue>, capabilities: ClientCapabilities, signal?: AbortSignal): Promise<Result<TValue>>;
 //# sourceMappingURL=capabilities.d.ts.map

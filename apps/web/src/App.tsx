@@ -4,6 +4,7 @@ import HomePage from "./Components/Pages/HomePage";
 import Dashboard from "./Components/Pages/Dashboard";
 import "./App.css";
 import { UserProvider } from "./Shared/UserContext";
+import RequireAuthentication from "./Shared/RequireAuthentication";
 
 const router = createBrowserRouter([
   {
@@ -13,7 +14,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <Dashboard />,
+    element: (
+      <RequireAuthentication>
+        <Dashboard />
+      </RequireAuthentication>
+    ),
   },
 ]);
 

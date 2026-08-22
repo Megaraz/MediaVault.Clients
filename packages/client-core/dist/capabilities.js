@@ -9,6 +9,9 @@ export async function executeOperation(operation, capabilities, signal) {
     }
     try {
         const response = await capabilities.transport.send(request);
+        if (operation.requiresAuthentication && response.status === 401) {
+            await capabilities.onUnauthorized?.(request);
+        }
         return operation.responseKind === 'empty'
             ? emptyResultFromResponse(response)
             : resultFromResponse(response);

@@ -115,6 +115,46 @@ test('maps safe HTTP failures and cancellation through ResultPattern v2', async 
   assert.equal(cancellation.error.kind, 'cancelled');
 });
 
+test('notifies the platform only for authenticated 401 responses', async () => {
+  const { currentUserOperation, executeOperation, loginOperation } = await core();
+  const unauthorizedRequests = [];
+  const capabilities = {
+    baseUrl: '',
+    accessToken: { getAccessToken: () => 'expired-token' },
+    transport: { send: async () => new Response(null, { status: 401 }) },
+    onUnauthorized: async (request) => { unauthorizedRequests.push(request); },
+  };
+
+  await executeOperation(currentUserOperation(), capabilities);
+  await executeOperation(
+    loginOperation({ usernameOrEmail: 'user', password: 'password' }),
+    capabilities,
+  );
+
+  assert.equal(unauthorizedRequests.length, 1);
+  assert.equal(unauthorizedRequests[0].headers.Authorization, 'Bearer expired-token');
+});
+
+test('invalidates stale authentication transitions deterministically', async () => {
+  const { SessionTransitionCoordinator } = await core();
+  const coordinator = new SessionTransitionCoordinator();
+  let invalidations = 0;
+  const unsubscribe = coordinator.subscribe(() => { invalidations += 1; });
+
+  const restoration = coordinator.beginTransition();
+  const login = coordinator.beginTransition();
+  assert.equal(coordinator.isCurrent(restoration), false);
+  assert.equal(coordinator.isCurrent(login), true);
+
+  coordinator.invalidate();
+  assert.equal(coordinator.isCurrent(login), false);
+  assert.equal(invalidations, 1);
+
+  unsubscribe();
+  coordinator.invalidate();
+  assert.equal(invalidations, 1);
+});
+
 test('preserves expected not-found and provider rate-limit failures', async () => {
   const { executeOperation, rawgGameByIdOperation, userByIdOperation } = await core();
   const capabilities = (response) => ({

@@ -1,17 +1,14 @@
 import { View, Text, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { useUser } from '../../shared/UserContext';
 import { Colors, S } from '../../constants/theme';
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const { currentUser, logout } = useUser();
 
   const handleLogout = async () => {
     try {
       await logout();
-      router.replace('/(auth)' as any);
     } catch (error) {
       Alert.alert('Logout Error', (error as Error).message);
     }

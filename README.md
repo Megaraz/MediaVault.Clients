@@ -198,8 +198,14 @@ closure and removes legacy `localStorage` tokens at startup. This limits
 persistence but does not protect a token from successful same-origin script
 injection. The mobile client stores its token with `expo-secure-store`. Tokens
 must never be moved to AsyncStorage, source code, logs, or public Vite/Expo
-variables. Cross-client expiry and authenticated-401 lifecycle work remains
-tracked in issue #51.
+variables.
+
+Both clients expose restoring, authenticated, and unauthenticated session
+states. Protected routes wait for restoration, and authenticated `401`
+responses invalidate the matching request session, clear persisted credentials,
+and remove the in-memory user. Session transition identities prevent late
+startup or login responses from restoring a session after logout or a newer
+authentication attempt.
 
 The optional mobile database is experimental local persistence, not offline
 synchronization. The API remains authoritative, and local database files are

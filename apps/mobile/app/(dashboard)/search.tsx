@@ -1,15 +1,43 @@
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useState, useRef, useEffect } from 'react';
 import { PagedRequestCoordinator } from '@mediavault/client-core';
-import type { MediaEntryMinimalDto } from '@mediavault/contracts';
+import {
+  MediaType,
+  Status,
+  type MediaEntryDetailedDto,
+  type MediaEntryMinimalDto,
+  type SeasonUpdateDto,
+} from '@mediavault/contracts';
 import { useUser } from '../../shared/UserContext';
 import { MediaEntryService } from '../../services/mediaEntryService';
 import { MediaTypeLabels } from '../../shared/mediaConstants';
 import { Colors, S } from '../../constants/theme';
+import MediaEntrySheet from '../../components/media-entry/MediaEntrySheet';
+import type { MediaEntryFormData, SeasonFormData } from '../../components/media-entry/MediaEntryForm';
 
 const DEBOUNCE_DELAY_MS = 400;
 const MIN_SEARCH_LENGTH = 3;
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+
+function toSeasonUpdateDto(season: SeasonFormData, entryId: string): SeasonUpdateDto {
+  return {
+    id: season.id ?? EMPTY_GUID,
+    tvSeriesId: season.tvSeriesId ?? entryId,
+    idExternal: season.idExternal ?? null,
+    name: season.name || null,
+    overview: season.overview || null,
+    imageUrl: season.imageUrl || null,
+    seasonNumber: parseInt(season.seasonNumber) || 0,
+    airDate: season.airDate || null,
+    watchedEpisodes: parseInt(season.watchedEpisodes) || 0,
+    episodes: parseInt(season.episodes) || 0,
+    status: season.status as Status,
+    rating: season.rating,
+    createdAtUtc: season.createdAtUtc ?? '0001-01-01T00:00:00.000Z',
+    updatedAtUtc: season.updatedAtUtc ?? '0001-01-01T00:00:00.000Z',
+  };
+}
 
 export default function SearchScreen() {
   const { currentUser } = useUser();
@@ -20,9 +48,92 @@ export default function SearchScreen() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto | undefined>();
+  const [isOpeningEntry, setIsOpeningEntry] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestCoordinator = useRef(new PagedRequestCoordinator());
   const requestController = useRef<AbortController | null>(null);
+
+  const loadDetailedEntry = async (entry: Pick<MediaEntryMinimalDto, 'id' | 'mediaType'>): Promise<MediaEntryDetailedDto> => {
+    if (!currentUser) throw new Error('Not authenticated.');
+    switch (entry.mediaType) {
+      case MediaType.Movie: return mediaEntryService.getMovieByIdAsync(currentUser.id, entry.id);
+      case MediaType.TvSeries: return mediaEntryService.getTvSeriesByIdAsync(currentUser.id, entry.id);
+      case MediaType.Game: return mediaEntryService.getGameByIdAsync(currentUser.id, entry.id);
+      case MediaType.Book: return mediaEntryService.getBookByIdAsync(currentUser.id, entry.id);
+      case MediaType.Manga: return mediaEntryService.getMangaByIdAsync(currentUser.id, entry.id);
+      default: return mediaEntryService.getDetailedByIdAsync(currentUser.id, entry.id);
+    }
+  };
+
+  const handleOpenEntry = async (entry: MediaEntryMinimalDto) => {
+    if (isOpeningEntry) return;
+    setIsOpeningEntry(true);
+    try {
+      setSelectedEntry(await loadDetailedEntry(entry));
+      setSheetVisible(true);
+    } catch {
+      Alert.alert('Unable to open entry', 'The entry could not be loaded. Please try again.');
+    } finally {
+      setIsOpeningEntry(false);
+    }
+  };
+
+  const handleCloseSheet = () => {
+    setSheetVisible(false);
+    setSelectedEntry(undefined);
+  };
+
+  const handleSubmit = async (formData: MediaEntryFormData, entryId?: string) => {
+    if (!currentUser || !entryId) throw new Error('Unable to save this entry. Please try again.');
+    const baseFields = {
+      idExternal: formData.idExternal ?? null,
+      title: formData.title ?? '',
+      status: formData.status as Status,
+      rating: formData.rating,
+      imageUrl: formData.imageUrl?.trim() || null,
+      review: formData.review || null,
+      overview: formData.overview || null,
+      genres: formData.genres,
+      ...(formData.releaseDate ? { releaseDate: formData.releaseDate } : {}),
+    };
+    const platforms = formData.platforms?.split(',').map((value) => value.trim()).filter(Boolean);
+
+    switch (formData.mediaType) {
+      case MediaType.Movie:
+        await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Movie, { ...baseFields, runtimeMinutes: Number(formData.runtimeMinutes) || 0 });
+        break;
+      case MediaType.TvSeries:
+        await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.TvSeries, {
+          ...baseFields,
+          numberOfSeasons: Number(formData.numberOfSeasons) || 0,
+          numberOfEpisodes: Number(formData.numberOfEpisodes) || 0,
+          totalWatchedEpisodes: Number(formData.totalWatchedEpisodes) || 0,
+          backdropImageUrl: formData.backdropImageUrl ?? null,
+          lastAirDate: formData.lastAirDate ?? null,
+          airingStatus: formData.airingStatus ?? null,
+          seasons: (formData.seasons ?? []).map((season) => toSeasonUpdateDto(season, entryId)),
+        });
+        break;
+      case MediaType.Game:
+        await mediaEntryService.updateAsync(currentUser.id, entryId, MediaType.Game, { ...baseFields, hoursPlayed: Number(formData.hoursPlayed) || 0, metacriticRating: formData.metacriticRating ?? 0, website: formData.website?.trim() || undefined, platforms });
+        break;
+      case MediaType.Book:
+      case MediaType.Manga:
+        await mediaEntryService.updateAsync(currentUser.id, entryId, formData.mediaType, { ...baseFields, author: formData.author || null });
+        break;
+      default:
+        throw new Error('Unable to save this entry. Please try again.');
+    }
+    setSearchResults((entries) => entries.map((entry) => entry.id === entryId ? { ...entry, ...baseFields } : entry));
+  };
+
+  const handleDelete = async (entryId: string) => {
+    if (!currentUser) throw new Error('Unable to delete this entry. Please try again.');
+    await mediaEntryService.deleteAsync(currentUser.id, entryId);
+    setSearchResults((entries) => entries.filter((entry) => entry.id !== entryId));
+  };
 
   const executeSearch = useCallback(async (query: string, requestedPage: number) => {
     if (!currentUser) return;
@@ -146,7 +257,16 @@ export default function SearchScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.resultsList}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.resultCard} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.resultCard}
+              activeOpacity={0.7}
+              disabled={isOpeningEntry}
+              onPress={() => void handleOpenEntry(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${item.title}`}
+              accessibilityHint="Opens this library entry for editing"
+              accessibilityState={{ disabled: isOpeningEntry }}
+            >
               {item.imageUrl ? (
                 <Image
                   source={{ uri: item.imageUrl }}
@@ -200,6 +320,13 @@ export default function SearchScreen() {
           <Text style={styles.emptyStateText}>No results found</Text>
         </View>
       )}
+      <MediaEntrySheet
+        visible={sheetVisible}
+        detailedEntry={selectedEntry}
+        onSubmit={handleSubmit}
+        onDelete={handleDelete}
+        onClose={handleCloseSheet}
+      />
     </SafeAreaView>
   );
 }

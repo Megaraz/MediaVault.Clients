@@ -1,3 +1,4 @@
+import { isValidRating, } from '@mediavault/contracts';
 import { success, validationFailure } from 'result-pattern-typescript';
 export function validateUserLogin(dto) {
     if (dto == null)
@@ -36,7 +37,11 @@ export function validateUserUpdate(dto) {
 export function validateMediaEntry(dto) {
     if (dto == null)
         return requiredObject();
-    return requiredFields([['title', dto.title, 'Title is required.']]);
+    const errors = collectRequired([['title', dto.title, 'Title is required.']]);
+    if (!isValidRating(dto.rating)) {
+        errors.push({ field: 'rating', message: 'Rating must be between 0 and 5 in 0.5 increments.' });
+    }
+    return fromErrors(errors);
 }
 function requiredFields(fields) {
     return fromErrors(collectRequired(fields));

@@ -159,7 +159,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
         handleChange('metacriticRating', metadata.metacriticRating);
         handleChange('platforms', metadata.platforms.join(', '));
         handleChange('website', metadata.website ?? '');
-      }).catch(() => {});
+      }).catch(() => setError('Unable to load game details. You can still enter the details manually.'));
     }
 
     if (formData.mediaType === MediaType.Movie) {
@@ -169,7 +169,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
         if (metadata.releaseDate) handleChange('releaseDate', formatDateForInput(metadata.releaseDate));
         handleChange('genres', [...metadata.genres]);
         if (metadata.overview) handleChange('overview', metadata.overview);
-      }).catch(() => {});
+      }).catch(() => setError('Unable to load movie details. You can still enter the details manually.'));
     }
 
     if (formData.mediaType === MediaType.TvSeries) {
@@ -197,7 +197,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
             rating: 0,
           })),
         }));
-      }).catch(() => {});
+      }).catch(() => setError('Unable to load TV series details. You can still enter the details manually.'));
     }
 
     // Books: author is already in the Android-local search view model.
@@ -346,7 +346,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
               >
                 {error && (
                   <View style={styles.errorBanner}>
-                    <Text style={styles.errorText}>{error}</Text>
+                    <Text style={styles.errorText} accessibilityLiveRegion="assertive">{error}</Text>
                   </View>
                 )}
                 <MediaEntryForm

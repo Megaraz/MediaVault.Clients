@@ -1,5 +1,6 @@
-import type {
-  MediaEntryCreateDto,
+import {
+  isValidRating,
+  type MediaEntryCreateDto,
   MediaEntryUpdateDto,
   UserLoginDto,
   UserRegisterDto,
@@ -46,7 +47,11 @@ export function validateMediaEntry(
   dto: MediaEntryCreateDto | MediaEntryUpdateDto | null | undefined,
 ): Result<void> {
   if (dto == null) return requiredObject();
-  return requiredFields([['title', dto.title, 'Title is required.']]);
+  const errors = collectRequired([['title', dto.title, 'Title is required.']]);
+  if (!isValidRating(dto.rating)) {
+    errors.push({ field: 'rating', message: 'Rating must be between 0 and 5 in 0.5 increments.' });
+  }
+  return fromErrors(errors);
 }
 
 type RequiredField = readonly [field: string, value: string | null | undefined, message: string];

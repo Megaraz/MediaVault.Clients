@@ -29,6 +29,16 @@ export interface MediaEntryMinimalDto {
   createdAtUtc: string;
 }
 
+export interface PagedResponseDto<T> {
+  items: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface MediaEntryCreateDto {
   idExternal?: string | null;
   status: Status;

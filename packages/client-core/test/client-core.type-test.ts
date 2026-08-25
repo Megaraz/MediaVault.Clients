@@ -2,6 +2,7 @@ import { MediaType, Status, type MovieEntryCreateDto } from '@mediavault/contrac
 import type { Result } from 'result-pattern-typescript';
 import {
   createMediaEntryOperation,
+  createPagedResponse,
   executeOperation,
   type ClientCapabilities,
   type MovieMetadata,
@@ -19,5 +20,6 @@ const capabilities = undefined as unknown as ClientCapabilities;
 const result: Promise<Result<import('@mediavault/contracts').MovieEntryDetailedDto>> =
   executeOperation(operation, capabilities);
 const metadata = undefined as unknown as MovieMetadata;
+const page = createPagedResponse([], 1, 25, 0);
 
-void [result, metadata];
+void [result, metadata, page];

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { PagedRequestCoordinator } from "@mediavault/client-core";
 import type { MediaEntryMinimalDto } from "@mediavault/contracts";
 import MediaEntriesClient from "../../Clients/MediaEntriesClient";
 import { MediaTypeLabels } from "../../Shared/mediaConstants";
@@ -20,7 +21,48 @@ export default function MainHeader({
   const [searchResults, setSearchResults] = useState<MediaEntryMinimalDto[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestCoordinator = useRef(new PagedRequestCoordinator());
+  const requestController = useRef<AbortController | null>(null);
+
+  const executeSearch = useCallback(async (query: string, requestedPage: number) => {
+    const normalizedQuery = query.trim();
+    const ticket = requestCoordinator.current.begin(`search:${normalizedQuery}:${requestedPage}`);
+    if (!ticket) return;
+
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchResults([]);
+    setPageNumber(requestedPage);
+    setShowDropdown(true);
+    try {
+      const response = await client.searchMediaEntries(
+        { query: normalizedQuery },
+        requestedPage,
+        10,
+        controller.signal,
+      );
+      if (!requestCoordinator.current.isCurrent(ticket)) return;
+
+      setSearchResults(response.items);
+      setPageNumber(response.pageNumber);
+      setTotalPages(response.totalPages);
+    } catch (error) {
+      if (requestCoordinator.current.isCurrent(ticket)) {
+        setSearchResults([]);
+        setSearchError((error as Error).message);
+      }
+    } finally {
+      requestCoordinator.current.complete(ticket);
+      if (requestCoordinator.current.isCurrent(ticket)) setIsSearching(false);
+    }
+  }, [client]);
 
   useEffect(() => {
     if (debounceTimer.current) {
@@ -28,23 +70,20 @@ export default function MainHeader({
     }
 
     if (searchQuery.length < MIN_SEARCH_LENGTH) {
+      requestController.current?.abort();
+      requestCoordinator.current.invalidate();
       setSearchResults([]);
       setShowDropdown(false);
+      setSearchError(null);
+      setPageNumber(1);
+      setTotalPages(0);
       return;
     }
 
-    debounceTimer.current = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const results = await client.searchMediaEntries({ query: searchQuery });
-        setSearchResults(results);
-        setShowDropdown(results.length > 0);
-      } catch {
-        setSearchResults([]);
-        setShowDropdown(false);
-      } finally {
-        setIsSearching(false);
-      }
+    requestController.current?.abort();
+    requestCoordinator.current.invalidate();
+    debounceTimer.current = setTimeout(() => {
+      void executeSearch(searchQuery, 1);
     }, DEBOUNCE_DELAY_MS);
 
     return () => {
@@ -52,7 +91,15 @@ export default function MainHeader({
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [client, searchQuery]);
+  }, [executeSearch, searchQuery]);
+
+  useEffect(() => {
+    const coordinator = requestCoordinator.current;
+    return () => {
+      requestController.current?.abort();
+      coordinator.invalidate();
+    };
+  }, []);
 
   const handleSelectResult = (entry: MediaEntryMinimalDto) => {
     setSearchQuery("");
@@ -77,7 +124,7 @@ export default function MainHeader({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => {
-                if (searchResults.length > 0) setShowDropdown(true);
+                if (searchQuery.length >= MIN_SEARCH_LENGTH) setShowDropdown(true);
               }}
               onBlur={() => {
                 setTimeout(() => setShowDropdown(false), 150);
@@ -95,7 +142,27 @@ export default function MainHeader({
 
             {/* Dropdown with search results */}
             {showDropdown && (
-              <ul className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
+              <div className="absolute z-50 mt-1 w-full max-h-80 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
+                {searchError && (
+                  <div className="p-4 text-sm text-red-700 dark:text-red-300" role="alert">
+                    <p>Search failed. {searchError}</p>
+                    <button
+                      type="button"
+                      className="mt-2 font-semibold text-primary"
+                      disabled={isSearching}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        void executeSearch(searchQuery, pageNumber);
+                      }}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
+                {!isSearching && !searchError && searchResults.length === 0 && (
+                  <p className="p-4 text-sm text-slate-500">No entries match this search.</p>
+                )}
+                <ul>
                 {searchResults.map((entry) => (
                   <li
                     key={entry.id}
@@ -119,7 +186,35 @@ export default function MainHeader({
                     </div>
                   </li>
                 ))}
-              </ul>
+                </ul>
+                {!searchError && totalPages > 0 && (
+                  <div className="flex items-center justify-between border-t border-slate-200 p-2 text-xs dark:border-slate-700">
+                    <button
+                      type="button"
+                      className="rounded px-2 py-1 font-semibold text-primary disabled:opacity-40"
+                      disabled={isSearching || pageNumber <= 1}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        void executeSearch(searchQuery, pageNumber - 1);
+                      }}
+                    >
+                      Previous
+                    </button>
+                    <span>Page {pageNumber} of {totalPages}</span>
+                    <button
+                      type="button"
+                      className="rounded px-2 py-1 font-semibold text-primary disabled:opacity-40"
+                      disabled={isSearching || pageNumber >= totalPages}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        void executeSearch(searchQuery, pageNumber + 1);
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

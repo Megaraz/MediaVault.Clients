@@ -4,6 +4,8 @@ import {
   type ErrorResponseBody,
   type LoginResponseDto,
   type MediaEntryDetailedDto,
+  type MediaEntryMinimalDto,
+  type PagedResponseDto,
   type TvSeriesEntryCreateDto,
   type ValidationErrorResponseBody,
 } from '../src/index.js';
@@ -34,6 +36,16 @@ const createTvSeries = {
   seasons: [],
 } satisfies TvSeriesEntryCreateDto;
 
+const mediaPage = {
+  items: [] as MediaEntryMinimalDto[],
+  pageNumber: 1,
+  pageSize: 25,
+  totalCount: 0,
+  totalPages: 0,
+  hasNextPage: false,
+  hasPreviousPage: false,
+} satisfies PagedResponseDto<MediaEntryMinimalDto>;
+
 const login = {
   user: {
     id: '00000000-0000-0000-0000-000000000002',
@@ -50,4 +62,4 @@ const validationError = {
   validationErrors: [{ field: 'title', message: 'A title is required.' }],
 } satisfies ValidationErrorResponseBody;
 
-void [mediaTypeValue, statusValue, mediaEntry, createTvSeries, login, ordinaryError, validationError];
+void [mediaTypeValue, statusValue, mediaEntry, mediaPage, createTvSeries, login, ordinaryError, validationError];

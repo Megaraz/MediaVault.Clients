@@ -5,6 +5,7 @@
 | API route/method/query/body construction in both apps' `Clients/` and `clients/` | Share | Near-duplicate and platform-neutral; several user routes had already drifted from the API. |
 | Bearer attachment and base URL resolution | Inject token and transport capabilities; build the safe request in core | Web token reads are synchronous and mobile SecureStore reads are asynchronous. Storage and `fetch` stay local. |
 | Response/error/cancellation mapping | Share by composing ResultPattern v2 | Existing clients throw raw response text; the v2 API already owns safe error interpretation and cancellation. |
+| Pagination operation types, metadata derivation, and request identity | Share | Both clients need the same envelope plus deterministic duplicate/stale request protection; rendering and retry interaction remain app-local. |
 | User and media title validation | Share | Pure rules mirror current backend-required fields and produce field-safe ResultPattern failures. |
 | TMDB/RAWG/Google Books detail mapping | Share normalized metadata | The same deterministic mapping is embedded in both rendered UI components. |
 | Android DTO/entity mappers | Keep Android-local | Depend on Expo UUID generation, Android models, `Rating`, timestamps, relationships, and SQLite semantics; web has no equivalent target. |
@@ -24,3 +25,7 @@
   them without a separate boundary review.
 - The completed migrations use `@mediavault/contracts` names (`Ongoing`,
   `TvSeries`, `usernameOrEmail`) and preserve the backend API contracts.
+- Issue #52 adds `PagedRequestCoordinator` as the platform-neutral request
+  identity boundary. Web and Android use it to reject duplicate in-flight page
+  requests and ignore stale completions while keeping AbortController and UI
+  state in their platform adapters.

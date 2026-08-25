@@ -4,6 +4,7 @@ import type {
   MangaEntryDetailedDto,
   MediaEntryDetailedDto,
   MediaEntryMinimalDto,
+  PagedResponseDto,
   SearchRequestDto,
   MovieEntryDetailedDto,
   TvSeriesEntryDetailedDto,
@@ -24,11 +25,11 @@ export default class MediaEntriesClient {
     page: number = 1,
     pageSize: number = 10,
     signal?: AbortSignal,
-  ): Promise<MediaEntryMinimalDto[]> {
+  ): Promise<PagedResponseDto<MediaEntryMinimalDto>> {
     return executeMobileOperation(searchMediaEntriesOperation(request, page, pageSize), signal);
   }
 
-  async getMediaEntries(pageNumber = 1, pageSize = 25, signal?: AbortSignal): Promise<MediaEntryMinimalDto[]> {
+  async getMediaEntries(pageNumber = 1, pageSize = 25, signal?: AbortSignal): Promise<PagedResponseDto<MediaEntryMinimalDto>> {
     return executeMobileOperation(mediaEntriesOperation(pageNumber, pageSize), signal);
   }
 

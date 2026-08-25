@@ -21,6 +21,7 @@ import type {
   MangaEntryUpdateDto,
   MediaEntryDetailedDto,
   MediaEntryMinimalDto,
+  PagedResponseDto,
   MovieEntryCreateDto,
   MovieEntryDetailedDto,
   MovieEntryUpdateDto,
@@ -28,6 +29,7 @@ import type {
   TvSeriesEntryDetailedDto,
   TvSeriesEntryUpdateDto,
 } from '@mediavault/contracts';
+import { createPagedResponse } from '@mediavault/client-core';
 import { MediaEntryRepo } from '../database/repos/MediaEntryRepo';
 import { UserRepo } from '../database/repos/UserRepo';
 import { featureFlags } from '../shared/featureFlags';
@@ -136,36 +138,42 @@ export class MediaEntryService {
 
     const pagination = normalizePagination(pageNumber, pageSize);
     if (this.useClientDatabase) {
-      const entities = await this.unwrap(
+      const page = await this.unwrap(
         this.mediaEntryRepository.getCollectionByOwnerIdAsync(userId, pagination.pageNumber, pagination.pageSize),
       );
-      return this.mediaEntryEntityMapper.toDetailedDtoCollection(entities);
+      return this.mediaEntryEntityMapper.toDetailedDtoCollection(page.items);
     }
 
     const minimalEntries = await this.mediaEntriesClient.getMediaEntries(
       pagination.pageNumber,
       pagination.pageSize,
     );
-    return Promise.all(minimalEntries.map((entry) => this.getDetailedByIdAsync(userId, entry.id)));
+    return Promise.all(minimalEntries.items.map((entry) => this.getDetailedByIdAsync(userId, entry.id)));
   }
 
   public async getMinimalCollectionByOwnerIdAsync(
     userId: UserId,
     pageNumber = 1,
     pageSize = 10,
-  ): Promise<MediaEntryMinimalDto[]> {
+    signal?: AbortSignal,
+  ): Promise<PagedResponseDto<MediaEntryMinimalDto>> {
     this.validateUserId(userId, 'getMinimalCollectionByOwnerIdAsync', OperationType.GetCollection);
     await this.ensureLocalUserExists(userId);
 
     const pagination = normalizePagination(pageNumber, pageSize);
     if (this.useClientDatabase) {
-      const entities = await this.unwrap(
+      const page = await this.unwrap(
         this.mediaEntryRepository.getCollectionByOwnerIdAsync(userId, pagination.pageNumber, pagination.pageSize),
       );
-      return this.mediaEntryEntityMapper.toMinimalDtoCollection(entities);
+      return createPagedResponse(
+        this.mediaEntryEntityMapper.toMinimalDtoCollection(page.items),
+        pagination.pageNumber,
+        pagination.pageSize,
+        page.totalCount,
+      );
     }
 
-    return this.mediaEntriesClient.getMediaEntries(pagination.pageNumber, pagination.pageSize);
+    return this.mediaEntriesClient.getMediaEntries(pagination.pageNumber, pagination.pageSize, signal);
   }
 
   public async searchAsync(
@@ -173,7 +181,8 @@ export class MediaEntryService {
     query: string,
     pageNumber = 1,
     pageSize = 10,
-  ): Promise<MediaEntryMinimalDto[]> {
+    signal?: AbortSignal,
+  ): Promise<PagedResponseDto<MediaEntryMinimalDto>> {
     this.validateUserId(userId, 'searchAsync', OperationType.GetCollection);
     await this.ensureLocalUserExists(userId);
 
@@ -182,7 +191,7 @@ export class MediaEntryService {
     if (!normalizedQuery) throw new Error('A value for the field \'Query\' is required and cannot be null or empty.');
 
     if (this.useClientDatabase) {
-      const entities = await this.unwrap(
+      const page = await this.unwrap(
         this.mediaEntryRepository.searchMediaEntriesAsync(
           userId,
           normalizedQuery,
@@ -190,13 +199,19 @@ export class MediaEntryService {
           pagination.pageSize,
         ),
       );
-      return this.mediaEntryEntityMapper.toMinimalDtoCollection(entities);
+      return createPagedResponse(
+        this.mediaEntryEntityMapper.toMinimalDtoCollection(page.items),
+        pagination.pageNumber,
+        pagination.pageSize,
+        page.totalCount,
+      );
     }
 
     return this.mediaEntriesClient.searchMediaEntries(
       { query: normalizedQuery },
       pagination.pageNumber,
       pagination.pageSize,
+      signal,
     );
   }
 

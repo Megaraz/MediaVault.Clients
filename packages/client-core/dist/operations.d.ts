@@ -1,4 +1,4 @@
-import { MediaType, type BookEntryCreateDto, type BookEntryDetailedDto, type BookEntryUpdateDto, type GameEntryCreateDto, type GameEntryDetailedDto, type GameEntryUpdateDto, type GoogleBooksDetailedDto, type LoginResponseDto, type MangaEntryCreateDto, type MangaEntryDetailedDto, type MangaEntryUpdateDto, type MediaEntryMinimalDto, type MovieEntryCreateDto, type MovieEntryDetailedDto, type MovieEntryUpdateDto, type RawgGameDetailedDto, type SearchRequestDto, type TmdbMovieDetailedDto, type TmdbTvSeriesDetailedDto, type TvSeriesEntryCreateDto, type TvSeriesEntryDetailedDto, type TvSeriesEntryUpdateDto, type UserDetailedDto, type UserLoginDto, type UserRegisterDto, type UserUpdateDto } from '@mediavault/contracts';
+import { MediaType, type BookEntryCreateDto, type BookEntryDetailedDto, type BookEntryUpdateDto, type GameEntryCreateDto, type GameEntryDetailedDto, type GameEntryUpdateDto, type GoogleBooksDetailedDto, type LoginResponseDto, type MangaEntryCreateDto, type MangaEntryDetailedDto, type MangaEntryUpdateDto, type MediaEntryMinimalDto, type PagedResponseDto, type MovieEntryCreateDto, type MovieEntryDetailedDto, type MovieEntryUpdateDto, type RawgGameDetailedDto, type SearchRequestDto, type TmdbMovieDetailedDto, type TmdbTvSeriesDetailedDto, type TvSeriesEntryCreateDto, type TvSeriesEntryDetailedDto, type TvSeriesEntryUpdateDto, type UserDetailedDto, type UserLoginDto, type UserRegisterDto, type UserUpdateDto } from '@mediavault/contracts';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export type QueryValue = string | number | boolean | undefined;
 export interface ApiOperation<TResponse> {
@@ -38,8 +38,8 @@ export declare function updateCurrentUserOperation(body: UserUpdateDto): ApiOper
 export declare function usersOperation(): ApiOperation<UserDetailedDto[]>;
 export declare function userByIdOperation(id: string): ApiOperation<UserDetailedDto>;
 export declare function deleteUserOperation(id: string): ApiOperation<void>;
-export declare function mediaEntriesOperation(pageNumber?: number, pageSize?: number): ApiOperation<MediaEntryMinimalDto[]>;
-export declare function searchMediaEntriesOperation(body: SearchRequestDto, page?: number, pageSize?: number): ApiOperation<MediaEntryMinimalDto[]>;
+export declare function mediaEntriesOperation(pageNumber?: number, pageSize?: number): ApiOperation<PagedResponseDto<MediaEntryMinimalDto>>;
+export declare function searchMediaEntriesOperation(body: SearchRequestDto, page?: number, pageSize?: number): ApiOperation<PagedResponseDto<MediaEntryMinimalDto>>;
 export declare function mediaEntryByIdOperation<TType extends MediaType>(mediaType: TType, id: string): ApiOperation<MediaDetailedByType[TType]>;
 export declare function createMediaEntryOperation<TType extends MediaType>(mediaType: TType, body: MediaCreateByType[TType]): ApiOperation<MediaDetailedByType[TType]>;
 export declare function updateMediaEntryOperation<TType extends MediaType>(mediaType: TType, id: string, body: MediaUpdateByType[TType]): ApiOperation<void>;

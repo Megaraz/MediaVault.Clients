@@ -13,6 +13,8 @@ Android can share without importing either runtime. It depends only on
 - injected capabilities resolve a token synchronously or asynchronously and
   execute the request without exposing storage or `fetch` to the core;
 - pure user/media validation returns field-safe ResultPattern failures;
+- paged media operations and request coordination keep continuation metadata,
+  duplicate suppression, and stale-completion checks consistent;
 - provider DTO mappers normalize metadata into immutable primitives that an
   app can adapt to its own form or model.
 

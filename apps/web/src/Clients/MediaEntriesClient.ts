@@ -4,6 +4,7 @@ import {
     type GameEntryDetailedDto,
     type MangaEntryDetailedDto,
     type MediaEntryMinimalDto,
+    type PagedResponseDto,
     type MovieEntryDetailedDto,
     type SearchRequestDto,
     type TvSeriesEntryDetailedDto,
@@ -22,7 +23,7 @@ export default class MediaEntriesClient {
         page: number = 1,
         pageSize: number = 10,
         signal?: AbortSignal,
-    ): Promise<MediaEntryMinimalDto[]> {
+    ): Promise<PagedResponseDto<MediaEntryMinimalDto>> {
         return executeWebOperation(searchMediaEntriesOperation(request, page, pageSize), signal);
     }
 
@@ -30,7 +31,7 @@ export default class MediaEntriesClient {
         pageNumber = 1,
         pageSize = 25,
         signal?: AbortSignal,
-    ): Promise<MediaEntryMinimalDto[]> {
+    ): Promise<PagedResponseDto<MediaEntryMinimalDto>> {
         return executeWebOperation(mediaEntriesOperation(pageNumber, pageSize), signal);
     }
 

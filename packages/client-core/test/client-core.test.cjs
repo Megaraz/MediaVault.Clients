@@ -93,6 +93,52 @@ test('builds deterministic routes, query strings, and JSON bodies', async () => 
   assert.equal(request.headers['Content-Type'], 'application/json');
 });
 
+test('derives bounded page metadata for empty, exact, and partial pages', async () => {
+  const { createPagedResponse } = await core();
+  assert.deepEqual(createPagedResponse([], 1, 10, 0), {
+    items: [], pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0,
+    hasNextPage: false, hasPreviousPage: false,
+  });
+  assert.deepEqual(createPagedResponse(['a'], 2, 10, 20), {
+    items: ['a'], pageNumber: 2, pageSize: 10, totalCount: 20, totalPages: 2,
+    hasNextPage: false, hasPreviousPage: true,
+  });
+  assert.equal(createPagedResponse([], 2, 10, 21).hasNextPage, true);
+});
+
+test('rejects duplicate page requests and identifies stale completions', async () => {
+  const { PagedRequestCoordinator } = await core();
+  const coordinator = new PagedRequestCoordinator();
+  const first = coordinator.begin('library:1');
+  assert.ok(first);
+  assert.equal(coordinator.begin('library:1'), null);
+
+  const second = coordinator.begin('library:2');
+  assert.ok(second);
+  assert.equal(coordinator.isCurrent(first), false);
+  assert.equal(coordinator.isCurrent(second), true);
+
+  coordinator.complete(first);
+  coordinator.complete(second);
+  assert.ok(coordinator.begin('library:1'));
+});
+
+test('an old completion cannot unlock a newer request with the same key', async () => {
+  const { PagedRequestCoordinator } = await core();
+  const coordinator = new PagedRequestCoordinator();
+  const oldRequest = coordinator.begin('search:query:1');
+  assert.ok(oldRequest);
+
+  coordinator.invalidate();
+  const currentRequest = coordinator.begin('search:query:1');
+  assert.ok(currentRequest);
+  coordinator.complete(oldRequest);
+
+  assert.equal(coordinator.begin('search:query:1'), null);
+  coordinator.complete(currentRequest);
+  assert.ok(coordinator.begin('search:query:1'));
+});
+
 test('maps safe HTTP failures and cancellation through ResultPattern v2', async () => {
   const { currentUserOperation, executeOperation } = await core();
   const failure = await executeOperation(currentUserOperation(), {

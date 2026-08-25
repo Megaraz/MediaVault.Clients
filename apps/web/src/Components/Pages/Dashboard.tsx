@@ -8,7 +8,8 @@
 //   - Opening the create/edit modal
 //   - Routing create/update calls to the correct type-specific client
 // ─────────────────────────────────────────────────────────────
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { PagedRequestCoordinator } from "@mediavault/client-core";
 import {
   MediaType,
   Status,
@@ -81,8 +82,12 @@ export default function Dashboard() {
   const [gameClient] = useState(() => new GameEntriesClient());
   const [bookClient] = useState(() => new BookEntriesClient());
   const [mangaClient] = useState(() => new MangaEntriesClient());
-  const [, setLoading] = useState(false);
-  const [, setError] = useState<string | null>(null);
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const requestCoordinator = useRef(new PagedRequestCoordinator());
+  const requestController = useRef<AbortController | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto>();
   // The currently active media type filter driven by the sidebar.
@@ -91,26 +96,43 @@ export default function Dashboard() {
     ALL_MEDIA_TYPE,
   );
 
-  useEffect(() => {
-    if (!isAuthenticated || !currentUser) {
-      return;
-    }
+  const fetchMediaEntries = useCallback(async (requestedPage: number) => {
+    if (!isAuthenticated || !currentUser) return;
 
-    const fetchMediaEntries = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const fetched = await client.getMediaEntries();
-        setEntries(fetched);
-      } catch (err) {
+    const ticket = requestCoordinator.current.begin(`library:${requestedPage}`);
+    if (!ticket) return;
+
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
+    setLoading(true);
+    setError(null);
+    setPageNumber(requestedPage);
+    try {
+      const fetched = await client.getMediaEntries(requestedPage, 25, controller.signal);
+      if (!requestCoordinator.current.isCurrent(ticket)) return;
+
+      setEntries(fetched.items);
+      setPageNumber(fetched.pageNumber);
+      setTotalPages(fetched.totalPages);
+    } catch (err) {
+      if (requestCoordinator.current.isCurrent(ticket)) {
         setError((err as Error).message);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    void fetchMediaEntries();
+    } finally {
+      requestCoordinator.current.complete(ticket);
+      if (requestCoordinator.current.isCurrent(ticket)) setLoading(false);
+    }
   }, [client, currentUser, isAuthenticated]);
+
+  useEffect(() => {
+    const coordinator = requestCoordinator.current;
+    void fetchMediaEntries(1);
+    return () => {
+      requestController.current?.abort();
+      coordinator.invalidate();
+    };
+  }, [fetchMediaEntries]);
 
   const loadDetailedEntry = async (
     entry: Pick<MediaEntryMinimalDto, "id" | "mediaType">,
@@ -385,6 +407,35 @@ export default function Dashboard() {
 
             {/* Each section shows entries for one status value.
                 Backlog gets a compact "list" view; all other statuses get the card grid. */}
+            {isLoading && entries.length === 0 && (
+              <div className="flex flex-1 items-center justify-center p-12" role="status">
+                <span className="material-symbols-outlined animate-spin text-3xl text-primary">progress_activity</span>
+                <span className="ml-3">Loading your library…</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="m-8 rounded-lg border border-red-300 bg-red-50 p-5 text-red-900" role="alert">
+                <p>We could not load your library. {error}</p>
+                <button
+                  type="button"
+                  className="mt-3 rounded bg-primary px-4 py-2 font-semibold text-white disabled:opacity-50"
+                  disabled={isLoading}
+                  onClick={() => void fetchMediaEntries(pageNumber)}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {!isLoading && !error && entries.length === 0 && (
+              <div className="flex flex-1 flex-col items-center justify-center p-12 text-center">
+                <span className="material-symbols-outlined text-5xl text-slate-400">video_library</span>
+                <h2 className="mt-4 text-xl font-bold">Your library is empty</h2>
+                <p className="mt-2 text-slate-500">Add your first entry to start building your collection.</p>
+              </div>
+            )}
+
             {entries.length > 0 && (
               <>
                 {statusSections.map(({ type, title }) => {
@@ -411,6 +462,28 @@ export default function Dashboard() {
                   );
                 })}
               </>
+            )}
+
+            {!error && totalPages > 0 && (
+              <nav className="flex items-center justify-center gap-4 p-8" aria-label="Library pages">
+                <button
+                  type="button"
+                  className="rounded border border-slate-300 px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+                  disabled={isLoading || pageNumber <= 1}
+                  onClick={() => void fetchMediaEntries(pageNumber - 1)}
+                >
+                  Previous
+                </button>
+                <span aria-live="polite">{isLoading ? "Loading page…" : `Page ${pageNumber} of ${totalPages}`}</span>
+                <button
+                  type="button"
+                  className="rounded border border-slate-300 px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+                  disabled={isLoading || pageNumber >= totalPages}
+                  onClick={() => void fetchMediaEntries(pageNumber + 1)}
+                >
+                  Next
+                </button>
+              </nav>
             )}
 
             {/* <!-- Sticky Mobile Nav --> */}

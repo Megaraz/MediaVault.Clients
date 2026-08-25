@@ -6,13 +6,17 @@ MediaVault.Api's public JSON contracts. It contains DTO types and the numeric
 dependency on Node, browser APIs, React, Expo, either application, or the
 ResultPattern package.
 
-The ASP.NET Core API is authoritative. The baseline reviewed for version 1.0.0
+The ASP.NET Core API is authoritative. The baseline reviewed for version 2.0.0
 is `Megaraz/MediaVault.Api` main commit
-`63f3599282c764c2019e33d9a20ae6f46e6dce90` on 2026-08-15. System.Text.Json's
+`75c745720b2b769c3895f1f5b1cbf9cb6fa0a744` on 2026-08-25. System.Text.Json's
 web defaults produce camel-case JSON property names and numeric enum values.
 That baseline also makes `POST /auth/register` a `204 No Content` operation;
 registration therefore has no response DTO in this package. Login continues to
 return `LoginResponseDto`.
+
+Version 2 intentionally changes successful media collection and internal
+search responses from bare arrays to `PagedResponseDto<MediaEntryMinimalDto>`.
+All controlled web and Android consumers must move with the API change.
 
 ## Ownership boundary
 

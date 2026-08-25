@@ -26,6 +26,15 @@ import {
 
 export type MediaEntryEntity = BookEntry | GameEntry | MangaEntry | MovieEntry | TvSeriesEntry;
 
+export interface MediaEntryPageSlice {
+  readonly items: readonly MediaEntryEntity[];
+  readonly totalCount: number;
+}
+
+interface CountRow {
+  TotalCount: number;
+}
+
 interface MediaEntryRow {
   Id: string;
   OwnerId: string;
@@ -120,7 +129,7 @@ export class MediaEntryRepo {
     ownerId: string,
     pageNumber: number,
     pageSize: number,
-  ): Promise<ResultOf<readonly MediaEntryEntity[]>> {
+  ): Promise<ResultOf<MediaEntryPageSlice>> {
     const context = errorContext(
       this.constructor.name,
       'getCollectionByOwnerIdAsync',
@@ -130,13 +139,25 @@ export class MediaEntryRepo {
 
     try {
       const db = await getOfflineDatabase();
-      const rows = await db.getAllAsync<MediaEntryRow>(
-        'SELECT * FROM "MediaEntries" WHERE "OwnerId" = ? ORDER BY "CreatedAtUtc" LIMIT ? OFFSET ?',
-        ownerId,
-        pageSize,
-        Math.max(0, pageNumber - 1) * pageSize,
-      );
-      return ResultOf.success(rows.map((row) => mapMediaEntry(row)));
+      let totalCount = 0;
+      let rows: MediaEntryRow[] = [];
+      await db.withTransactionAsync(async () => {
+        const count = await db.getFirstAsync<CountRow>(
+          'SELECT COUNT(*) AS "TotalCount" FROM "MediaEntries" WHERE "OwnerId" = ?',
+          ownerId,
+        );
+        rows = await db.getAllAsync<MediaEntryRow>(
+          'SELECT * FROM "MediaEntries" WHERE "OwnerId" = ? ORDER BY "CreatedAtUtc" DESC, "Id" ASC LIMIT ? OFFSET ?',
+          ownerId,
+          pageSize,
+          Math.max(0, pageNumber - 1) * pageSize,
+        );
+        totalCount = count?.TotalCount ?? 0;
+      });
+      return ResultOf.success({
+        items: rows.map((row) => mapMediaEntry(row)),
+        totalCount,
+      });
     } catch (exception) {
       if (isOperationCancelled(exception)) return cancelled(context);
       return queryFailure(context, exception);
@@ -220,7 +241,7 @@ export class MediaEntryRepo {
     query: string,
     pageNumber: number,
     pageSize: number,
-  ): Promise<ResultOf<readonly MediaEntryEntity[]>> {
+  ): Promise<ResultOf<MediaEntryPageSlice>> {
     const context = errorContext(
       this.constructor.name,
       'searchMediaEntriesAsync',
@@ -230,16 +251,30 @@ export class MediaEntryRepo {
 
     try {
       const db = await getOfflineDatabase();
-      const rows = await db.getAllAsync<MediaEntryRow>(
-        `SELECT * FROM "MediaEntries"
-         WHERE "OwnerId" = ? AND instr(lower("Title"), lower(?)) > 0
-         ORDER BY "CreatedAtUtc" LIMIT ? OFFSET ?`,
-        ownerId,
-        query,
-        pageSize,
-        Math.max(0, pageNumber - 1) * pageSize,
-      );
-      return ResultOf.success(rows.map((row) => mapMediaEntry(row)));
+      let totalCount = 0;
+      let rows: MediaEntryRow[] = [];
+      await db.withTransactionAsync(async () => {
+        const count = await db.getFirstAsync<CountRow>(
+          `SELECT COUNT(*) AS "TotalCount" FROM "MediaEntries"
+           WHERE "OwnerId" = ? AND instr(lower("Title"), lower(?)) > 0`,
+          ownerId,
+          query,
+        );
+        rows = await db.getAllAsync<MediaEntryRow>(
+          `SELECT * FROM "MediaEntries"
+           WHERE "OwnerId" = ? AND instr(lower("Title"), lower(?)) > 0
+           ORDER BY "CreatedAtUtc" DESC, "Id" ASC LIMIT ? OFFSET ?`,
+          ownerId,
+          query,
+          pageSize,
+          Math.max(0, pageNumber - 1) * pageSize,
+        );
+        totalCount = count?.TotalCount ?? 0;
+      });
+      return ResultOf.success({
+        items: rows.map((row) => mapMediaEntry(row)),
+        totalCount,
+      });
     } catch (exception) {
       if (isOperationCancelled(exception)) return cancelled(context);
       return queryFailure(context, exception);

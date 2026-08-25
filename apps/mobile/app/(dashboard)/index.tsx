@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image, StyleSheet } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { PagedRequestCoordinator } from '@mediavault/client-core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   MediaType,
@@ -57,27 +58,59 @@ export default function DashboardScreen() {
   const { currentUser } = useUser();
   const [entries, setEntries] = useState<MediaEntryMinimalDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [mediaTypeFilter, setMediaTypeFilter] = useState<number>(ALL_MEDIA_TYPE);
 
   const [mediaEntryService] = useState(() => new MediaEntryService());
+  const requestCoordinator = useRef(new PagedRequestCoordinator());
+  const requestController = useRef<AbortController | null>(null);
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<MediaEntryDetailedDto | undefined>();
 
-  useEffect(() => { void fetchEntries(); }, []);
+  const fetchEntries = useCallback(async (requestedPage: number) => {
+    if (!currentUser) return;
+    const ticket = requestCoordinator.current.begin(`library:${requestedPage}`);
+    if (!ticket) return;
 
-  const fetchEntries = async () => {
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
     setIsLoading(true);
+    setLoadError(null);
+    setPageNumber(requestedPage);
     try {
-      if (!currentUser) throw new Error('Not authenticated.');
-      const data = await mediaEntryService.getMinimalCollectionByOwnerIdAsync(currentUser.id);
-      setEntries(data);
+      const page = await mediaEntryService.getMinimalCollectionByOwnerIdAsync(
+        currentUser.id,
+        requestedPage,
+        10,
+        controller.signal,
+      );
+      if (!requestCoordinator.current.isCurrent(ticket)) return;
+
+      setEntries(page.items);
+      setPageNumber(page.pageNumber);
+      setTotalPages(page.totalPages);
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch entries: ' + (error as Error).message);
+      if (requestCoordinator.current.isCurrent(ticket)) {
+        setLoadError((error as Error).message);
+      }
     } finally {
-      setIsLoading(false);
+      requestCoordinator.current.complete(ticket);
+      if (requestCoordinator.current.isCurrent(ticket)) setIsLoading(false);
     }
-  };
+  }, [currentUser, mediaEntryService]);
+
+  useEffect(() => {
+    const coordinator = requestCoordinator.current;
+    void fetchEntries(1);
+    return () => {
+      requestController.current?.abort();
+      coordinator.invalidate();
+    };
+  }, [fetchEntries]);
 
   const loadDetailedEntry = async (entry: Pick<MediaEntryMinimalDto, 'id' | 'mediaType'>): Promise<MediaEntryDetailedDto> => {
     switch (entry.mediaType) {
@@ -282,20 +315,53 @@ export default function DashboardScreen() {
       <View style={styles.divider} />
 
       {/* Content */}
-      {isLoading ? (
+      {isLoading && entries.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-          {filteredEntries.length === 0 ? (
+          {loadError ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateTitle}>Could not load your library</Text>
+              <Text style={styles.emptyStateSub}>{loadError}</Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                disabled={isLoading}
+                onPress={() => void fetchEntries(pageNumber)}
+              >
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : filteredEntries.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateIcon}>📭</Text>
               <Text style={styles.emptyStateTitle}>No entries yet</Text>
               <Text style={styles.emptyStateSub}>Tap + to add your first entry</Text>
             </View>
           ) : (
-            statusSections.map(section => renderStatusSection(section))
+            <>
+              {statusSections.map(section => renderStatusSection(section))}
+              {totalPages > 0 && (
+                <View style={styles.paginationRow}>
+                  <TouchableOpacity
+                    style={[styles.pageButton, (isLoading || pageNumber <= 1) && styles.pageButtonDisabled]}
+                    disabled={isLoading || pageNumber <= 1}
+                    onPress={() => void fetchEntries(pageNumber - 1)}
+                  >
+                    <Text style={styles.pageButtonText}>Previous</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.pageLabel}>{isLoading ? 'Loading page…' : `Page ${pageNumber} of ${totalPages}`}</Text>
+                  <TouchableOpacity
+                    style={[styles.pageButton, (isLoading || pageNumber >= totalPages) && styles.pageButtonDisabled]}
+                    disabled={isLoading || pageNumber >= totalPages}
+                    onPress={() => void fetchEntries(pageNumber + 1)}
+                  >
+                    <Text style={styles.pageButtonText}>Next</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
           )}
         </ScrollView>
       )}
@@ -470,6 +536,44 @@ const styles = StyleSheet.create({
   emptyStateSub: {
     fontSize: 16,
     color: Colors.textSecondary,
+  },
+  retryButton: {
+    marginTop: 12,
+    borderRadius: 10,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  paginationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 28,
+  },
+  pageButton: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  pageButtonDisabled: {
+    opacity: 0.4,
+  },
+  pageButtonText: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  pageLabel: {
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
   fab: {
     position: 'absolute',

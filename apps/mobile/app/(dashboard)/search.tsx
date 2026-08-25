@@ -1,6 +1,7 @@
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
+import { PagedRequestCoordinator } from '@mediavault/client-core';
 import type { MediaEntryMinimalDto } from '@mediavault/contracts';
 import { useUser } from '../../shared/UserContext';
 import { MediaEntryService } from '../../services/mediaEntryService';
@@ -16,7 +17,49 @@ export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MediaEntryMinimalDto[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestCoordinator = useRef(new PagedRequestCoordinator());
+  const requestController = useRef<AbortController | null>(null);
+
+  const executeSearch = useCallback(async (query: string, requestedPage: number) => {
+    if (!currentUser) return;
+    const normalizedQuery = query.trim();
+    const ticket = requestCoordinator.current.begin(`search:${normalizedQuery}:${requestedPage}`);
+    if (!ticket) return;
+
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchResults([]);
+    setPageNumber(requestedPage);
+    try {
+      const page = await mediaEntryService.searchAsync(
+        currentUser.id,
+        normalizedQuery,
+        requestedPage,
+        10,
+        controller.signal,
+      );
+      if (!requestCoordinator.current.isCurrent(ticket)) return;
+
+      setSearchResults(page.items);
+      setPageNumber(page.pageNumber);
+      setTotalPages(page.totalPages);
+    } catch (error) {
+      if (requestCoordinator.current.isCurrent(ticket)) {
+        setSearchResults([]);
+        setSearchError((error as Error).message);
+      }
+    } finally {
+      requestCoordinator.current.complete(ticket);
+      if (requestCoordinator.current.isCurrent(ticket)) setIsSearching(false);
+    }
+  }, [currentUser, mediaEntryService]);
 
   useEffect(() => {
     if (debounceTimer.current) {
@@ -24,24 +67,19 @@ export default function SearchScreen() {
     }
 
     if (searchQuery.length < MIN_SEARCH_LENGTH) {
+      requestController.current?.abort();
+      requestCoordinator.current.invalidate();
       setSearchResults([]);
+      setSearchError(null);
+      setPageNumber(1);
+      setTotalPages(0);
       return;
     }
 
-    debounceTimer.current = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        if (!currentUser) {
-          throw new Error('Not authenticated.');
-        }
-        const results = await mediaEntryService.searchAsync(currentUser.id, searchQuery);
-        setSearchResults(results);
-      } catch (error) {
-        Alert.alert('Search Error', (error as Error).message);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
+    requestController.current?.abort();
+    requestCoordinator.current.invalidate();
+    debounceTimer.current = setTimeout(() => {
+      void executeSearch(searchQuery, 1);
     }, DEBOUNCE_DELAY_MS);
 
     return () => {
@@ -49,7 +87,15 @@ export default function SearchScreen() {
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [searchQuery, currentUser, mediaEntryService]);
+  }, [executeSearch, searchQuery]);
+
+  useEffect(() => {
+    const coordinator = requestCoordinator.current;
+    return () => {
+      requestController.current?.abort();
+      coordinator.invalidate();
+    };
+  }, []);
 
   return (
     <SafeAreaView style={S.screen}>
@@ -81,7 +127,20 @@ export default function SearchScreen() {
       </View>
 
       {/* Results */}
-      {searchResults.length > 0 && (
+      {searchError && !isSearching && (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>Search failed</Text>
+          <Text style={styles.errorDetail}>{searchError}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => void executeSearch(searchQuery, pageNumber)}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!searchError && searchResults.length > 0 && (
         <FlatList
           data={searchResults}
           keyExtractor={(item) => item.id}
@@ -113,10 +172,29 @@ export default function SearchScreen() {
               </View>
             </TouchableOpacity>
           )}
+          ListFooterComponent={totalPages > 0 ? (
+            <View style={styles.paginationRow}>
+              <TouchableOpacity
+                style={[styles.pageButton, (isSearching || pageNumber <= 1) && styles.pageButtonDisabled]}
+                disabled={isSearching || pageNumber <= 1}
+                onPress={() => void executeSearch(searchQuery, pageNumber - 1)}
+              >
+                <Text style={styles.pageButtonText}>Previous</Text>
+              </TouchableOpacity>
+              <Text style={styles.pageLabel}>Page {pageNumber} of {totalPages}</Text>
+              <TouchableOpacity
+                style={[styles.pageButton, (isSearching || pageNumber >= totalPages) && styles.pageButtonDisabled]}
+                disabled={isSearching || pageNumber >= totalPages}
+                onPress={() => void executeSearch(searchQuery, pageNumber + 1)}
+              >
+                <Text style={styles.pageButtonText}>Next</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
         />
       )}
 
-      {searchQuery.length >= MIN_SEARCH_LENGTH && searchResults.length === 0 && !isSearching && (
+      {!searchError && searchQuery.length >= MIN_SEARCH_LENGTH && searchResults.length === 0 && !isSearching && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateIcon}>🔭</Text>
           <Text style={styles.emptyStateText}>No results found</Text>
@@ -242,5 +320,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textSecondary,
     fontWeight: '500',
+  },
+  errorDetail: {
+    color: Colors.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+  },
+  retryButton: {
+    marginTop: 8,
+    borderRadius: 10,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  paginationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 20,
+  },
+  pageButton: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  pageButtonDisabled: {
+    opacity: 0.4,
+  },
+  pageButtonText: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+  pageLabel: {
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
 });

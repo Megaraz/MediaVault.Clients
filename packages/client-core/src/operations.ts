@@ -12,6 +12,7 @@ import {
   type MangaEntryDetailedDto,
   type MangaEntryUpdateDto,
   type MediaEntryMinimalDto,
+  type PagedResponseDto,
   type MovieEntryCreateDto,
   type MovieEntryDetailedDto,
   type MovieEntryUpdateDto,
@@ -93,7 +94,7 @@ export function deleteUserOperation(id: string): ApiOperation<void> {
   return empty('DELETE', `/users/${segment(id)}`);
 }
 
-export function mediaEntriesOperation(pageNumber = 1, pageSize = 25): ApiOperation<MediaEntryMinimalDto[]> {
+export function mediaEntriesOperation(pageNumber = 1, pageSize = 25): ApiOperation<PagedResponseDto<MediaEntryMinimalDto>> {
   return json('GET', '/mediaentries', undefined, true, { pageNumber, pageSize });
 }
 
@@ -101,7 +102,7 @@ export function searchMediaEntriesOperation(
   body: SearchRequestDto,
   page = 1,
   pageSize = 10,
-): ApiOperation<MediaEntryMinimalDto[]> {
+): ApiOperation<PagedResponseDto<MediaEntryMinimalDto>> {
   return json('POST', '/mediaentries/search', body, true, { page, pageSize });
 }
 

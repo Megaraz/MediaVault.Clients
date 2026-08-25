@@ -232,6 +232,10 @@ test('validates shared DTOs with field-safe ResultPattern failures', async () =>
   assert.equal(title.ok, false);
   assert.deepEqual(title.validationErrors, [{ field: 'title', message: 'Title is required.' }]);
 
+  const rating = validateMediaEntry({ status: 2, title: 'Valid title', rating: 4.25 });
+  assert.equal(rating.ok, false);
+  assert.deepEqual(rating.validationErrors, [{ field: 'rating', message: 'Rating must be between 0 and 5 in 0.5 increments.' }]);
+
   const registration = validateUserRegistration({
     username: 'user', email: 'a@example.invalid', confirmEmail: 'b@example.invalid',
     password: 'password', confirmPassword: 'different',

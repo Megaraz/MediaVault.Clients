@@ -4,3 +4,4 @@ export type * from './media-entries.js';
 export type * from './metadata.js';
 export type * from './seasons.js';
 export type * from './users.js';
+export * from './rating.js';

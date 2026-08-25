@@ -1,24 +1,27 @@
+import { MAXIMUM_RATING, RATING_STEP, isValidRating } from '@mediavault/client-core';
+
 type StarRatingProps = {
   rating: number;
-  maxStars?: number;
   onChange: (newRating: number) => void;
 };
 
-function clampRating(rating: number, maxStars: number) {
-  const normalized = Math.max(0, Math.min(rating, maxStars));
-  return Math.round(normalized * 2) / 2;
+function displayRating(rating: number) {
+  return isValidRating(rating) ? rating : 0;
 }
 
 export default function StarRating({
   rating,
-  maxStars = 5,
   onChange,
 }: StarRatingProps) {
-  const normalizedRating = clampRating(rating, maxStars);
+  const normalizedRating = displayRating(rating);
 
   return (
-    <div className="flex items-center gap-1 text-amber-400">
-      {Array.from({ length: maxStars }, (_, i) => {
+    <div
+      className="flex items-center gap-1 text-amber-400"
+      role="group"
+      aria-label={`Rating: ${normalizedRating.toFixed(1)} out of ${MAXIMUM_RATING.toFixed(1)} stars`}
+    >
+      {Array.from({ length: MAXIMUM_RATING }, (_, i) => {
         const starValue = i + 1;
         const fillWidth = Math.max(
           0,
@@ -31,6 +34,7 @@ export default function StarRating({
             className="relative hover:scale-110 transition-transform"
             type="button"
             aria-label={`Set rating to ${starValue} stars`}
+            aria-pressed={normalizedRating === starValue || normalizedRating === starValue - RATING_STEP}
             onClick={(event) => {
               const bounds = event.currentTarget.getBoundingClientRect();
               const isHalfStar = event.clientX - bounds.left < bounds.width / 2;
@@ -53,7 +57,7 @@ export default function StarRating({
       })}
       <span className="ml-3 text-sm font-medium text-slate-500 dark:text-slate-400">
         {normalizedRating > 0
-          ? `${normalizedRating.toFixed(1)} / ${maxStars.toFixed(1)}`
+          ? `${normalizedRating.toFixed(1)} / ${MAXIMUM_RATING.toFixed(1)}`
           : "Not rated"}
       </span>
       <button

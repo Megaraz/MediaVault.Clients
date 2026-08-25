@@ -1,4 +1,4 @@
-import type { MediaEntryCreateDto, MediaEntryUpdateDto, UserLoginDto, UserRegisterDto, UserUpdateDto } from '@mediavault/contracts';
+import { type MediaEntryCreateDto, MediaEntryUpdateDto, UserLoginDto, UserRegisterDto, UserUpdateDto } from '@mediavault/contracts';
 import { type Result } from 'result-pattern-typescript';
 export declare function validateUserLogin(dto: UserLoginDto | null | undefined): Result<void>;
 export declare function validateUserRegistration(dto: UserRegisterDto | null | undefined): Result<void>;

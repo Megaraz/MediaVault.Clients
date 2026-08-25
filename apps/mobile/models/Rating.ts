@@ -1,9 +1,13 @@
+import { isValidRating } from '@mediavault/client-core';
+
 export class Rating {
   public readonly value: number;
 
   constructor(value: number) {
-    const clamped = Math.min(5, Math.max(0, value));
-    this.value = Math.round(clamped * 2) / 2;
+    if (!isValidRating(value)) {
+      throw new RangeError('Rating must be between 0 and 5 in 0.5 increments.');
+    }
+    this.value = value;
   }
 
   public valueOf(): number {

@@ -32,6 +32,14 @@ Use the shared enum names `MediaType.TvSeries` and `Status.Ongoing`. Android
 presentation code may use local labels and ordering, but must not add aliases or
 change the numeric values sent to the API.
 
+## Rating policy
+
+Media-entry and season ratings use the backend-owned range **0 through 5 in
+0.5 increments**. `@mediavault/contracts` exports the range, increment, valid
+values, and runtime validator; the web picker, Android picker, DTO validation,
+and Android-local `Rating` model must use that shared policy. Do not clamp or
+round invalid values into a different rating: reject them before a write.
+
 ## Resolution and verification
 
 `apps/mobile/metro.config.js` uses Expo's default Metro configuration. The

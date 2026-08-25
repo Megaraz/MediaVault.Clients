@@ -11,7 +11,7 @@
 // After a successful save or delete, a brief success screen is shown
 // before the modal closes automatically.
 // ─────────────────────────────────────────────────────────────
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MediaType,
   type BookEntryDetailedDto,
@@ -147,6 +147,8 @@ export default function MediaEntryModal({
   const [showSuccessState, setShowSuccessState] = useState(false);
   const [deleteSuccessState, setDeleteSuccessState] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const mutationInProgress = useRef(false);
+  const isMounted = useRef(true);
 
   const [rawgClient] = useState(() => new RawgApiClient());
   const [tmdbClient] = useState(() => new TmdbApiClient());
@@ -155,6 +157,13 @@ export default function MediaEntryModal({
   const isEditMode = detailedEntry != null && detailedEntry.id != null;
   // isBusy prevents closing the modal while an async operation is running.
   const isBusy = isSubmitting || showSuccessState || deleteSuccessState;
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const handleChange = (
     field: keyof MediaEntryFormData,
@@ -172,47 +181,73 @@ export default function MediaEntryModal({
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (mutationInProgress.current) {
+      return;
+    }
+
+    mutationInProgress.current = true;
     setIsSubmitting(true);
     setShowSuccessState(false);
     setSubmitError(null);
 
     try {
       await onSubmit(formData, detailedEntry?.id);
+      if (!isMounted.current) return;
       setIsSubmitting(false);
       setShowSuccessState(true);
       await new Promise((resolve) => {
         window.setTimeout(resolve, SUCCESS_STATE_DELAY_MS);
       });
-      onCancel();
-    } catch (err) {
-      setSubmitError((err as Error).message || "Failed to save entry.");
-      setIsSubmitting(false);
-      setShowSuccessState(false);
+      if (isMounted.current) {
+        onCancel();
+      }
+    } catch {
+      if (isMounted.current) {
+        setSubmitError("We couldn't save this entry. Please review the details and try again.");
+        setIsSubmitting(false);
+        setShowSuccessState(false);
+      }
+    } finally {
+      mutationInProgress.current = false;
     }
   };
 
   const handleDelete = async () => {
-    if (detailedEntry) {
-      setIsSubmitting(true);
-      setShowSuccessState(false);
-      setDeleteSuccessState(false);
-      setSubmitError(null);
+    if (!detailedEntry || mutationInProgress.current) {
+      return;
+    }
 
-      try {
-        await onDelete(detailedEntry.id);
-        setIsSubmitting(false);
-        setShowSuccessState(true);
-        setDeleteSuccessState(true);
-        await new Promise((resolve) => {
-          window.setTimeout(resolve, SUCCESS_STATE_DELAY_MS);
-        });
+    if (!window.confirm("Remove this entry from your library? This action cannot be undone.")) {
+      return;
+    }
+
+    mutationInProgress.current = true;
+    setIsSubmitting(true);
+    setShowSuccessState(false);
+    setDeleteSuccessState(false);
+    setSubmitError(null);
+
+    try {
+      await onDelete(detailedEntry.id);
+      if (!isMounted.current) return;
+      setIsSubmitting(false);
+      setShowSuccessState(true);
+      setDeleteSuccessState(true);
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, SUCCESS_STATE_DELAY_MS);
+      });
+      if (isMounted.current) {
         onCancel();
-      } catch (err) {
-        setSubmitError((err as Error).message || "Failed to delete entry.");
+      }
+    } catch {
+      if (isMounted.current) {
+        setSubmitError("We couldn't remove this entry. Please try again.");
         setDeleteSuccessState(false);
         setIsSubmitting(false);
         setShowSuccessState(false);
       }
+    } finally {
+      mutationInProgress.current = false;
     }
   };
 
@@ -341,17 +376,20 @@ export default function MediaEntryModal({
             subtitle={formatSubtitle(detailedEntry)}
             onCancel={onCancel}
             imgUrl={formData.imageUrl || undefined}
+            isBusy={isBusy}
           />
 
           <div className="overflow-y-auto flex-1 min-h-0">
             <form className="space-y-6 p-6" onSubmit={handleSubmit}>
-              <MediaEntryForm
-                formData={formData}
-                onChange={handleChange}
-                onSeasonsChange={handleSeasonsChange}
-                isEditMode={isEditMode}
-                onSelectResult={handleSelectResult}
-              />
+              <fieldset disabled={isBusy}>
+                <MediaEntryForm
+                  formData={formData}
+                  onChange={handleChange}
+                  onSeasonsChange={handleSeasonsChange}
+                  isEditMode={isEditMode}
+                  onSelectResult={handleSelectResult}
+                />
+              </fieldset>
               {submitError && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                   {submitError}
@@ -362,6 +400,7 @@ export default function MediaEntryModal({
                 isEditMode={isEditMode}
                 onDelete={isEditMode ? handleDelete : undefined}
                 onCancel={onCancel}
+                isBusy={isBusy}
               />
             </form>
           </div>

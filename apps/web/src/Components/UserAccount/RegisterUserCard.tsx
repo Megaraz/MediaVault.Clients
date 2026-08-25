@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UserRegisterDto } from "@mediavault/contracts";
 import { validateUserRegistration } from "@mediavault/client-core";
 import ModalWindow from "../Shared/ModalWindow";
@@ -17,12 +17,26 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
   const [client] = useState(() => new UsersClient());
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInProgress = useRef(false);
+  const isMounted = useRef(true);
   const [formData, setFormData] = useState<RegisterUserFormData>(
     new RegisterUserFormData(),
   );
 
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
+    if (submissionInProgress.current) {
+      return;
+    }
+
+    submissionInProgress.current = true;
     setErrorMessage(null);
     setIsSubmitting(true);
 
@@ -38,19 +52,24 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
     if (!validation.ok) {
       setErrorMessage(validation.validationErrors.map((error) => error.message).join(" "));
       setIsSubmitting(false);
+      submissionInProgress.current = false;
       return;
     }
 
     try {
       await client.registerUser(dto);
-      onCancel(true);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Failed to register user",
-      );
+      if (isMounted.current) {
+        onCancel(true);
+      }
+    } catch {
+      if (isMounted.current) {
+        setErrorMessage("We couldn't create your account. Please review your details and try again.");
+      }
     } finally {
-      setIsSubmitting(false);
-      onCancel(true);
+      submissionInProgress.current = false;
+      if (isMounted.current) {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -62,13 +81,14 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
 
   return (
     <ModalWindow
-      onClose={() => onCancel(false)}
+      onClose={isSubmitting ? () => undefined : () => onCancel(false)}
       cardClassName={defaultCardClassName}
     >
       <div className="px-8 pt-10 pb-6 text-center relative">
         <button
           type="button"
           onClick={() => onCancel(false)}
+          disabled={isSubmitting}
           className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 transition-colors"
         >
           <span className="material-symbols-outlined">close</span>
@@ -88,56 +108,59 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
         </div>
       </div>
       <form className="px-8 pb-10 space-y-4" onSubmit={handleSubmit}>
-        <RegisterUserForm formData={formData} onChange={handleChange} />
-        {/* Terms */}
-        <div className="flex items-center pt-2">
-          <input
-            className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] text-primary focus:ring-primary focus:ring-offset-0"
-            id="terms"
-            type="checkbox"
-            required
-          />
-          <label
-            className="ml-3 text-sm font-medium text-slate-600 dark:text-slate-400 leading-snug"
-            htmlFor="terms"
-          >
-            I agree to the{" "}
-            <a className="text-primary hover:underline" href="#">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a className="text-primary hover:underline" href="#">
-              Privacy Policy
-            </a>
-            .
-          </label>
-        </div>
-        {/* Button */}
+        <fieldset disabled={isSubmitting} className="space-y-4">
+          <RegisterUserForm formData={formData} onChange={handleChange} />
+          {/* Terms */}
+          <div className="flex items-center pt-2">
+            <input
+              className="w-5 h-5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-[#101922] text-primary focus:ring-primary focus:ring-offset-0"
+              id="terms"
+              type="checkbox"
+              required
+            />
+            <label
+              className="ml-3 text-sm font-medium text-slate-600 dark:text-slate-400 leading-snug"
+              htmlFor="terms"
+            >
+              I agree to the{" "}
+              <a className="text-primary hover:underline" href="#">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a className="text-primary hover:underline" href="#">
+                Privacy Policy
+              </a>
+              .
+            </label>
+          </div>
+          {/* Button */}
 
-        {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
-        >
-          <span>{isSubmitting ? "Creating Account..." : "Create Account"}</span>
-          <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
-            arrow_forward
-          </span>
-        </button>
+          {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
+          >
+            <span>{isSubmitting ? "Creating Account..." : "Create Account"}</span>
+            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
+              arrow_forward
+            </span>
+          </button>
+        </fieldset>
       </form>
 
       {/* Footer */}
       <div className="px-8 pb-10 text-center">
         <p className="text-center text-sm text-slate-500 dark:text-slate-400">
           Already have an account?
-          <a
+          <button
+            type="button"
             className="ms-1 text-primary font-bold hover:underline"
-            href="#"
             onClick={() => onCancel(true)}
+            disabled={isSubmitting}
           >
             Sign In
-          </a>
+          </button>
         </p>
       </div>
     </ModalWindow>

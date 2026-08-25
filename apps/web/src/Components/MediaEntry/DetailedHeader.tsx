@@ -3,6 +3,7 @@ type DetailedHeaderProps = {
   subtitle?: string;
   onCancel: () => void;
   imgUrl?: string;
+  isBusy: boolean;
 };
 
 export default function DetailedHeader({
@@ -10,6 +11,7 @@ export default function DetailedHeader({
   subtitle,
   onCancel,
   imgUrl,
+  isBusy,
 }: DetailedHeaderProps) {
   return (
     <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-5">
@@ -42,6 +44,7 @@ export default function DetailedHeader({
         className="flex items-start justify-center size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
         type="button"
         onClick={onCancel}
+        disabled={isBusy}
       >
         <span className="material-symbols-outlined">close</span>
       </button>

@@ -2,12 +2,14 @@ type FormFooterProps = {
   isEditMode: boolean;
   onDelete?: () => void;
   onCancel: () => void;
+  isBusy: boolean;
 };
 
 export default function FormFooter({
   isEditMode,
   onDelete,
   onCancel,
+  isBusy,
 }: FormFooterProps) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -17,6 +19,7 @@ export default function FormFooter({
           className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 font-semibold transition-colors"
           type="button"
           onClick={onDelete}
+          disabled={isBusy}
         >
           <span className="material-symbols-outlined">delete</span>
           Remove Entry
@@ -30,12 +33,14 @@ export default function FormFooter({
           className="flex-1 sm:flex-none px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           type="button"
           onClick={onCancel}
+          disabled={isBusy}
         >
           Cancel
         </button>
         <button
           className="flex-1 sm:flex-none px-8 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold shadow-lg shadow-primary/20 transition-all"
           type="submit"
+          disabled={isBusy}
         >
           {isEditMode ? "Save Changes" : "Create Entry"}
         </button>

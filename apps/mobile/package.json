@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "oxlint ."
+    "lint": "oxlint .",
+    "test:release-config": "node --test ./scripts/android-release-config.test.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

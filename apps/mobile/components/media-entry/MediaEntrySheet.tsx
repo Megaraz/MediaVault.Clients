@@ -303,7 +303,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
 
           {successState !== 'none' ? (
             // ── Success state ────────────────────────────
-            <View style={styles.successContainer}>
+            <View style={styles.successContainer} accessibilityRole="alert">
               <View style={styles.successIcon}>
                 <Text style={{ fontSize: 48 }}>{successState === 'deleted' ? '🗑️' : '✅'}</Text>
               </View>
@@ -317,7 +317,7 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
                   ? 'Your changes have been saved.'
                   : 'Your new entry has been added!'}
               </Text>
-              <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }} />
+              <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }} accessibilityLabel="Closing entry form" />
             </View>
           ) : (
             <>
@@ -326,7 +326,14 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
                 {/* Drag indicator */}
                 <View style={styles.dragIndicator} />
                 <View style={styles.headerRow}>
-                  <TouchableOpacity onPress={onClose} disabled={isBusy} style={styles.headerBtn}>
+                  <TouchableOpacity
+                    onPress={onClose}
+                    disabled={isBusy}
+                    style={styles.headerBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close entry form"
+                    accessibilityState={{ disabled: isBusy, busy: isBusy }}
+                  >
                     <Text style={styles.headerBtnText}>✕</Text>
                   </TouchableOpacity>
                   <Text style={styles.headerTitle}>{isEditMode ? 'Edit Entry' : 'New Entry'}</Text>
@@ -365,6 +372,10 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
                     onPress={handleDelete}
                     disabled={isBusy}
                     style={[styles.deleteBtn, isBusy && { opacity: 0.5 }]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Delete entry"
+                    accessibilityHint="Opens a confirmation before deleting this entry"
+                    accessibilityState={{ disabled: isBusy, busy: isBusy }}
                   >
                     <Text style={styles.deleteBtnText}>Delete</Text>
                   </TouchableOpacity>
@@ -373,9 +384,12 @@ export default function MediaEntrySheet({ visible, detailedEntry, onSubmit, onDe
                   onPress={handleSave}
                   disabled={isBusy}
                   style={[styles.saveBtn, isBusy && { opacity: 0.5 }, !isEditMode && { flex: 1 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={isEditMode ? 'Save changes' : 'Add entry'}
+                  accessibilityState={{ disabled: isBusy, busy: isBusy }}
                 >
                   {isSubmitting ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color="#fff" accessibilityLabel="Saving entry" />
                   ) : (
                     <Text style={styles.saveBtnText}>{isEditMode ? 'Save Changes' : 'Add Entry'}</Text>
                   )}

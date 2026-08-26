@@ -48,7 +48,7 @@ export default function RegisterScreen() {
     }
   };
 
-  const field = (key: keyof typeof form, placeholder: string, opts?: { secureTextEntry?: boolean; keyboardType?: 'email-address' }) => (
+  const field = (key: keyof typeof form, label: string, placeholder: string, opts?: { secureTextEntry?: boolean; keyboardType?: 'email-address' }) => (
     <View>
       <TextInput
         placeholder={placeholder}
@@ -58,6 +58,8 @@ export default function RegisterScreen() {
         editable={!isSubmitting}
         autoCapitalize="none"
         style={S.input}
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: isSubmitting }}
         {...opts}
       />
     </View>
@@ -77,14 +79,14 @@ export default function RegisterScreen() {
 
         {/* Card */}
         <View style={[S.card, { padding: 24, gap: 12 }]}>
-          {field('username', 'Username')}
-          {field('email', 'Email', { keyboardType: 'email-address' })}
-          {field('confirmEmail', 'Confirm Email', { keyboardType: 'email-address' })}
-          {field('password', 'Password', { secureTextEntry: true })}
-          {field('confirmPassword', 'Confirm Password', { secureTextEntry: true })}
+          {field('username', 'Username', 'Username')}
+          {field('email', 'Email', 'Email', { keyboardType: 'email-address' })}
+          {field('confirmEmail', 'Confirm email', 'Confirm Email', { keyboardType: 'email-address' })}
+          {field('password', 'Password', 'Password', { secureTextEntry: true })}
+          {field('confirmPassword', 'Confirm password', 'Confirm Password', { secureTextEntry: true })}
 
           {errorMessage && (
-            <View style={{ backgroundColor: Colors.errorDim, borderRadius: 8, padding: 12 }}>
+            <View style={{ backgroundColor: Colors.errorDim, borderRadius: 8, padding: 12 }} accessibilityRole="alert">
               <Text style={{ color: Colors.error, fontSize: 13 }}>{errorMessage}</Text>
             </View>
           )}
@@ -93,9 +95,13 @@ export default function RegisterScreen() {
             onPress={handleRegister}
             disabled={isSubmitting}
             style={[S.primaryBtn, { opacity: isSubmitting ? 0.6 : 1, marginTop: 4 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Create account"
+            accessibilityHint="Creates your MediaVault account"
+            accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#fff" accessibilityLabel="Creating account" />
             ) : (
               <Text style={S.primaryBtnText}>Create Account</Text>
             )}
@@ -104,7 +110,7 @@ export default function RegisterScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
             <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>Already have an account?</Text>
             <Link href={'/(auth)' as any} asChild>
-              <TouchableOpacity>
+              <TouchableOpacity accessibilityRole="link" accessibilityLabel="Log in">
                 <Text style={[S.linkText, { fontSize: 14 }]}>Login</Text>
               </TouchableOpacity>
             </Link>

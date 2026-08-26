@@ -15,7 +15,7 @@ export default function StarRating({ rating, onChange }: Props) {
   const normalizedRating = displayRating(rating);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityLabel={`Rating: ${normalizedRating.toFixed(1)} out of ${MAXIMUM_RATING.toFixed(1)} stars`}>
       <View style={styles.stars}>
         {Array.from({ length: MAXIMUM_RATING }, (_, index) => {
           const starValue = index + 1;
@@ -35,6 +35,7 @@ export default function StarRating({ rating, onChange }: Props) {
                   activeOpacity={0.7}
                   accessibilityRole="radio"
                   accessibilityLabel={`Set rating to ${halfValue.toFixed(1)} stars`}
+                  accessibilityHint={`Sets the rating to ${halfValue.toFixed(1)} out of ${MAXIMUM_RATING.toFixed(1)} stars`}
                   accessibilityState={{ selected: normalizedRating === halfValue }}
                 />
                 <TouchableOpacity
@@ -43,6 +44,7 @@ export default function StarRating({ rating, onChange }: Props) {
                   activeOpacity={0.7}
                   accessibilityRole="radio"
                   accessibilityLabel={`Set rating to ${starValue.toFixed(1)} stars`}
+                  accessibilityHint={`Sets the rating to ${starValue.toFixed(1)} out of ${MAXIMUM_RATING.toFixed(1)} stars`}
                   accessibilityState={{ selected: normalizedRating === starValue }}
                 />
               </View>
@@ -55,6 +57,7 @@ export default function StarRating({ rating, onChange }: Props) {
           activeOpacity={0.7}
           accessibilityRole="radio"
           accessibilityLabel="Clear rating"
+          accessibilityHint="Sets the rating to no rating"
           accessibilityState={{ selected: normalizedRating === 0 }}
         >
           <Text style={styles.clearText}>Clear</Text>
@@ -70,13 +73,13 @@ export default function StarRating({ rating, onChange }: Props) {
 const styles = StyleSheet.create({
   container: { gap: 10 },
   stars: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 3 },
-  starControl: { width: 31, height: 41, position: 'relative', justifyContent: 'center' },
-  star: { fontSize: 31, color: Colors.border },
-  starFill: { position: 'absolute', overflow: 'hidden', height: 41, justifyContent: 'center' },
+  starControl: { width: 44, height: 44, position: 'relative', justifyContent: 'center' },
+  star: { fontSize: 31, color: Colors.border, marginLeft: 6 },
+  starFill: { position: 'absolute', overflow: 'hidden', height: 44, justifyContent: 'center' },
   starActive: { color: '#f59e0b' },
   starTargets: { ...StyleSheet.absoluteFill, flexDirection: 'row' },
   halfStarTarget: { flex: 1 },
-  clearButton: { paddingHorizontal: 8, paddingVertical: 8 },
+  clearButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 8, paddingVertical: 8 },
   clearText: { color: Colors.textSecondary, fontSize: 14, fontWeight: '600' },
   label: { fontSize: 16, color: Colors.textSecondary, marginLeft: 4 },
 });

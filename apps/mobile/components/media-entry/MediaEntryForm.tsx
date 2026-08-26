@@ -14,7 +14,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { Colors, ST } from '../../constants/theme';
+import { Colors } from '../../constants/theme';
 import { MediaType } from '@mediavault/contracts';
 import { MediaTypeLabels, StatusLabels } from '../../shared/mediaConstants';
 import StarRating from './StarRating';
@@ -107,6 +107,9 @@ export default function MediaEntryForm({ formData, onChange, onSeasonsChange, on
               ]}
               onPress={() => onChange('mediaType', opt.value)}
               activeOpacity={0.7}
+              accessibilityRole="radio"
+              accessibilityLabel={opt.label}
+              accessibilityState={{ selected: formData.mediaType === opt.value }}
             >
               <Text style={styles.typeChipIcon}>{typeIcon(opt.value)}</Text>
               <Text style={[styles.typeChipLabel, formData.mediaType === opt.value && styles.typeChipLabelActive]}>
@@ -315,6 +318,9 @@ function SegmentRow({ options, value, onChange }: {
             onPress={() => onChange(opt.value)}
             style={[styles.segmentChip, isActive && styles.segmentChipActive]}
             activeOpacity={0.7}
+            accessibilityRole="radio"
+            accessibilityLabel={opt.label}
+            accessibilityState={{ selected: isActive }}
           >
             <Text style={[styles.segmentChipText, isActive && styles.segmentChipTextActive]}>
               {opt.label}

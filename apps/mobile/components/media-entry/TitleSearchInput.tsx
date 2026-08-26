@@ -8,11 +8,9 @@ import {
   Image,
   ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
-import { Colors, ST } from '../../constants/theme';
+import { Colors } from '../../constants/theme';
 import { MediaType } from '@mediavault/contracts';
 import TmdbApiClient from '../../clients/TmdbApiClient';
 import RawgApiClient from '../../clients/RawgApiClient';
@@ -106,27 +104,46 @@ export default function TitleSearchInput({ value, onChange, onSelectResult, medi
           placeholderTextColor={Colors.textMuted}
           style={styles.input}
           autoCapitalize="none"
+          accessibilityLabel="Media title"
+          accessibilityHint={isSearchEnabled(mediaType) ? 'Type at least three characters to search for matching media' : undefined}
         />
         {isSearching && (
-          <ActivityIndicator size="small" color={Colors.primary} style={styles.spinner} />
+          <ActivityIndicator size="small" color={Colors.primary} style={styles.spinner} accessibilityLabel="Searching media providers" />
         )}
       </View>
 
       {isSearchEnabled(mediaType) && !isEditMode && value.length === 0 && (
-        <Text style={styles.hint}>✨ Start typing to auto-fill cover art, genres and more</Text>
+        <Text style={styles.hint} accessibilityLiveRegion="polite">✨ Start typing to auto-fill cover art, genres and more</Text>
       )}
 
       {/* Results dropdown rendered as a modal overlay */}
       <Modal visible={showDropdown} transparent animationType="fade" onRequestClose={() => setShowDropdown(false)}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => setShowDropdown(false)}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => setShowDropdown(false)} accessible={false}>
           <View style={styles.dropdown}>
-            <Text style={styles.dropdownHeader}>Search Results</Text>
+            <View style={styles.dropdownHeader}>
+              <Text style={styles.dropdownHeaderText}>Search Results</Text>
+              <TouchableOpacity
+                onPress={() => setShowDropdown(false)}
+                style={styles.closeResultsButton}
+                accessibilityRole="button"
+                accessibilityLabel="Close search results"
+              >
+                <Text style={styles.closeResultsButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
             <FlatList
               data={results}
               keyExtractor={(item) => item.idExternal}
               keyboardShouldPersistTaps="always"
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.resultRow} onPress={() => handleSelect(item)} activeOpacity={0.7}>
+                <TouchableOpacity
+                  style={styles.resultRow}
+                  onPress={() => handleSelect(item)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${item.title}`}
+                  accessibilityHint="Uses this result to fill in the media entry"
+                >
                   {item.coverImageUrl ? (
                     <Image source={{ uri: item.coverImageUrl }} style={styles.resultImg} resizeMode="cover" />
                   ) : (
@@ -185,13 +202,30 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+    paddingLeft: 16,
+    paddingRight: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  dropdownHeaderText: {
     fontSize: 15,
     fontWeight: '700',
     color: Colors.textSecondary,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  },
+  closeResultsButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  closeResultsButtonText: {
+    color: Colors.primary,
+    fontWeight: '600',
   },
   resultRow: {
     flexDirection: 'row',

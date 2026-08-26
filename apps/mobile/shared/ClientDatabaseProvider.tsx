@@ -43,7 +43,7 @@ export function ClientDatabaseProvider({ children }: ClientDatabaseProviderProps
 
   if (error) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: Colors.background }}>
+      <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: Colors.background }} accessibilityRole="alert">
         <Text style={{ color: Colors.error, textAlign: 'center' }}>{error.message}</Text>
       </View>
     );
@@ -52,7 +52,7 @@ export function ClientDatabaseProvider({ children }: ClientDatabaseProviderProps
   if (!isReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background }}>
-        <ActivityIndicator color={Colors.primary} />
+        <ActivityIndicator color={Colors.primary} accessibilityLabel="Preparing local database" />
       </View>
     );
   }

@@ -226,12 +226,14 @@ export default function SearchScreen() {
             onChangeText={setSearchQuery}
             style={styles.searchInput}
             autoCapitalize="none"
+            accessibilityLabel="Search your library"
+            accessibilityRole="search"
           />
-          {isSearching && <ActivityIndicator size="small" color={Colors.primary} style={{ marginRight: 4 }} />}
+          {isSearching && <ActivityIndicator size="small" color={Colors.primary} style={{ marginRight: 4 }} accessibilityLabel="Searching your library" />}
         </View>
 
         {searchQuery.length > 0 && searchQuery.length < MIN_SEARCH_LENGTH && (
-          <Text style={styles.hint}>
+          <Text style={styles.hint} accessibilityLiveRegion="polite">
             Type at least {MIN_SEARCH_LENGTH} characters to search
           </Text>
         )}
@@ -240,11 +242,13 @@ export default function SearchScreen() {
       {/* Results */}
       {searchError && !isSearching && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>Search failed</Text>
-          <Text style={styles.errorDetail}>{searchError}</Text>
+          <Text style={styles.emptyStateText} accessibilityRole="alert">Search failed</Text>
+          <Text style={styles.errorDetail} accessibilityLiveRegion="assertive">{searchError}</Text>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => void executeSearch(searchQuery, pageNumber)}
+            accessibilityRole="button"
+            accessibilityLabel="Retry search"
           >
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
@@ -298,14 +302,20 @@ export default function SearchScreen() {
                 style={[styles.pageButton, (isSearching || pageNumber <= 1) && styles.pageButtonDisabled]}
                 disabled={isSearching || pageNumber <= 1}
                 onPress={() => void executeSearch(searchQuery, pageNumber - 1)}
+                accessibilityRole="button"
+                accessibilityLabel="Previous search results page"
+                accessibilityState={{ disabled: isSearching || pageNumber <= 1, busy: isSearching }}
               >
                 <Text style={styles.pageButtonText}>Previous</Text>
               </TouchableOpacity>
-              <Text style={styles.pageLabel}>Page {pageNumber} of {totalPages}</Text>
+              <Text style={styles.pageLabel} accessibilityLiveRegion="polite">Page {pageNumber} of {totalPages}</Text>
               <TouchableOpacity
                 style={[styles.pageButton, (isSearching || pageNumber >= totalPages) && styles.pageButtonDisabled]}
                 disabled={isSearching || pageNumber >= totalPages}
                 onPress={() => void executeSearch(searchQuery, pageNumber + 1)}
+                accessibilityRole="button"
+                accessibilityLabel="Next search results page"
+                accessibilityState={{ disabled: isSearching || pageNumber >= totalPages, busy: isSearching }}
               >
                 <Text style={styles.pageButtonText}>Next</Text>
               </TouchableOpacity>
@@ -315,7 +325,7 @@ export default function SearchScreen() {
       )}
 
       {!searchError && searchQuery.length >= MIN_SEARCH_LENGTH && searchResults.length === 0 && !isSearching && (
-        <View style={styles.emptyState}>
+        <View style={styles.emptyState} accessibilityLiveRegion="polite">
           <Text style={styles.emptyStateIcon}>🔭</Text>
           <Text style={styles.emptyStateText}>No results found</Text>
         </View>

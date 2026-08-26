@@ -47,7 +47,13 @@ export default function ProfileScreen() {
 
         {/* Actions */}
         <View style={styles.actions}>
-          <TouchableOpacity onPress={handleLogout} style={S.dangerBtn}>
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={S.dangerBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Log out"
+            accessibilityHint="Signs out of your MediaVault account"
+          >
             <Text style={S.dangerBtnText}>Logout</Text>
           </TouchableOpacity>
         </View>

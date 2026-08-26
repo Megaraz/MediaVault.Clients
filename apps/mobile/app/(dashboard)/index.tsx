@@ -260,7 +260,15 @@ export default function DashboardScreen() {
         <Text style={[S.sectionTitle, styles.sectionTitle]}>{title}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRow}>
           {sectionEntries.map(entry => (
-            <TouchableOpacity key={entry.id} style={styles.card} onPress={() => handleOpenEntry(entry)} activeOpacity={0.75}>
+            <TouchableOpacity
+              key={entry.id}
+              style={styles.card}
+              onPress={() => handleOpenEntry(entry)}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${entry.title}`}
+              accessibilityHint="Opens this library entry for editing"
+            >
               {entry.imageUrl ? (
                 <Image source={{ uri: entry.imageUrl }} style={styles.cardImage} resizeMode="cover" />
               ) : (
@@ -306,7 +314,10 @@ export default function DashboardScreen() {
           const isActive = mediaTypeFilter === type.value;
           return (
             <TouchableOpacity key={type.value} onPress={() => setMediaTypeFilter(type.value)}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}>
+              style={[styles.filterChip, isActive && styles.filterChipActive]}
+              accessibilityRole="radio"
+              accessibilityLabel={`${type.label} filter`}
+              accessibilityState={{ selected: isActive }}>
               <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]} numberOfLines={1}>{type.label}</Text>
             </TouchableOpacity>
           );
@@ -317,24 +328,27 @@ export default function DashboardScreen() {
       {/* Content */}
       {isLoading && entries.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading your library" />
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           {loadError ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateTitle}>Could not load your library</Text>
-              <Text style={styles.emptyStateSub}>{loadError}</Text>
+              <Text style={styles.emptyStateTitle} accessibilityRole="alert">Could not load your library</Text>
+              <Text style={styles.emptyStateSub} accessibilityLiveRegion="assertive">{loadError}</Text>
               <TouchableOpacity
                 style={styles.retryButton}
                 disabled={isLoading}
                 onPress={() => void fetchEntries(pageNumber)}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading your library"
+                accessibilityState={{ disabled: isLoading, busy: isLoading }}
               >
                 <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>
             </View>
           ) : filteredEntries.length === 0 ? (
-            <View style={styles.emptyState}>
+            <View style={styles.emptyState} accessibilityLiveRegion="polite">
               <Text style={styles.emptyStateIcon}>📭</Text>
               <Text style={styles.emptyStateTitle}>No entries yet</Text>
               <Text style={styles.emptyStateSub}>Tap + to add your first entry</Text>
@@ -348,14 +362,20 @@ export default function DashboardScreen() {
                     style={[styles.pageButton, (isLoading || pageNumber <= 1) && styles.pageButtonDisabled]}
                     disabled={isLoading || pageNumber <= 1}
                     onPress={() => void fetchEntries(pageNumber - 1)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Previous page"
+                    accessibilityState={{ disabled: isLoading || pageNumber <= 1, busy: isLoading }}
                   >
                     <Text style={styles.pageButtonText}>Previous</Text>
                   </TouchableOpacity>
-                  <Text style={styles.pageLabel}>{isLoading ? 'Loading page…' : `Page ${pageNumber} of ${totalPages}`}</Text>
+                  <Text style={styles.pageLabel} accessibilityLiveRegion="polite">{isLoading ? 'Loading page…' : `Page ${pageNumber} of ${totalPages}`}</Text>
                   <TouchableOpacity
                     style={[styles.pageButton, (isLoading || pageNumber >= totalPages) && styles.pageButtonDisabled]}
                     disabled={isLoading || pageNumber >= totalPages}
                     onPress={() => void fetchEntries(pageNumber + 1)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Next page"
+                    accessibilityState={{ disabled: isLoading || pageNumber >= totalPages, busy: isLoading }}
                   >
                     <Text style={styles.pageButtonText}>Next</Text>
                   </TouchableOpacity>
@@ -367,7 +387,14 @@ export default function DashboardScreen() {
       )}
 
       {/* FAB */}
-      <TouchableOpacity onPress={handleOpenCreate} style={styles.fab} activeOpacity={0.85}>
+      <TouchableOpacity
+        onPress={handleOpenCreate}
+        style={styles.fab}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel="Add media entry"
+        accessibilityHint="Opens a form to add an entry to your library"
+      >
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
 

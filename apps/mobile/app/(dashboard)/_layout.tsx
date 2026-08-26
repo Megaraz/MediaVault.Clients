@@ -9,7 +9,7 @@ export default function DashboardLayout() {
   if (authenticationStatus === 'restoring') {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
+        <ActivityIndicator accessibilityLabel="Restoring your session" />
       </View>
     );
   }

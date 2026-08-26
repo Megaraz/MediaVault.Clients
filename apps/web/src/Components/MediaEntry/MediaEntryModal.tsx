@@ -329,6 +329,7 @@ export default function MediaEntryModal({
 
   return (
     <ModalWindow
+      ariaLabel={showSuccessState ? "Entry saved" : isEditMode ? "Edit entry" : "Create entry"}
       onClose={isBusy ? () => undefined : onCancel}
       overlayClassName={
         showSuccessState
@@ -353,7 +354,7 @@ export default function MediaEntryModal({
                 ? "Entry Updated"
                 : "Entry Created"}
           </h2>
-          <p className="mb-8 text-base leading-relaxed text-slate-300">
+          <p role="status" className="mb-8 text-base leading-relaxed text-slate-300">
             {deleteSuccessState
               ? "The entry was deleted successfully. Returning you to the dashboard now."
               : isEditMode
@@ -391,7 +392,7 @@ export default function MediaEntryModal({
                 />
               </fieldset>
               {submitError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+                <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                   {submitError}
                 </div>
               )}

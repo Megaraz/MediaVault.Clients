@@ -3,6 +3,7 @@ import { MAXIMUM_RATING, RATING_STEP, isValidRating } from '@mediavault/client-c
 type StarRatingProps = {
   rating: number;
   onChange: (newRating: number) => void;
+  labelledBy?: string;
 };
 
 function displayRating(rating: number) {
@@ -12,6 +13,7 @@ function displayRating(rating: number) {
 export default function StarRating({
   rating,
   onChange,
+  labelledBy,
 }: StarRatingProps) {
   const normalizedRating = displayRating(rating);
 
@@ -19,6 +21,7 @@ export default function StarRating({
     <div
       className="flex items-center gap-1 text-amber-400"
       role="group"
+      aria-labelledby={labelledBy}
       aria-label={`Rating: ${normalizedRating.toFixed(1)} out of ${MAXIMUM_RATING.toFixed(1)} stars`}
     >
       {Array.from({ length: MAXIMUM_RATING }, (_, i) => {

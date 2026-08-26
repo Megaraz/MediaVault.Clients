@@ -81,6 +81,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
 
   return (
     <ModalWindow
+      ariaLabel="Create account"
       onClose={isSubmitting ? () => undefined : () => onCancel(false)}
       cardClassName={defaultCardClassName}
     >
@@ -90,6 +91,7 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
           onClick={() => onCancel(false)}
           disabled={isSubmitting}
           className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 transition-colors"
+          aria-label="Close registration"
         >
           <span className="material-symbols-outlined">close</span>
         </button>
@@ -123,19 +125,19 @@ export default function RegisterUser({ onCancel }: RegisterProps) {
               htmlFor="terms"
             >
               I agree to the{" "}
-              <a className="text-primary hover:underline" href="#">
+              <span className="text-primary">
                 Terms of Service
-              </a>{" "}
+              </span>{" "}
               and{" "}
-              <a className="text-primary hover:underline" href="#">
+              <span className="text-primary">
                 Privacy Policy
-              </a>
+              </span>
               .
             </label>
           </div>
           {/* Button */}
 
-          {errorMessage && <p className="text-sm text-red-400">{errorMessage}</p>}
+          {errorMessage && <p className="text-sm text-red-400" role="alert">{errorMessage}</p>}
           <button
             type="submit"
             disabled={isSubmitting}

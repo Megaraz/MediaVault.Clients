@@ -45,6 +45,7 @@ export default function DetailedHeader({
         type="button"
         onClick={onCancel}
         disabled={isBusy}
+        aria-label="Close entry form"
       >
         <span className="material-symbols-outlined">close</span>
       </button>

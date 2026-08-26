@@ -6,6 +6,7 @@ type InputText = {
   placeholder?: string;
   type?: string;
   className?: string;
+  id?: string;
 };
 
 const defaultClassName: string =
@@ -17,9 +18,11 @@ export default function InputText({
   onChange,
   className = defaultClassName,
   placeholder = "",
+  id,
 }: InputText) {
   return (
     <input
+      id={id}
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}

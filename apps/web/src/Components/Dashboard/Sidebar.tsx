@@ -47,13 +47,13 @@ export default function Sidebar({
             <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
               Main Menu
             </p>
-            <a
+            <span
               className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium"
-              href="#"
+              aria-current="page"
             >
               <span className="material-symbols-outlined">dashboard</span>
               <span>Dashboard</span>
-            </a>
+            </span>
 
             <a
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -74,7 +74,9 @@ export default function Sidebar({
               return (
                 <button
                   key={type}
+                  type="button"
                   onClick={() => onChangeMediaTypeFilter(type)}
+                  aria-pressed={isCurrent}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left ${
                     isCurrent ? "bg-primary/10 text-primary" : ""
                   }`}

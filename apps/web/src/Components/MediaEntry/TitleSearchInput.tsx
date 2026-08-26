@@ -20,6 +20,7 @@ type TitleSearchProps = {
   className?: string;
   mediaType?: number;
   isEditMode: boolean;
+  id?: string;
 };
 
 // How long to wait after the user stops typing before firing the API call.
@@ -38,6 +39,7 @@ export default function TitleSearchInput({
   placeholder = "",
   mediaType,
   isEditMode,
+  id,
 }: TitleSearchProps) {
   // Lazily create the clients once (arrow function form of useState avoids re-creating on every render)
   const [rawgClient] = useState(() => new RawgApiClient());
@@ -145,6 +147,7 @@ export default function TitleSearchInput({
   return (
     <div className="relative">
       <input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => {
@@ -155,10 +158,13 @@ export default function TitleSearchInput({
           // Re-show the dropdown if we still have results (e.g. user clicked away and came back)
           if (searchResults.length > 0) setShowDropdown(true);
         }}
-        onBlur={() => {
-          // Delay closing so that a click on a dropdown item can register first
-          setTimeout(() => setShowDropdown(false), 150);
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setShowDropdown(false);
         }}
+        onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+        aria-autocomplete="list"
+        aria-expanded={showDropdown}
+        aria-controls="title-search-results"
         className={className}
         placeholder={placeholder}
       />
@@ -171,6 +177,7 @@ export default function TitleSearchInput({
           </span>
         </div>
       )}
+      {isSearching && <span className="sr-only" role="status">Searching titles</span>}
 
       {/* Search hint — only shown while the field is empty on a new entry */}
       {isSearchEnabled && !isEditMode && value.length === 0 && (
@@ -182,14 +189,14 @@ export default function TitleSearchInput({
 
       {/* ── Dropdown with search results ── */}
       {showDropdown && (
-        <ul className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
+        <ul id="title-search-results" role="listbox" className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
           {searchResults.map((result) => (
-            <li
-              key={result.idExternal}
-              // onMouseDown fires before onBlur, so the click registers before the dropdown hides
-              onMouseDown={() => handleSelectResult(result)}
-              className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
+            <li key={result.idExternal} role="option">
+              <button
+                type="button"
+                onClick={() => handleSelectResult(result)}
+                className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
               {result.coverImageUrl && (
                 <img
                   src={result.coverImageUrl}
@@ -200,6 +207,7 @@ export default function TitleSearchInput({
               <span className="truncate text-sm text-slate-900 dark:text-slate-100">
                 {result.title}
               </span>
+              </button>
             </li>
           ))}
         </ul>

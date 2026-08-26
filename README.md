@@ -180,6 +180,13 @@ Every `EXPO_PUBLIC_*` value is embedded in the client bundle. Use these values
 only for public runtime configuration, never for passwords, JWTs, provider
 keys, or other secrets.
 
+Preview and production Android builds require an explicit, non-localhost HTTPS
+API URL and use the checked-in EAS profiles, stable package identity, and remote
+version-code management. See the
+[Android runtime and distribution guide](apps/mobile/docs/android-distribution.md)
+for environment setup, preview APK installation and upgrade checks, production
+AAB creation, signing ownership, and installed-artifact verification.
+
 Start the Android workflow from the repository root:
 
 ```powershell
@@ -220,6 +227,7 @@ npm ci
 npm run lint
 npm run typecheck:mobile
 npm run doctor:mobile
+npm run test:release-config --workspace=media-vault-android
 npm run build:web
 npm run test:client-core
 npm run test:contracts
@@ -233,8 +241,9 @@ automated UI test suite.
 
 ## Current limitations and direction
 
-- No production web deployment, Android distribution, or app-store release is
-  provided.
+- Production web hosting and app-store release remain unselected. Android has
+  repeatable preview/production build configuration, but no artifact is
+  published from this repository.
 - The mobile SQLite path is not a general synchronization implementation.
 - iOS and Expo web scripts exist, but this repository does not claim they have
   been manually validated.
@@ -251,6 +260,7 @@ Current work is tracked in the
 - [MediaVault API](https://github.com/Megaraz/MediaVault.Api)
 - [Continuous integration and default-branch gates](apps/mobile/docs/continuous-integration.md)
 - [Public repository readiness audit](apps/mobile/docs/public-repository-readiness-audit.md)
+- [Android runtime and distribution](apps/mobile/docs/android-distribution.md)
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security](SECURITY.md)

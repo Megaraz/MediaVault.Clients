@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "media-vault-android",
-    "slug": "media-vault-android",
+    "name": "MediaVault",
+    "slug": "mediavault",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -11,6 +11,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.megaraz.mediavault",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -48,6 +50,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b5ec51ec-d5ba-4e01-afdb-6b00745a0182"
+      }
+    },
+    "owner": "megaraz-team"
   }
 }

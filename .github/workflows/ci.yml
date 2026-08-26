@@ -47,6 +47,9 @@ jobs:
       - name: Validate Expo project
         run: npm run doctor:mobile
 
+      - name: Validate Android release configuration
+        run: npm run test:release-config --workspace=media-vault-android
+
   web:
     name: Web (Node 24)
     runs-on: ubuntu-latest

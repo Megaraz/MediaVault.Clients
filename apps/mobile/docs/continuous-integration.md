@@ -6,8 +6,8 @@ pull request and on pushes to `main`.
 ## Checks
 
 - **Expo quality gates** uses Node.js 20.19.x and the root workspace lock file
-  to run `npm ci`, mobile lint, TypeScript checking, and Expo Doctor for Expo
-  SDK 57.
+  to run `npm ci`, mobile lint, TypeScript checking, Expo Doctor for Expo SDK
+  57, and focused Android release-configuration tests.
 - **Web (Node 24)** uses the same root workspace lock file to run `npm ci`, web
   lint, and the production build.
 - **Dependency review** runs on pull requests and rejects newly introduced
@@ -24,7 +24,7 @@ same pull request or branch cancels an older run.
 
 ## Expo SDK 57 dependency baseline
 
-The mobile workspace targets Expo `57.0.13` with React Native `0.86.2` and
+The mobile workspace targets Expo `57.0.16` with React Native `0.86.2` and
 React `19.2.3`. Expo SDK 55 and later always use the New Architecture, so the
 obsolete `newArchEnabled` app-config field is not present. Android
 edge-to-edge is mandatory for the supported SDK/runtime, so the removed

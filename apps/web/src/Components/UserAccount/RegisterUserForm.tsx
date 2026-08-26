@@ -19,7 +19,7 @@ export default function RegisterUserForm({
     <>
       {/* Username Row */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <label htmlFor="register-username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Username
         </label>
         <div className="relative">
@@ -27,6 +27,7 @@ export default function RegisterUserForm({
             person
           </span>
           <input
+            id="register-username"
             value={formData.username}
             onChange={(event) => onChange("username", event.target.value)}
             placeholder="JohnDoe123"
@@ -37,7 +38,7 @@ export default function RegisterUserForm({
       </div>
       {/* Email Row */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <label htmlFor="register-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Email Address
         </label>
         <div className="relative">
@@ -45,6 +46,7 @@ export default function RegisterUserForm({
             mail
           </span>
           <input
+            id="register-email"
             type="email"
             value={formData.email}
             onChange={(event) => onChange("email", event.target.value)}
@@ -56,7 +58,7 @@ export default function RegisterUserForm({
       </div>
       {/* Confirm Email Row */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <label htmlFor="register-confirm-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
           Confirm Email Address
         </label>
         <div className="relative">
@@ -64,6 +66,7 @@ export default function RegisterUserForm({
             mail
           </span>
           <input
+            id="register-confirm-email"
             type="email"
             value={formData.confirmEmail}
             onChange={(event) => onChange("confirmEmail", event.target.value)}
@@ -76,7 +79,7 @@ export default function RegisterUserForm({
       {/* Password Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <label htmlFor="register-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Password
           </label>
           <div className="relative">
@@ -84,6 +87,7 @@ export default function RegisterUserForm({
               lock
             </span>
             <input
+              id="register-password"
               type="password"
               value={formData.password}
               onChange={(event) => onChange("password", event.target.value)}
@@ -94,7 +98,7 @@ export default function RegisterUserForm({
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <label htmlFor="register-confirm-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Confirm Password
           </label>
           <div className="relative">
@@ -103,6 +107,7 @@ export default function RegisterUserForm({
             </span>
 
             <input
+              id="register-confirm-password"
               type="password"
               value={formData.confirmPassword}
               onChange={(event) =>

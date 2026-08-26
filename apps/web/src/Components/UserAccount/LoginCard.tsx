@@ -48,7 +48,7 @@ export default function Login({ onCancel }: LoginProps) {
   }
 
   return (
-    <ModalWindow onClose={() => onCancel(false)} cardClassName={defaultCardClassName}>
+    <ModalWindow ariaLabel="Log in" onClose={() => onCancel(false)} cardClassName={defaultCardClassName}>
       {/* Header */}
       <div className="px-8 pt-10 pb-6 text-center">
         <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 mb-4">
@@ -67,7 +67,7 @@ export default function Login({ onCancel }: LoginProps) {
         {/* Form Fields */}
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="login-username-or-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Email or Username
             </label>
             <div className="relative">
@@ -87,7 +87,7 @@ export default function Login({ onCancel }: LoginProps) {
           </div>
           <div>
             <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label htmlFor="login-password" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Password
               </label>
               {/* <a
@@ -115,6 +115,8 @@ export default function Login({ onCancel }: LoginProps) {
                 type="button"
                 className="absolute inset-y-0 right-4 flex items-center"
                 onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
               >
                 <span className="material-symbols-outlined text-slate-400 text-xl">
                   {showPassword ? "visibility_off" : "visibility"}
@@ -125,7 +127,7 @@ export default function Login({ onCancel }: LoginProps) {
 
           {/* Submit */}
           {errorMessage && (
-            <p className="text-sm text-red-400">{errorMessage}</p>
+            <p className="text-sm text-red-400" role="alert">{errorMessage}</p>
           )}
 
           <button
@@ -142,9 +144,9 @@ export default function Login({ onCancel }: LoginProps) {
         {/* Footer Link */}
         <p className="text-center text-sm text-slate-500 dark:text-slate-400">
           Don't have an account?
-          <a className="ms-1 text-primary font-bold hover:underline" href="#" onClick={() => onCancel(true)}>
+          <button type="button" className="ms-1 text-primary font-bold hover:underline" onClick={() => onCancel(true)}>
             Create an account
-          </a>
+          </button>
         </p>
       </div>
     </ModalWindow>

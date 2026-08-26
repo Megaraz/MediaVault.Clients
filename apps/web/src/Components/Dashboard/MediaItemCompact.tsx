@@ -27,17 +27,11 @@ export default function MediaItemCompact({
 	onClickEntry,
 }: MediaItemCompactProps) {
 	return (
-		<div
-			className="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-100 p-3 transition-colors hover:border-primary/50 dark:border-slate-800 dark:bg-slate-800/50"
+		<button
+			type="button"
+			aria-label={`Open ${entry.title}`}
+			className="flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-slate-100 p-3 text-left transition-colors hover:border-primary/50 dark:border-slate-800 dark:bg-slate-800/50"
 			onClick={() => onClickEntry(entry)}
-			onKeyDown={(event) => {
-				if (event.key === "Enter" || event.key === " ") {
-					event.preventDefault();
-					onClickEntry(entry);
-				}
-			}}
-			role="button"
-			tabIndex={0}
 		>
 			<div
 				className="h-20 w-14 shrink-0 rounded-lg bg-slate-200 bg-cover bg-center dark:bg-slate-700"
@@ -59,17 +53,7 @@ export default function MediaItemCompact({
 				</div>
 			</div>
 
-			<button
-				type="button"
-				className="rounded-full p-2 transition-colors hover:bg-primary/20 hover:text-primary"
-				onClick={(event) => {
-					event.stopPropagation();
-					onClickEntry(entry);
-				}}
-				aria-label={`Open ${entry.title ?? "entry"}`}
-			>
-				<span className="material-symbols-outlined text-lg">play_arrow</span>
-			</button>
-		</div>
+			<span className="material-symbols-outlined text-lg" aria-hidden="true">play_arrow</span>
+		</button>
 	);
 }

@@ -120,15 +120,17 @@ export default function MainHeader({
             <input
               className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
               placeholder="Search your library..."
+              aria-label="Search your library"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => {
                 if (searchQuery.length >= MIN_SEARCH_LENGTH) setShowDropdown(true);
               }}
-              onBlur={() => {
-                setTimeout(() => setShowDropdown(false), 150);
-              }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              aria-autocomplete="list"
+              aria-expanded={showDropdown}
+              aria-controls="library-search-results"
             />
 
             {/* Spinning icon while searching */}
@@ -139,10 +141,11 @@ export default function MainHeader({
                 </span>
               </div>
             )}
+            {isSearching && <span className="sr-only" role="status">Searching your library</span>}
 
             {/* Dropdown with search results */}
             {showDropdown && (
-              <div className="absolute z-50 mt-1 w-full max-h-80 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
+              <div id="library-search-results" role="region" aria-label="Library search results" className="absolute z-50 mt-1 w-full max-h-80 overflow-y-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
                 {searchError && (
                   <div className="p-4 text-sm text-red-700 dark:text-red-300" role="alert">
                     <p>Search failed. {searchError}</p>
@@ -150,8 +153,7 @@ export default function MainHeader({
                       type="button"
                       className="mt-2 font-semibold text-primary"
                       disabled={isSearching}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
+                      onClick={() => {
                         void executeSearch(searchQuery, pageNumber);
                       }}
                     >
@@ -162,13 +164,10 @@ export default function MainHeader({
                 {!isSearching && !searchError && searchResults.length === 0 && (
                   <p className="p-4 text-sm text-slate-500">No entries match this search.</p>
                 )}
-                <ul>
+                <ul role="listbox">
                 {searchResults.map((entry) => (
-                  <li
-                    key={entry.id}
-                    onMouseDown={() => handleSelectResult(entry)}
-                    className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                  >
+                  <li key={entry.id} role="option">
+                    <button type="button" onClick={() => handleSelectResult(entry)} className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                     {entry.imageUrl && (
                       <img
                         src={entry.imageUrl}
@@ -184,6 +183,7 @@ export default function MainHeader({
                         {MediaTypeLabels[entry.mediaType] ?? "Unknown"}
                       </span>
                     </div>
+                    </button>
                   </li>
                 ))}
                 </ul>
@@ -193,8 +193,7 @@ export default function MainHeader({
                       type="button"
                       className="rounded px-2 py-1 font-semibold text-primary disabled:opacity-40"
                       disabled={isSearching || pageNumber <= 1}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
+                      onClick={() => {
                         void executeSearch(searchQuery, pageNumber - 1);
                       }}
                     >
@@ -205,8 +204,7 @@ export default function MainHeader({
                       type="button"
                       className="rounded px-2 py-1 font-semibold text-primary disabled:opacity-40"
                       disabled={isSearching || pageNumber >= totalPages}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
+                      onClick={() => {
                         void executeSearch(searchQuery, pageNumber + 1);
                       }}
                     >
@@ -220,16 +218,17 @@ export default function MainHeader({
         </div>
         <div className="flex items-center gap-4">
           <button
+            type="button"
             onClick={onClickAddEntry}
             className="hidden sm:flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-lg shadow-primary/20"
           >
             <span className="material-symbols-outlined text-sm">add</span>
             <span>Add New Entry</span>
           </button>
-          <button className="p-2 text-slate-500 hover:text-primary transition-colors">
+          <button type="button" aria-label="Notifications" className="p-2 text-slate-500 hover:text-primary transition-colors">
             <span className="material-symbols-outlined">notifications</span>
           </button>
-          <button className="p-2 text-slate-500 hover:text-primary transition-colors">
+          <button type="button" aria-label="Settings" className="p-2 text-slate-500 hover:text-primary transition-colors">
             <span className="material-symbols-outlined">settings</span>
           </button>
         </div>

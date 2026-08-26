@@ -3,6 +3,7 @@ type SelectOptionProps = {
   value: string | number;
   onChange: (newValue: string) => void;
   className?: string;
+  id?: string;
 };
 
 export type SelectOptionItem = {
@@ -18,9 +19,11 @@ export default function SelectOption({
   value,
   onChange,
   className = defaultClassName,
+  id,
 }: SelectOptionProps) {
   return (
     <select
+      id={id}
       className={className}
       value={value}
       onChange={(e) => onChange(e.target.value)}

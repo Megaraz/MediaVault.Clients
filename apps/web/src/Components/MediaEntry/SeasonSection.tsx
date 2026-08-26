@@ -117,10 +117,11 @@ export default function SeasonSection({
       {/* Season picker */}
       {seasons.length > 0 && (
         <div>
-          <label className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <label htmlFor="season-picker" className="block mb-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Edit a Season
           </label>
           <SelectOption
+            id="season-picker"
             options={[
               { value: "", label: "— Select a season —" },
               ...seasonSelectOptions,
@@ -160,10 +161,11 @@ export default function SeasonSection({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-number" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Season Number
               </label>
               <InputText
+                id="season-number"
                 type="number"
                 value={editForm.seasonNumber}
                 placeholder="e.g. 1"
@@ -172,10 +174,11 @@ export default function SeasonSection({
             </div>
 
             <div>
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-name" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Name (optional)
               </label>
               <InputText
+                id="season-name"
                 value={editForm.name}
                 placeholder="e.g. The Beginning"
                 onChange={(val) => handleEditChange("name", val)}
@@ -183,10 +186,11 @@ export default function SeasonSection({
             </div>
 
             <div>
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-episodes" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Total Episodes
               </label>
               <InputText
+                id="season-episodes"
                 type="number"
                 value={editForm.episodes}
                 placeholder="e.g. 12"
@@ -195,10 +199,11 @@ export default function SeasonSection({
             </div>
 
             <div>
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-watched-episodes" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Watched Episodes
               </label>
               <InputText
+                id="season-watched-episodes"
                 type="number"
                 value={editForm.watchedEpisodes}
                 placeholder="e.g. 6"
@@ -207,10 +212,11 @@ export default function SeasonSection({
             </div>
 
             <div>
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-air-date" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Air Date
               </label>
               <InputText
+                id="season-air-date"
                 type="date"
                 value={editForm.airDate}
                 onChange={(val) => handleEditChange("airDate", val)}
@@ -218,10 +224,11 @@ export default function SeasonSection({
             </div>
 
             <div>
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-image-url" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Cover Image URL
               </label>
               <InputText
+                id="season-image-url"
                 type="url"
                 value={editForm.imageUrl}
                 placeholder="https://..."
@@ -230,10 +237,11 @@ export default function SeasonSection({
             </div>
 
             <div className="col-span-full">
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-status" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Status
               </label>
               <SelectOption
+                id="season-status"
                 options={statusOptions}
                 value={editForm.status}
                 onChange={(val) => handleEditChange("status", Number(val))}
@@ -241,20 +249,22 @@ export default function SeasonSection({
             </div>
 
             <div className="col-span-full">
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <p id="season-rating-label" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Rating
-              </label>
+              </p>
               <StarRating
                 rating={editForm.rating}
                 onChange={(val) => handleEditChange("rating", val)}
+                labelledBy="season-rating-label"
               />
             </div>
 
             <div className="col-span-full">
-              <label className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+              <label htmlFor="season-overview" className="block mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Overview
               </label>
               <textarea
+                id="season-overview"
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none"
                 placeholder="Short description of the season..."
                 rows={2}

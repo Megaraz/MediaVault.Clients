@@ -13,8 +13,10 @@ export default function MediaItem({
   onClickEntry,
 }: MediaEntrySmallProps) {
   return (
-    <div
-      className="group relative z-0 cursor-pointer transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:z-10 hover:scale-[1.025] motion-reduce:transition-none motion-reduce:hover:scale-100"
+    <button
+      type="button"
+      aria-label={`Open ${entry.title}`}
+      className="group relative z-0 block w-full text-left transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:z-10 hover:scale-[1.025] motion-reduce:transition-none motion-reduce:hover:scale-100"
       key={entry.id}
       onClick={() => onClickEntry(entry)}
     >
@@ -47,6 +49,6 @@ export default function MediaItem({
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
